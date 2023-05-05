@@ -63,7 +63,7 @@ class plugin : Plugin() {
     object MouseWheelCallbacks : MouseWheelListener {
         override fun mouseWheelMoved(e: MouseWheelEvent?) {
             e ?: return
-            if (API.IsKeyPressed(Keyboard.KEY_SHIFT)) {
+            if (API.IsKeyPressed(Keyboard.KEY_SHIFT) || API.IsKeyPressed(Keyboard.KEY_CTRL)) {
                 val previous = API.GetPreviousMouseWheelRotation()
                 val current = API.GetMouseWheelRotation()
                 val diff = current - previous
