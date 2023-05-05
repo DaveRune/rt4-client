@@ -18,7 +18,7 @@ build:
     script:
         - ./gradlew jar
         - mv client/build/libs/*.jar client/build/libs/rt4-client.jar
-        - sha256sum client/build/libs/rt4-client.jar > client/build/libs/rt4-client.jar.sha256
+        - sha256sum client/build/libs/rt4-client.jar | awk '{print $1}' > client/build/libs/rt4-client.jar.sha256
     artifacts:
         paths:
             - client/build/libs/*.jar
