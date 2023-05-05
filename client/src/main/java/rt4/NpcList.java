@@ -25,26 +25,26 @@ public class NpcList {
 
 	@OriginalMember(owner = "client!vg", name = "a", descriptor = "(IILclient!fe;)V")
 	public static void method4514(@OriginalArg(0) int arg0, @OriginalArg(2) PathingEntity arg1) {
-		if (client.loop < arg1.anInt3395) {
-			method553(arg1);
-		} else if (arg1.anInt3386 >= client.loop) {
-			method4665(arg1);
+		if (client.loop < arg1.forceMoveCyclesToStart) {
+			lerpToForceMoveStart(arg1);
+		} else if (arg1.forceMoveCyclesToDest >= client.loop) {
+			lerpToForceMoveDest(arg1);
 		} else {
 			method2247(arg1);
 		}
 		if (arg1.xFine < 128 || arg1.zFine < 128 || arg1.xFine >= 13184 || arg1.zFine >= 13184) {
 			arg1.seqId = -1;
 			arg1.spotAnimId = -1;
-			arg1.anInt3395 = 0;
-			arg1.anInt3386 = 0;
+			arg1.forceMoveCyclesToStart = 0;
+			arg1.forceMoveCyclesToDest = 0;
 			arg1.xFine = arg1.movementQueueX[0] * 128 + arg1.getSize() * 64;
 			arg1.zFine = arg1.movementQueueZ[0] * 128 + arg1.getSize() * 64;
 			arg1.method2689();
 		}
 		if (arg1 == PlayerList.self && (arg1.xFine < 1536 || arg1.zFine < 1536 || arg1.xFine >= 11776 || arg1.zFine >= 11776)) {
 			arg1.spotAnimId = -1;
-			arg1.anInt3395 = 0;
-			arg1.anInt3386 = 0;
+			arg1.forceMoveCyclesToStart = 0;
+			arg1.forceMoveCyclesToDest = 0;
 			arg1.seqId = -1;
 			arg1.xFine = arg1.movementQueueX[0] * 128 + arg1.getSize() * 64;
 			arg1.zFine = arg1.movementQueueZ[0] * 128 + arg1.getSize() * 64;
@@ -55,50 +55,50 @@ public class NpcList {
 	}
 
 	@OriginalMember(owner = "client!bh", name = "a", descriptor = "(Lclient!fe;Z)V")
-	public static void method553(@OriginalArg(0) PathingEntity arg0) {
-		@Pc(8) int local8 = arg0.anInt3395 - client.loop;
-		@Pc(20) int local20 = arg0.anInt3380 * 128 + arg0.getSize() * 64;
-		@Pc(36) int local36 = arg0.anInt3428 * 128 + arg0.getSize() * 64;
-		if (arg0.anInt3431 == 0) {
+	public static void lerpToForceMoveStart(@OriginalArg(0) PathingEntity arg0) {
+		@Pc(8) int toStartCyclesLeft = arg0.forceMoveCyclesToStart - client.loop;
+		@Pc(20) int startXFine = arg0.forceMoveStartX * 128 + arg0.getSize() * 64;
+		@Pc(36) int startYFine = arg0.forceMoveStartY * 128 + arg0.getSize() * 64;
+		if (arg0.forceMoveDirection == 0) {
 			arg0.anInt3400 = 1024;
 		}
-		arg0.xFine += (local20 - arg0.xFine) / local8;
-		arg0.zFine += (local36 - arg0.zFine) / local8;
-		if (arg0.anInt3431 == 1) {
+		arg0.xFine += (startXFine - arg0.xFine) / toStartCyclesLeft;
+		arg0.zFine += (startYFine - arg0.zFine) / toStartCyclesLeft;
+		if (arg0.forceMoveDirection == 1) {
 			arg0.anInt3400 = 1536;
 		}
 		arg0.anInt3417 = 0;
-		if (arg0.anInt3431 == 2) {
+		if (arg0.forceMoveDirection == 2) {
 			arg0.anInt3400 = 0;
 		}
-		if (arg0.anInt3431 == 3) {
+		if (arg0.forceMoveDirection == 3) {
 			arg0.anInt3400 = 512;
 		}
 	}
 
 	@OriginalMember(owner = "client!wl", name = "a", descriptor = "(Lclient!fe;B)V")
-	public static void method4665(@OriginalArg(0) PathingEntity arg0) {
-		if (client.loop == arg0.anInt3386 || arg0.seqId == -1 || arg0.anInt3420 != 0 || arg0.anInt3360 + 1 > SeqTypeList.get(arg0.seqId).frameDelay[arg0.anInt3425]) {
-			@Pc(35) int local35 = arg0.anInt3386 - arg0.anInt3395;
-			@Pc(41) int local41 = client.loop - arg0.anInt3395;
-			@Pc(52) int local52 = arg0.anInt3380 * 128 + arg0.getSize() * 64;
-			@Pc(64) int local64 = arg0.anInt3428 * 128 + arg0.getSize() * 64;
-			@Pc(75) int local75 = arg0.anInt3416 * 128 + arg0.getSize() * 64;
-			@Pc(86) int local86 = arg0.anInt3392 * 128 + arg0.getSize() * 64;
-			arg0.xFine = (local41 * local75 + local52 * (local35 - local41)) / local35;
-			arg0.zFine = (local86 * local41 + local64 * (local35 - local41)) / local35;
+	public static void lerpToForceMoveDest(@OriginalArg(0) PathingEntity arg0) {
+		if (client.loop == arg0.forceMoveCyclesToDest || arg0.seqId == -1 || arg0.anInt3420 != 0 || arg0.anInt3360 + 1 > SeqTypeList.get(arg0.seqId).frameDelay[arg0.anInt3425]) {
+			@Pc(35) int cyclesDiff = arg0.forceMoveCyclesToDest - arg0.forceMoveCyclesToStart;
+			@Pc(41) int lerpCyclesRemaining = client.loop - arg0.forceMoveCyclesToStart;
+			@Pc(52) int startXFine = arg0.forceMoveStartX * 128 + arg0.getSize() * 64;
+			@Pc(64) int startYFine = arg0.forceMoveStartY * 128 + arg0.getSize() * 64;
+			@Pc(75) int destXFine = arg0.forceMoveDestX * 128 + arg0.getSize() * 64;
+			@Pc(86) int destYFine = arg0.forceMoveDestY * 128 + arg0.getSize() * 64;
+			arg0.xFine = (lerpCyclesRemaining * destXFine + startXFine * (cyclesDiff - lerpCyclesRemaining)) / cyclesDiff;
+			arg0.zFine = (destYFine * lerpCyclesRemaining + startYFine * (cyclesDiff - lerpCyclesRemaining)) / cyclesDiff;
 		}
 		arg0.anInt3417 = 0;
-		if (arg0.anInt3431 == 0) {
+		if (arg0.forceMoveDirection == 0) {
 			arg0.anInt3400 = 1024;
 		}
-		if (arg0.anInt3431 == 1) {
+		if (arg0.forceMoveDirection == 1) {
 			arg0.anInt3400 = 1536;
 		}
-		if (arg0.anInt3431 == 2) {
+		if (arg0.forceMoveDirection == 2) {
 			arg0.anInt3400 = 0;
 		}
-		if (arg0.anInt3431 == 3) {
+		if (arg0.forceMoveDirection == 3) {
 			arg0.anInt3400 = 512;
 		}
 		arg0.anInt3381 = arg0.anInt3400;
@@ -535,7 +535,7 @@ public class NpcList {
 		}
 		if (entity.seqId != -1 && entity.anInt3420 <= 1) {
 			local18 = SeqTypeList.get(entity.seqId);
-			if (local18.looptype == 1 && entity.anInt3405 > 0 && client.loop >= entity.anInt3395 && client.loop > entity.anInt3386) {
+			if (local18.looptype == 1 && entity.anInt3405 > 0 && client.loop >= entity.forceMoveCyclesToStart && client.loop > entity.forceMoveCyclesToDest) {
 				entity.anInt3420 = 1;
 				return;
 			}

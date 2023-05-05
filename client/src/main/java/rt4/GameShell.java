@@ -469,6 +469,7 @@ public abstract class GameShell extends Applet implements Runnable, FocusListene
 			focus = focusIn;
 		}
 		this.mainLoop();
+                setWindowTitle();
 	}
 
 	public static GraphicsDevice getCurrentDevice() {
@@ -686,6 +687,7 @@ public abstract class GameShell extends Applet implements Runnable, FocusListene
 			frame.setVisible(true);
 			frame.setBackground(Color.black);
 			frame.toFront();
+                        frame.setIconImage(new javax.swing.ImageIcon(getClass().getResource("/saradomin.png")).getImage());
 			@Pc(44) Insets insets = frame.getInsets();
 			frame.setSize(insets.left + frameWidth + insets.right, insets.top + frameHeight + insets.bottom);
 			GameShell.setFpsTarget(getCurrentDevice().getDisplayMode().getRefreshRate());
@@ -699,6 +701,38 @@ public abstract class GameShell extends Applet implements Runnable, FocusListene
 			TracingException.report(null, ex);
 		}
 	}
+
+        private void setWindowTitle() {
+            if (GlobalJsonConfig.instance != null) {
+                String modeString = "2009Scape [Local]";
+                switch (GlobalJsonConfig.instance.ip_management) {
+                    case "play.2009scape.org":
+                        modeString = "2009Scape [Live]";
+                        break;
+                    case "test.2009scape.org":
+                        modeString = "2009Scape [Test]";
+                        break;
+                    default:
+                        break;
+                }
+                if (PlayerList.self != null) {
+                    JagString name = PlayerList.self.username;
+                    if (name != null)
+                        modeString += " - " + name.toString();
+                    else modeString += " - At Login";
+                }
+                if (frame != null)
+                    frame.setTitle(modeString);
+            }
+        }
+
+        private final void configureTargetFPS() {
+            int refreshRate = getCurrentDevice().getDisplayMode().getRefreshRate();
+            if (refreshRate == java.awt.DisplayMode.REFRESH_RATE_UNKNOWN) {  
+                refreshRate = 60; //just assume 60hz and call it a day.
+            }
+            GameShell.setFpsTarget(refreshRate);
+        }
 
 	@OriginalMember(owner = "client!rc", name = "windowOpened", descriptor = "(Ljava/awt/event/WindowEvent;)V")
 	@Override

@@ -33,7 +33,7 @@ public abstract class PathingEntity extends Entity {
 	public int attachmentXFine;
 
 	@OriginalMember(owner = "client!fe", name = "bb", descriptor = "I")
-	public int anInt3380;
+	public int forceMoveStartX;
 
 	@OriginalMember(owner = "client!fe", name = "cb", descriptor = "I")
 	public int anInt3381;
@@ -42,19 +42,19 @@ public abstract class PathingEntity extends Entity {
 	public int atachmentX0;
 
 	@OriginalMember(owner = "client!fe", name = "hb", descriptor = "I")
-	public int anInt3386;
+	public int forceMoveCyclesToDest;
 
 	@OriginalMember(owner = "client!fe", name = "nb", descriptor = "Ljava/lang/Object;")
 	public Object attachment;
 
 	@OriginalMember(owner = "client!fe", name = "rb", descriptor = "I")
-	public int anInt3392;
+	public int forceMoveDestY;
 
 	@OriginalMember(owner = "client!fe", name = "tb", descriptor = "I")
 	public int spotAnimY;
 
 	@OriginalMember(owner = "client!fe", name = "ub", descriptor = "I")
-	public int anInt3395;
+	public int forceMoveCyclesToStart;
 
 	@OriginalMember(owner = "client!fe", name = "vb", descriptor = "Lclient!ga;")
 	protected ParticleSystem particleSystem;
@@ -75,7 +75,7 @@ public abstract class PathingEntity extends Entity {
 	public int xFine;
 
 	@OriginalMember(owner = "client!fe", name = "Ub", descriptor = "I")
-	public int anInt3416;
+	public int forceMoveDestX;
 
 	@OriginalMember(owner = "client!fe", name = "ac", descriptor = "I")
 	public int zFine;
@@ -87,10 +87,10 @@ public abstract class PathingEntity extends Entity {
 	public int attachmentZFine;
 
 	@OriginalMember(owner = "client!fe", name = "hc", descriptor = "I")
-	public int anInt3428;
+	public int forceMoveStartY;
 
 	@OriginalMember(owner = "client!fe", name = "mc", descriptor = "I")
-	public int anInt3431;
+	public int forceMoveDirection;
 
 	@OriginalMember(owner = "client!fe", name = "w", descriptor = "[I")
 	public final int[] movementQueueZ = new int[10];

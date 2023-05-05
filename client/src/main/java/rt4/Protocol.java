@@ -623,13 +623,13 @@ public class Protocol {
 			}
 		}
 		if ((flags & 0x400) != 0) {
-			player.anInt3380 = inboundBuffer.g1neg();
-			player.anInt3428 = inboundBuffer.g1();
-			player.anInt3416 = inboundBuffer.g1add();
-			player.anInt3392 = inboundBuffer.g1();
-			player.anInt3395 = inboundBuffer.ig2() + client.loop;
-			player.anInt3386 = inboundBuffer.ig2() + client.loop;
-			player.anInt3431 = inboundBuffer.g1neg();
+			player.forceMoveStartX = inboundBuffer.g1neg();
+			player.forceMoveStartY = inboundBuffer.g1();
+			player.forceMoveDestX = inboundBuffer.g1add();
+			player.forceMoveDestY = inboundBuffer.g1();
+			player.forceMoveCyclesToStart = inboundBuffer.ig2() + client.loop;
+			player.forceMoveCyclesToDest = inboundBuffer.ig2() + client.loop;
+			player.forceMoveDirection = inboundBuffer.g1neg();
 			player.movementQueueSize = 1;
 			player.anInt3405 = 0;
 		}
