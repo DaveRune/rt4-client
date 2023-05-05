@@ -468,8 +468,8 @@ public abstract class GameShell extends Applet implements Runnable, FocusListene
 		synchronized (this) {
 			focus = focusIn;
 		}
-		this.mainLoop();
                 setWindowTitle();
+		this.mainLoop();
 	}
 
 	public static GraphicsDevice getCurrentDevice() {
@@ -690,7 +690,7 @@ public abstract class GameShell extends Applet implements Runnable, FocusListene
                         frame.setIconImage(new javax.swing.ImageIcon(getClass().getResource("/saradomin.png")).getImage());
 			@Pc(44) Insets insets = frame.getInsets();
 			frame.setSize(insets.left + frameWidth + insets.right, insets.top + frameHeight + insets.bottom);
-			GameShell.setFpsTarget(getCurrentDevice().getDisplayMode().getRefreshRate());
+                        configureTargetFPS();
 			signLink2 = signLink = new SignLink(null, cacheId, cacheSubDir, 28);
 			@Pc(76) PrivilegedRequest request = signLink.startThread(1, this);
 			while (request.status == 0) {
@@ -703,8 +703,8 @@ public abstract class GameShell extends Applet implements Runnable, FocusListene
 	}
 
         private void setWindowTitle() {
+            String modeString = "2009Scape [Test]";
             if (GlobalJsonConfig.instance != null) {
-                String modeString = "2009Scape [Local]";
                 switch (GlobalJsonConfig.instance.ip_management) {
                     case "play.2009scape.org":
                         modeString = "2009Scape [Live]";
@@ -713,17 +713,18 @@ public abstract class GameShell extends Applet implements Runnable, FocusListene
                         modeString = "2009Scape [Test]";
                         break;
                     default:
+                        modeString = "2009Scape [Local]";
                         break;
                 }
-                if (PlayerList.self != null) {
-                    JagString name = PlayerList.self.username;
-                    if (name != null)
-                        modeString += " - " + name.toString();
-                    else modeString += " - At Login";
-                }
-                if (frame != null)
-                    frame.setTitle(modeString);
             }
+            if (PlayerList.self != null) {
+                JagString name = PlayerList.self.username;
+                if (name != null)
+                    modeString += " - " + name.toString();
+                else modeString += " - At Login";
+            }
+            if (frame != null)
+                frame.setTitle(modeString);
         }
 
         private final void configureTargetFPS() {

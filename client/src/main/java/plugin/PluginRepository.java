@@ -51,6 +51,8 @@ public class PluginRepository {
     }
 
     public static void Init() {
+        if (GlobalJsonConfig.instance == null)
+            return;
         File pluginsDirectory = new File(GlobalJsonConfig.instance.pluginsFolder);
 
         if (!pluginsDirectory.exists()) {
