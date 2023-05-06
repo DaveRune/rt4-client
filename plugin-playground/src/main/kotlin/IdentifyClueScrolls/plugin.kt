@@ -4,7 +4,6 @@ import plugin.Plugin
 import plugin.annotations.PluginMeta
 import plugin.api.MiniMenuEntry
 import plugin.api.MiniMenuType
-import rt4.ObjTypeList
 
 @PluginMeta(
     author = "bushtail",
@@ -17,7 +16,6 @@ class plugin : Plugin() {
         when(entry?.type) {
             MiniMenuType.OBJ -> {
                 val index = entry.subjectIndex
-                // val def = ObjTypeList.get(index.toInt())
                 if(entry.verb.equals("read", true)) {
                     if(EASY.contains(index.toInt())) {
                         entry.subject = entry.subject + " (easy)"
