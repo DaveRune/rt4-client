@@ -19,7 +19,7 @@ class plugin : Plugin() {
     override fun PlayerOverheadDraw(player: Player?, screenX: Int, screenY: Int) {
         if (player == null) return
         val width = Fonts.p11Full.getStringWidth(player.username)
-        API.DrawRect(screenX - width / 2, screenY - 12, width, 14, FontColor.fromColor(Color.BLACK).colorCode)
+        API.FillRect((screenX - width / 2) - 2, screenY - 12, width + 4, 14, FontColor.fromColor(Color.BLACK).colorCode, 125)
         API.DrawText(FontType.SMALL, FontColor.fromColor(Color.WHITE), TextModifier.CENTER, player.username.toString(), screenX, screenY)
     }
 }
