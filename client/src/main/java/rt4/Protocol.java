@@ -582,13 +582,10 @@ public class Protocol {
 					player.chatEffect = int1 & 0xFF;
 					player.chatLoops = 150;
 					player.chatColor = int1 >> 8;
-					if (int2 == 2) {
-						Chat.add(local106, local35 ? 17 : 1, message, null, JagString.concatenate(new JagString[]{IMG1, player.getName()}));
-					} else if (int2 == 1) {
-						Chat.add(local106, local35 ? 17 : 1, message, null, JagString.concatenate(new JagString[]{IMG0, player.getName()}));
-					} else {
-						Chat.add(local106, local35 ? 17 : 2, message, null, player.getName());
-					}
+                                        if (int2 != 0)
+					    Chat.add(local106, local35 ? 17 : 1, message, null, JagString.concatenate(new JagString[]{getChatIcon(int2), player.getName()}));
+                                        else 
+					    Chat.add(local106, local35 ? 17 : 2, message, null, player.getName());
 				}
 			}
 			inboundBuffer.offset = local24 + local21;
@@ -1144,13 +1141,7 @@ public class Protocol {
 				Chat.recentMessages[Chat.messageCounter] = messageId;
 				Chat.messageCounter = (Chat.messageCounter + 1) % 100;
 				@Pc(999) JagString message = QuickChatPhraseTypeList.get(quickchatId).decodeMessage(inboundBuffer);
-				if (rights == 2 || rights == 3) {
-					Chat.add(quickchatId, 20, message, Base37.decode37(clan37).toTitleCase(), JagString.concatenate(new JagString[]{IMG1, Base37.decode37(name37).toTitleCase()}));
-				} else if (rights == 1) {
-					Chat.add(quickchatId, 20, message, Base37.decode37(clan37).toTitleCase(), JagString.concatenate(new JagString[]{IMG0, Base37.decode37(name37).toTitleCase()}));
-				} else {
-					Chat.add(quickchatId, 20, message, Base37.decode37(clan37).toTitleCase(), Base37.decode37(name37).toTitleCase());
-				}
+				Chat.add(quickchatId, 20, message, Base37.decode37(clan37).toTitleCase(), JagString.concatenate(new JagString[]{getChatIcon(rights), Base37.decode37(name37).toTitleCase()}));
 			}
 			opcode = -1;
 			return true;
@@ -1696,13 +1687,7 @@ public class Protocol {
 				Chat.recentMessages[Chat.messageCounter] = messageId;
 				Chat.messageCounter = (Chat.messageCounter + 1) % 100;
 				JagString message = QuickChatPhraseTypeList.get(chatId).decodeMessage(inboundBuffer);
-				if (rights == 2) {
-					Chat.add(chatId, 18, message, null, JagString.concatenate(new JagString[]{IMG1, Base37.decode37(name).toTitleCase()}));
-				} else if (rights == 1) {
-					Chat.add(chatId, 18, message, null, JagString.concatenate(new JagString[]{IMG0, Base37.decode37(name).toTitleCase()}));
-				} else {
-					Chat.add(chatId, 18, message, null, Base37.decode37(name).toTitleCase());
-				}
+				Chat.add(chatId, 18, message, null, JagString.concatenate(new JagString[]{getChatIcon(rights), Base37.decode37(name).toTitleCase()}));
 			}
 			opcode = -1;
 			return true;
@@ -1991,10 +1976,8 @@ public class Protocol {
 				Chat.recentMessages[Chat.messageCounter] = messageId;
 				Chat.messageCounter = (Chat.messageCounter + 1) % 100;
 				@Pc(4518) JagString message = Font.escape(formatChatMessage(inboundBuffer).encodeMessage());
-				if (rights == 2 || rights == 3) {
-					Chat.add(JagString.concatenate(new JagString[]{IMG1, Base37.decode37(name37).toTitleCase()}), 7, message);
-				} else if (rights == 1) {
-					Chat.add(JagString.concatenate(new JagString[]{IMG0, Base37.decode37(name37).toTitleCase()}), 7, message);
+				if (rights != 0) {
+					Chat.add(JagString.concatenate(new JagString[]{getChatIcon(rights), Base37.decode37(name37).toTitleCase()}), 7, message);
 				} else {
 					Chat.add(Base37.decode37(name37).toTitleCase(), 3, message);
 				}
@@ -2038,13 +2021,7 @@ public class Protocol {
 				Chat.recentMessages[Chat.messageCounter] = local4626;
 				Chat.messageCounter = (Chat.messageCounter + 1) % 100;
 				JagString message = Font.escape(formatChatMessage(inboundBuffer).encodeMessage());
-				if (rights == 2 || rights == 3) {
-					Chat.method1598(message, JagString.concatenate(new JagString[]{IMG1, Base37.decode37(name37).toTitleCase()}), Base37.decode37(chat37).toTitleCase());
-				} else if (rights == 1) {
-					Chat.method1598(message, JagString.concatenate(new JagString[]{IMG0, Base37.decode37(name37).toTitleCase()}), Base37.decode37(chat37).toTitleCase());
-				} else {
-					Chat.method1598(message, Base37.decode37(name37).toTitleCase(), Base37.decode37(chat37).toTitleCase());
-				}
+				Chat.method1598(message, JagString.concatenate(new JagString[]{getChatIcon(rights), Base37.decode37(name37).toTitleCase()}), Base37.decode37(chat37).toTitleCase());
 			}
 			opcode = -1;
 			return true;
@@ -3312,6 +3289,20 @@ public class Protocol {
 	public static JagString formatChatMessage(@OriginalArg(0) Buffer arg0) {
 		return method4350(arg0);
 	}
+
+        public static JagString getChatIcon (int rights) {
+            switch (rights) {
+                case 1:
+                case 2:
+                case 3:
+                case 5:
+                case 6:
+                case 7:
+                    return JagString.parse("<img=" + (rights == 3 ? 2 : (rights - 1)) + ">");
+                default:
+                    return JagString.parse("");
+            }
+        }
 
 	@OriginalMember(owner = "client!uj", name = "a", descriptor = "(Lclient!wa;II)Lclient!na;")
 	public static JagString method4350(@OriginalArg(0) Buffer arg0) {
