@@ -6,20 +6,25 @@ import plugin.api.API
 import rt4.Component
 import rt4.JagString
 import rt4.Player
+import rt4.client
 
 @PluginMeta (
     author = "Ceikry",
-    description = "Stores your last used login for automatic reuse",
-    version = 1.0
+    description = "Stores your last used login for automatic reuse, per server",
+    version = 1.1
 )
 class plugin : Plugin() {
     var hasRan = false
+    var credentials = HashMap<String, HashMap<String, String>>()
+    var server = ""
     var username = ""
     var password = ""
 
     override fun Init() {
-        username = API.GetData("login-user") as? String ?: ""
-        password = API.GetData("login-pass") as? String ?: ""
+        server = client.hostname + ":" + client.port
+        credentials = API.GetData("login-credentials") as? HashMap<String, HashMap<String, String>> ?: HashMap()
+        username = credentials.get(server)?.get("username") ?: ""
+        password = credentials.get(server)?.get("password") ?: ""
     }
 
     override fun ComponentDraw(componentIndex: Int, component: Component?, screenX: Int, screenY: Int) {
@@ -34,8 +39,10 @@ class plugin : Plugin() {
     override fun OnLogin() {
         username = String(Player.usernameInput.chars)
         password = String(Player.password.chars)
-        API.StoreData("login-user", username)
-        API.StoreData("login-pass", password)
+
+        credentials[server] = mapOf("username" to username, "password" to password) as HashMap<String, String>
+
+        API.StoreData("login-credentials", credentials)
     }
 
     override fun OnLogout() {
