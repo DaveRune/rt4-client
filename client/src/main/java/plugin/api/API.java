@@ -172,11 +172,11 @@ public class API {
     }
 
     public static void UpdateCameraZoom(int zoomDiff) {
-        Camera.ZOOM = clamp(200, 1200, Camera.ZOOM + (zoomDiff >= 0 ? 50 : -50));
+        Camera.ZOOM = clamp(1, 2000, Camera.ZOOM + (zoomDiff >= 0 ? 50 : -50));
     }
 
     public static void SetCameraZoom(int zoomTarget) {
-        Camera.ZOOM = clamp(200, 1200, zoomTarget);
+        Camera.ZOOM = clamp(1, 2000, zoomTarget);
     }
 
     public static int GetCameraZoom() {
