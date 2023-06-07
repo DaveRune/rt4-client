@@ -45,7 +45,7 @@ public class GlobalConfig {
 
 	// default distance is 28
 	public static int TILE_DISTANCE = 56;
-	public static int VIEW_DISTANCE = TILE_DISTANCE * 128;
+	public static int VIEW_DISTANCE = TILE_DISTANCE * 256;
 	public static float VIEW_FADE_DISTANCE = ((float) TILE_DISTANCE / 28.0f) * 256.0f;
 
 	public static boolean USE_SHIFT_CLICK = true;
@@ -54,5 +54,7 @@ public class GlobalConfig {
 	public static boolean MOUSEWHEEL_ZOOM = true;
 
 	public static int JS5_RESPONSE_TIMEOUT = 5000;
+
+        public static int AUDIO_SAMPLE_RATE = 44100; //default is 22050
 
 }

@@ -11,7 +11,7 @@ import java.util.Random;
 public final class SynthInstrument {
 
 	@OriginalMember(owner = "client!pj", name = "o", descriptor = "[I")
-	public static final int[] samples = new int[220500];
+	public static final int[] samples = new int[GlobalConfig.AUDIO_SAMPLE_RATE * 10];
 	@OriginalMember(owner = "client!pj", name = "p", descriptor = "[I")
 	public static final int[] oscillatorIntervalRanges = new int[5];
 	@OriginalMember(owner = "client!pj", name = "q", descriptor = "[I")

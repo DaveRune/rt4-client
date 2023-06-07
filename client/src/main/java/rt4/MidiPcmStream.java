@@ -111,7 +111,7 @@ public final class MidiPcmStream extends PcmStream {
 	public final synchronized boolean isSongReady(@OriginalArg(0) Song arg0, @OriginalArg(2) Js5 arg1, @OriginalArg(3) SoundBank arg2) {
 		arg0.createPrograms();
 		@Pc(5) boolean local5 = true;
-		@Pc(20) int[] local20 = new int[]{22050};
+		@Pc(20) int[] local20 = new int[]{GlobalConfig.AUDIO_SAMPLE_RATE};
 		for (@Pc(34) ByteArrayNode local34 = (ByteArrayNode) arg0.programs.head(); local34 != null; local34 = (ByteArrayNode) arg0.programs.next()) {
 			@Pc(40) int local40 = (int) local34.key;
 			@Pc(48) MidiInstrument local48 = (MidiInstrument) this.aClass133_23.get(local40);

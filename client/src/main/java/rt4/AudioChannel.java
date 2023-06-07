@@ -71,7 +71,7 @@ public class AudioChannel {
 	public static void init(@OriginalArg(3) boolean stereo) {
 		threadPriority = 2;
 		AudioChannel.stereo = stereo;
-		sampleRate = 22050;
+		sampleRate = GlobalConfig.AUDIO_SAMPLE_RATE;
 	}
 
 	@OriginalMember(owner = "client!id", name = "a", descriptor = "(ILsignlink!ll;Ljava/awt/Component;II)Lclient!vh;")

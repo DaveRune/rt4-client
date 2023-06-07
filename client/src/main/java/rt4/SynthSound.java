@@ -49,12 +49,12 @@ public final class SynthSound {
 		if (local1 == 0) {
 			return new byte[0];
 		}
-		local3 = local1 * 22050 / 1000;
+		local3 = local1 * GlobalConfig.AUDIO_SAMPLE_RATE / 1000;
 		@Pc(52) byte[] local52 = new byte[local3];
 		for (@Pc(54) int local54 = 0; local54 < 10; local54++) {
 			if (this.instruments[local54] != null) {
-				@Pc(72) int local72 = this.instruments[local54].length * 22050 / 1000;
-				@Pc(82) int local82 = this.instruments[local54].start * 22050 / 1000;
+				@Pc(72) int local72 = this.instruments[local54].length * GlobalConfig.AUDIO_SAMPLE_RATE / 1000;
+				@Pc(82) int local82 = this.instruments[local54].start * GlobalConfig.AUDIO_SAMPLE_RATE / 1000;
 				@Pc(94) int[] local94 = this.instruments[local54].getSamples(local72, this.instruments[local54].length);
 				for (@Pc(96) int local96 = 0; local96 < local72; local96++) {
 					@Pc(111) int local111 = local52[local96 + local82] + (local94[local96] >> 8);
@@ -71,7 +71,7 @@ public final class SynthSound {
 	@OriginalMember(owner = "client!sl", name = "b", descriptor = "()Lclient!kj;")
 	public final PcmSound toPcmSound() {
 		@Pc(2) byte[] local2 = this.getSamples();
-		return new PcmSound(22050, local2, this.start * 22050 / 1000, this.end * 22050 / 1000);
+		return new PcmSound(GlobalConfig.AUDIO_SAMPLE_RATE, local2, this.start * GlobalConfig.AUDIO_SAMPLE_RATE / 1000, this.end * GlobalConfig.AUDIO_SAMPLE_RATE / 1000);
 	}
 
 	@OriginalMember(owner = "client!sl", name = "c", descriptor = "()I")

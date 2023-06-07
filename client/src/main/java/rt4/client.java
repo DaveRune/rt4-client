@@ -664,7 +664,7 @@ public final class client extends GameShell {
 			soundChannel.quit();
 		}
 		AudioChannel.init(Preferences.stereo);
-		musicChannel = AudioChannel.create(22050, signLink, canvas, 0);
+		musicChannel = AudioChannel.create(GlobalConfig.AUDIO_SAMPLE_RATE, signLink, canvas, 0);
 		musicChannel.setStream(musicStream);
 		soundChannel = AudioChannel.create(2048, signLink, canvas, 1);
 		soundChannel.setStream(soundStream);
@@ -1364,13 +1364,13 @@ public final class client extends GameShell {
 			AudioChannel.init(Preferences.stereo);
 			musicStream = new MidiPcmStream();
 			musicStream.init();
-			musicChannel = AudioChannel.create(22050, GameShell.signLink, GameShell.canvas, 0);
+			musicChannel = AudioChannel.create(GlobalConfig.AUDIO_SAMPLE_RATE, GameShell.signLink, GameShell.canvas, 0);
 			musicChannel.setStream(musicStream);
 			MidiPlayer.init(musicStream, js5Archive15, js5Archive14, js5Archive4);
 			soundChannel = AudioChannel.create(2048, GameShell.signLink, GameShell.canvas, 1);
 			soundStream = new MixerPcmStream();
 			soundChannel.setStream(soundStream);
-			resampler = new PcmResampler(22050, AudioChannel.sampleRate);
+			resampler = new PcmResampler(GlobalConfig.AUDIO_SAMPLE_RATE, AudioChannel.sampleRate);
 			MusicPlayer.titleSong = js5Archive6.getGroupId(TITLE_SONG);
 			mainLoadPercentage = 30;
 			mainLoadState = 50;

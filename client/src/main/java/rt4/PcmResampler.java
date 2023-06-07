@@ -54,9 +54,9 @@ public final class PcmResampler {
 
 	@OriginalMember(owner = "client!og", name = "a", descriptor = "(III)I")
 	public static int gcd(@OriginalArg(1) int arg0, @OriginalArg(2) int arg1) {
-		if (arg0 > 22050) {
+		if (arg0 > GlobalConfig.AUDIO_SAMPLE_RATE) {
 			arg1 = arg0;
-			arg0 = 22050;
+			arg0 = GlobalConfig.AUDIO_SAMPLE_RATE;
 		}
 		while (arg0 != 0) {
 			@Pc(21) int local21 = arg1 % arg0;
