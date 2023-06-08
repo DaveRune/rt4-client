@@ -7,6 +7,7 @@ import rt4.Font;
 
 import java.awt.*;
 import java.awt.event.*;
+import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 
 import static rt4.MathUtils.clamp;
@@ -79,6 +80,10 @@ public class API {
 
     public static Sprite GetObjSprite(int objId, int qty, boolean drawText, int outlineType, int shadowIntensity) {
         return Inv.getObjectSprite(outlineType, objId, drawText, qty, shadowIntensity);
+    }
+
+    public static Sprite GetSpriteFromPNG(BufferedImage image) {
+        return SpritePNGLoader.getImageIndexedSprite(image);
     }
 
     public static WindowMode GetWindowMode() {
