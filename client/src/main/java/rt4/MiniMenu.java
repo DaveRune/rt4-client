@@ -27,21 +27,21 @@ public class MiniMenu {
 	@OriginalMember(owner = "client!ef", name = "c", descriptor = "[I")
 	public static final int[] intArgs2 = new int[500];
 	@OriginalMember(owner = "client!nm", name = "bb", descriptor = "Lclient!na;")
-	public static final JagString aClass100_798 = JagString.parse("<col=ff0000>");
+	public static final JagString COLOR_RED = JagString.parse("<col=ff0000>");
 	@OriginalMember(owner = "client!fb", name = "p", descriptor = "Lclient!na;")
-	public static final JagString aClass100_433 = JagString.parse("<col=ff3000>");
+	public static final JagString COLOR_LIGHT_RED = JagString.parse("<col=ff3000>");
 	@OriginalMember(owner = "client!sc", name = "D", descriptor = "Lclient!na;")
-	public static final JagString aClass100_951 = JagString.parse("<col=ff7000>");
+	public static final JagString COLOR_ORANGE = JagString.parse("<col=ff7000>");
 	@OriginalMember(owner = "client!si", name = "Z", descriptor = "Lclient!na;")
-	public static final JagString aClass100_972 = JagString.parse("<col=ffb000>");
+	public static final JagString COLOR_LIGHT_ORANGE = JagString.parse("<col=ffb000>");
 	@OriginalMember(owner = "client!ag", name = "bb", descriptor = "Lclient!na;")
-	public static final JagString aClass100_18 = JagString.parse("<col=40ff00>");
+	public static final JagString COLOR_LIGHT_GREEN = JagString.parse("<col=40ff00>");
 	@OriginalMember(owner = "client!dc", name = "v", descriptor = "Lclient!na;")
-	public static final JagString aClass100_266 = JagString.parse("<col=c0ff00>");
+	public static final JagString COLOR_YELLOW_GREEN = JagString.parse("<col=c0ff00>");
 	@OriginalMember(owner = "client!sf", name = "g", descriptor = "Lclient!na;")
-	public static final JagString aClass100_965 = JagString.parse("<col=ffff00>");
+	public static final JagString COLOR_YELLOW = JagString.parse("<col=ffff00>");
 	@OriginalMember(owner = "client!vg", name = "f", descriptor = "Lclient!na;")
-	public static final JagString aClass100_1081 = JagString.parse("<col=80ff00>");
+	public static final JagString COLOR_BRIGHT_GREEN = JagString.parse("<col=80ff00>");
 	@OriginalMember(owner = "client!r", name = "d", descriptor = "Z")
 	public static final boolean aBoolean237 = false;
 	@OriginalMember(owner = "client!se", name = "m", descriptor = "Lclient!na;")
@@ -1156,21 +1156,21 @@ public class MiniMenu {
 	public static JagString getCombatLevelColor(@OriginalArg(0) int otherLevel, @OriginalArg(2) int selfLevel) {
 		@Pc(4) int delta = selfLevel - otherLevel;
 		if (delta < -9) {
-			return aClass100_798;
+			return COLOR_RED;
 		} else if (delta < -6) {
-			return aClass100_433;
+			return COLOR_LIGHT_RED;
 		} else if (delta < -3) {
-			return aClass100_951;
+			return COLOR_ORANGE;
 		} else if (delta < 0) {
-			return aClass100_972;
+			return COLOR_LIGHT_ORANGE;
 		} else if (delta > 9) {
 			return COLOR_GREEN;
 		} else if (delta > 6) {
-			return aClass100_18;
+			return COLOR_LIGHT_GREEN;
 		} else if (delta <= 3) {
-			return delta > 0 ? aClass100_266 : aClass100_965;
+			return delta > 0 ? COLOR_YELLOW_GREEN : COLOR_YELLOW;
 		} else {
-			return aClass100_1081;
+			return COLOR_BRIGHT_GREEN;
 		}
 	}
 
@@ -1456,7 +1456,7 @@ public class MiniMenu {
 						if (local140 == 4) {
 							local161 = 2;
 						}
-						add(local176, arg2, JagString.concatenate(new JagString[]{aClass100_965, local35}), arg1, local161, local129[local140], arg3);
+						add(local176, arg2, JagString.concatenate(new JagString[]{ COLOR_YELLOW, local35}), arg1, local161, local129[local140], arg3);
 					}
 				}
 			}
@@ -1486,11 +1486,11 @@ public class MiniMenu {
 						if (local281 != 0) {
 							local281 += local271;
 						}
-						add(arg0.attackCursor, arg2, JagString.concatenate(new JagString[]{aClass100_965, local35}), arg1, local281, local129[local140], arg3);
+						add(arg0.attackCursor, arg2, JagString.concatenate(new JagString[]{ COLOR_YELLOW, local35}), arg1, local281, local129[local140], arg3);
 					}
 				}
 			}
-			add(MiniMap.anInt5073, arg2, JagString.concatenate(new JagString[]{aClass100_965, local35}), arg1, (short) 1007, LocalizedText.EXAMINE, arg3);
+			add(MiniMap.anInt5073, arg2, JagString.concatenate(new JagString[]{ COLOR_YELLOW, local35}), arg1, (short) 1007, LocalizedText.EXAMINE, arg3);
 		}
 	}
 
@@ -1501,8 +1501,9 @@ public class MiniMenu {
 		}
 		@Pc(158) JagString string;
 		if (other.skill == 0) {
-			@Pc(22) boolean markCombatDifference = true;
+			@Pc(22) boolean withinCombatRange = true;
 			if (PlayerList.self.combatRange != -1 && other.combatRange != -1) {
+				//combat range calculation for PvP worlds
 				@Pc(43) int highestCombatLevel = Math.max(other.combatLevel, PlayerList.self.combatLevel);
 				@Pc(58) int highestCombatRange = Math.min(other.combatRange, PlayerList.self.combatRange);
 				@Pc(69) int calc = (highestCombatLevel * 10) / 100 + highestCombatRange + 5;
@@ -1510,15 +1511,15 @@ public class MiniMenu {
 				if (combatDelta < 0) {
 					combatDelta = -combatDelta;
 				}
-				if (combatDelta < calc) {
-					markCombatDifference = false;
+				if (calc < combatDelta) {
+					withinCombatRange = false;
 				}
 			}
 			@Pc(95) JagString local95 = client.game == 1 ? LocalizedText.RATING : LocalizedText.LEVEL;
 			if (other.combatLevelWithSummoning > other.combatLevel) {
-				string = JagString.concatenate(new JagString[]{other.getName(), markCombatDifference ? getCombatLevelColor(other.combatLevel, PlayerList.self.combatLevel) : COLOR_WHITE, OPEN_PARENTHESIS, local95, JagString.parseInt(other.combatLevel), PLUS, JagString.parseInt(other.combatLevelWithSummoning - other.combatLevel), CLOSE_PARENTHESIS});
+				string = JagString.concatenate(new JagString[]{other.getName(), withinCombatRange ? getCombatLevelColor(other.combatLevel, PlayerList.self.combatLevel) : COLOR_WHITE, OPEN_PARENTHESIS, local95, JagString.parseInt(other.combatLevel), PLUS, JagString.parseInt(other.combatLevelWithSummoning - other.combatLevel), CLOSE_PARENTHESIS});
 			} else {
-				string = JagString.concatenate(new JagString[]{other.getName(), markCombatDifference ? getCombatLevelColor(other.combatLevel, PlayerList.self.combatLevel) : COLOR_WHITE, OPEN_PARENTHESIS, local95, JagString.parseInt(other.combatLevel), CLOSE_PARENTHESIS});
+				string = JagString.concatenate(new JagString[]{other.getName(), withinCombatRange ? getCombatLevelColor(other.combatLevel, PlayerList.self.combatLevel) : COLOR_WHITE, OPEN_PARENTHESIS, local95, JagString.parseInt(other.combatLevel), CLOSE_PARENTHESIS});
 			}
 		} else {
 			string = JagString.concatenate(new JagString[]{other.getName(), OPEN_PARENTHESIS, LocalizedText.SKILL, JagString.parseInt(other.skill), CLOSE_PARENTHESIS});
