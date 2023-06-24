@@ -11,6 +11,7 @@ import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 
 import static rt4.MathUtils.clamp;
+import static rt4.Player.plane;
 
 /**
  * API used for writing plugins, so dozens of plugins don't break when we rename shit :)
@@ -275,6 +276,56 @@ public class API {
 
     public static void PlayMusic(int volume, int trackId) {
         MidiPlayer.playFadeOut(trackId, client.js5Archive6, volume);
+    }
+
+    /**
+     * Calculates the 2D screen position for a position in the SceneGraph.
+     *
+     * @param entityX The x-coordinate of the entity in the scene graph.
+     * @param entityZ The z-coordinate of the entity in the scene graph.
+     * @param yOffset The vertical displacement for positioning the entity.
+     * @return An array containing the calculated screen coordinates [x, y] or [-1, -1] if entity is not visible.
+     */
+    public static int[] CalculateSceneGraphScreenPosition(int entityX, int entityZ, int yOffset) {
+        final int HALF_FIXED_WIDTH = 256;
+        final int HALF_FIXED_HEIGHT = 167;
+
+        int elevation = SceneGraph.getTileHeight(plane, entityX, entityZ) - yOffset;
+        entityX -= SceneGraph.cameraX;
+        elevation -= SceneGraph.cameraY;
+        entityZ -= SceneGraph.cameraZ;
+
+        int sinPitch = MathUtils.sin[Camera.cameraPitch];
+        int cosPitch = MathUtils.cos[Camera.cameraPitch];
+        int sinYaw = MathUtils.sin[Camera.cameraYaw];
+        int cosYaw = MathUtils.cos[Camera.cameraYaw];
+
+        int rotatedX = (entityZ * sinYaw + entityX * cosYaw) >> 16;
+        entityZ = (entityZ * cosYaw - entityX * sinYaw) >> 16;
+        entityX = rotatedX;
+
+        int rotatedY = (elevation * cosPitch - entityZ * sinPitch) >> 16;
+        entityZ = (elevation * sinPitch + entityZ * cosPitch) >> 16;
+        elevation = rotatedY;
+
+        int[] screenPos = new int[2]; // X,Y
+
+        if (entityZ >= 50) {
+            if(GetWindowMode() == WindowMode.FIXED) {
+                screenPos[0] = HALF_FIXED_WIDTH + ((entityX << 9) / entityZ);
+                screenPos[1] = HALF_FIXED_HEIGHT + ((elevation << 9) / entityZ);
+            } else {
+                Dimension canvas = GetWindowDimensions();
+                double newViewDistH = (canvas.width / 2) / Math.tan(Math.toRadians(GlRenderer.hFOV) / 2);
+                double newViewDistV = (canvas.height / 2) / Math.tan(Math.toRadians(GlRenderer.vFOV) / 2);
+                screenPos[0] = canvas.width / 2 + (int)((entityX * newViewDistH) / entityZ);
+                screenPos[1] = canvas.height / 2 + (int)((elevation * newViewDistV) / entityZ);
+            }
+        } else {
+            screenPos[0] = -1;
+            screenPos[1] = -1;
+        }
+        return screenPos;
     }
 
     public static void PlayJingle(int jingleId) {

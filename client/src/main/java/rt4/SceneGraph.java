@@ -147,7 +147,7 @@ public class SceneGraph {
 	@OriginalMember(owner = "client!ok", name = "c", descriptor = "I")
 	public static int anInt4272 = (int) (Math.random() * 33.0D) - 16;
 	@OriginalMember(owner = "client!rj", name = "R", descriptor = "I")
-	public static int anInt4903;
+	public static int cameraZ;
 	@OriginalMember(owner = "client!pi", name = "U", descriptor = "I")
 	public static int anInt4539;
 	@OriginalMember(owner = "client!sk", name = "mb", descriptor = "I")
@@ -171,11 +171,11 @@ public class SceneGraph {
 	@OriginalMember(owner = "client!hh", name = "p", descriptor = "[I")
 	public static int[] anIntArray234;
 	@OriginalMember(owner = "client!ml", name = "K", descriptor = "I")
-	public static int anInt3947;
+	public static int cameraY;
 	@OriginalMember(owner = "client!nd", name = "s", descriptor = "I")
 	public static int anInt4069;
 	@OriginalMember(owner = "client!lj", name = "B", descriptor = "I")
-	public static int anInt3555;
+	public static int cameraX;
 	@OriginalMember(owner = "client!tb", name = "Q", descriptor = "I")
 	public static int anInt5276 = 0;
 	@OriginalMember(owner = "client!bc", name = "Z", descriptor = "I")
@@ -1752,20 +1752,20 @@ public class SceneGraph {
 												if (var22 != null) {
 													if (GlRenderer.enabled) {
 														if ((var22.anInt3049 & local8.anInt670) == 0) {
-															LightingManager.method2393(anInt3555, anInt3947, anInt4903, local24, local18, local21);
+															LightingManager.method2393(cameraX, cameraY, cameraZ, local24, local18, local21);
 														} else {
-															LightingManager.method2388(var22.anInt3049, anInt3555, anInt3947, anInt4903, local27, local18, local21);
+															LightingManager.method2388(var22.anInt3049, cameraX, cameraY, cameraZ, local27, local18, local21);
 														}
 													}
-													var22.primary.render(0, anInt2886, anInt3038, anInt5205, anInt2222, var22.xFine - anInt3555, var22.anInt3051 - anInt3947, var22.zFine - anInt4903, var22.key, local24, null);
+													var22.primary.render(0, anInt2886, anInt3038, anInt5205, anInt2222, var22.xFine - cameraX, var22.anInt3051 - cameraY, var22.zFine - cameraZ, var22.key, local24, null);
 												}
 												for (local65 = 0; local65 < local153.sceneryLen; local65++) {
 													var25 = local153.scenery[local65];
 													if (var25 != null) {
 														if (GlRenderer.enabled) {
-															LightingManager.method2393(anInt3555, anInt3947, anInt4903, local24, local18, local21);
+															LightingManager.method2393(cameraX, cameraY, cameraZ, local24, local18, local21);
 														}
-														var25.entity.render(var25.anInt1714, anInt2886, anInt3038, anInt5205, anInt2222, var25.anInt1699 - anInt3555, var25.anInt1706 - anInt3947, var25.anInt1703 - anInt4903, var25.key, local24, null);
+														var25.entity.render(var25.anInt1714, anInt2886, anInt3038, anInt5205, anInt2222, var25.anInt1699 - cameraX, var25.anInt1706 - cameraY, var25.anInt1703 - cameraZ, var25.key, local24, null);
 													}
 												}
 												if (GlRenderer.enabled) {
@@ -1797,9 +1797,9 @@ public class SceneGraph {
 														GlRenderer.method4159(local33 + 50.0F - 1.5F);
 													}
 													if (GlRenderer.enabled) {
-														LightingManager.method2393(anInt3555, anInt3947, anInt4903, local24, local18, local21);
+														LightingManager.method2393(cameraX, cameraY, cameraZ, local24, local18, local21);
 													}
-													local549.entity.render(0, anInt2886, anInt3038, anInt5205, anInt2222, local549.xFine - anInt3555, local549.anInt733 - anInt3947, local549.zFine - anInt4903, local549.key, local24, null);
+													local549.entity.render(0, anInt2886, anInt3038, anInt5205, anInt2222, local549.xFine - cameraX, local549.anInt733 - cameraY, local549.zFine - cameraZ, local549.key, local24, null);
 													if (GlRenderer.enabled && local549.aBoolean49) {
 														GlRenderer.method4159(local33);
 													}
@@ -1845,15 +1845,15 @@ public class SceneGraph {
 												}
 												if ((local616.anInt3049 & local65) != 0 && !method3850(local27, local18, local21, local616.anInt3049)) {
 													if (GlRenderer.enabled) {
-														LightingManager.method2393(anInt3555, anInt3947, anInt4903, local24, local18, local21);
+														LightingManager.method2393(cameraX, cameraY, cameraZ, local24, local18, local21);
 													}
-													local616.primary.render(0, anInt2886, anInt3038, anInt5205, anInt2222, local616.xFine - anInt3555, local616.anInt3051 - anInt3947, local616.zFine - anInt4903, local616.key, local24, null);
+													local616.primary.render(0, anInt2886, anInt3038, anInt5205, anInt2222, local616.xFine - cameraX, local616.anInt3051 - cameraY, local616.zFine - cameraZ, local616.key, local24, null);
 												}
 												if ((local616.anInt3052 & local65) != 0 && !method3850(local27, local18, local21, local616.anInt3052)) {
 													if (GlRenderer.enabled) {
-														LightingManager.method2393(anInt3555, anInt3947, anInt4903, local24, local18, local21);
+														LightingManager.method2393(cameraX, cameraY, cameraZ, local24, local18, local21);
 													}
-													local616.secondary.render(0, anInt2886, anInt3038, anInt5205, anInt2222, local616.xFine - anInt3555, local616.anInt3051 - anInt3947, local616.zFine - anInt4903, local616.key, local24, null);
+													local616.secondary.render(0, anInt2886, anInt3038, anInt5205, anInt2222, local616.xFine - cameraX, local616.anInt3051 - cameraY, local616.zFine - cameraZ, local616.key, local24, null);
 												}
 											}
 											if (local619 != null && !method4611(local27, local18, local21, local619.primary.getMinY())) {
@@ -1862,13 +1862,13 @@ public class SceneGraph {
 												}
 												if ((local619.anInt1395 & local65) != 0) {
 													if (GlRenderer.enabled) {
-														LightingManager.method2393(anInt3555, anInt3947, anInt4903, local24, local18, local21);
+														LightingManager.method2393(cameraX, cameraY, cameraZ, local24, local18, local21);
 													}
-													local619.primary.render(0, anInt2886, anInt3038, anInt5205, anInt2222, local619.xFine + local619.xOffset - anInt3555, local619.anInt1391 - anInt3947, local619.zFine + local619.zOffset - anInt4903, local619.key, local24, null);
+													local619.primary.render(0, anInt2886, anInt3038, anInt5205, anInt2222, local619.xFine + local619.xOffset - cameraX, local619.anInt1391 - cameraY, local619.zFine + local619.zOffset - cameraZ, local619.key, local24, null);
 												} else if (local619.anInt1395 == 256) {
-													local894 = local619.xFine - anInt3555;
-													local899 = local619.anInt1391 - anInt3947;
-													local904 = local619.zFine - anInt4903;
+													local894 = local619.xFine - cameraX;
+													local899 = local619.anInt1391 - cameraY;
+													local904 = local619.zFine - cameraZ;
 													var17 = local619.anInt1388;
 													if (var17 == 1 || var17 == 2) {
 														var18 = -local894;
@@ -1883,12 +1883,12 @@ public class SceneGraph {
 													}
 													if (local928 < var18) {
 														if (GlRenderer.enabled) {
-															LightingManager.method2393(anInt3555, anInt3947, anInt4903, local24, local18, local21);
+															LightingManager.method2393(cameraX, cameraY, cameraZ, local24, local18, local21);
 														}
 														local619.primary.render(0, anInt2886, anInt3038, anInt5205, anInt2222, local894 + local619.xOffset, local899, local904 + local619.zOffset, local619.key, local24, null);
 													} else if (local619.secondary != null) {
 														if (GlRenderer.enabled) {
-															LightingManager.method2393(anInt3555, anInt3947, anInt4903, local24, local18, local21);
+															LightingManager.method2393(cameraX, cameraY, cameraZ, local24, local18, local21);
 														}
 														local619.secondary.render(0, anInt2886, anInt3038, anInt5205, anInt2222, local894, local899, local904, local619.key, local24, null);
 													}
@@ -1904,9 +1904,9 @@ public class SceneGraph {
 														GlRenderer.method4159(local33 + 50.0F - 1.5F);
 													}
 													if (GlRenderer.enabled) {
-														LightingManager.method2393(anInt3555, anInt3947, anInt4903, local24, local18, local21);
+														LightingManager.method2393(cameraX, cameraY, cameraZ, local24, local18, local21);
 													}
-													local1001.entity.render(0, anInt2886, anInt3038, anInt5205, anInt2222, local1001.xFine - anInt3555, local1001.anInt733 - anInt3947, local1001.zFine - anInt4903, local1001.key, local24, null);
+													local1001.entity.render(0, anInt2886, anInt3038, anInt5205, anInt2222, local1001.xFine - cameraX, local1001.anInt733 - cameraY, local1001.zFine - cameraZ, local1001.key, local24, null);
 													if (GlRenderer.enabled && local1001.aBoolean49) {
 														GlRenderer.method4159(local33);
 													}
@@ -1914,16 +1914,16 @@ public class SceneGraph {
 												@Pc(1064) ObjStackEntity local1064 = local8.objStack;
 												if (local1064 != null && local1064.anInt3063 == 0) {
 													if (GlRenderer.enabled) {
-														LightingManager.method2393(anInt3555, anInt3947, anInt4903, local24, local18, local21);
+														LightingManager.method2393(cameraX, cameraY, cameraZ, local24, local18, local21);
 													}
 													if (local1064.secondary != null) {
-														local1064.secondary.render(0, anInt2886, anInt3038, anInt5205, anInt2222, local1064.xFine - anInt3555, local1064.anInt3057 - anInt3947, local1064.zFine - anInt4903, local1064.key, local24, null);
+														local1064.secondary.render(0, anInt2886, anInt3038, anInt5205, anInt2222, local1064.xFine - cameraX, local1064.anInt3057 - cameraY, local1064.zFine - cameraZ, local1064.key, local24, null);
 													}
 													if (local1064.tertiary != null) {
-														local1064.tertiary.render(0, anInt2886, anInt3038, anInt5205, anInt2222, local1064.xFine - anInt3555, local1064.anInt3057 - anInt3947, local1064.zFine - anInt4903, local1064.key, local24, null);
+														local1064.tertiary.render(0, anInt2886, anInt3038, anInt5205, anInt2222, local1064.xFine - cameraX, local1064.anInt3057 - cameraY, local1064.zFine - cameraZ, local1064.key, local24, null);
 													}
 													if (local1064.primary != null) {
-														local1064.primary.render(0, anInt2886, anInt3038, anInt5205, anInt2222, local1064.xFine - anInt3555, local1064.anInt3057 - anInt3947, local1064.zFine - anInt4903, local1064.key, local24, null);
+														local1064.primary.render(0, anInt2886, anInt3038, anInt5205, anInt2222, local1064.xFine - cameraX, local1064.anInt3057 - cameraY, local1064.zFine - cameraZ, local1064.key, local24, null);
 													}
 												}
 											}
@@ -1971,43 +1971,43 @@ public class SceneGraph {
 														label882:
 														{
 															if ((var22.key & 0xFC000L) == 16384L) {
-																local65 = var22.xFine - anInt3555;
-																local115 = var22.zFine - anInt4903;
+																local65 = var22.xFine - cameraX;
+																local115 = var22.zFine - cameraZ;
 																local1332 = (int) (var22.key >> 20 & 0x3L);
 																if (local1332 == 0) {
 																	local65 -= 64;
 																	local115 += 64;
 																	if (local115 < local65 && local18 > 0 && local21 < length - 1) {
-																		LightingManager.method2393(anInt3555, anInt3947, anInt4903, local24, local18 - 1, local21 + 1);
+																		LightingManager.method2393(cameraX, cameraY, cameraZ, local24, local18 - 1, local21 + 1);
 																		break label882;
 																	}
 																} else if (local1332 == 1) {
 																	local65 += 64;
 																	local115 += 64;
 																	if (local115 < -local65 && local18 < width - 1 && local21 < length - 1) {
-																		LightingManager.method2393(anInt3555, anInt3947, anInt4903, local24, local18 + 1, local21 + 1);
+																		LightingManager.method2393(cameraX, cameraY, cameraZ, local24, local18 + 1, local21 + 1);
 																		break label882;
 																	}
 																} else if (local1332 == 2) {
 																	local65 += 64;
 																	local115 -= 64;
 																	if (local115 > local65 && local18 < width - 1 && local21 > 0) {
-																		LightingManager.method2393(anInt3555, anInt3947, anInt4903, local24, local18 + 1, local21 - 1);
+																		LightingManager.method2393(cameraX, cameraY, cameraZ, local24, local18 + 1, local21 - 1);
 																		break label882;
 																	}
 																} else if (local1332 == 3) {
 																	local65 -= 64;
 																	local115 -= 64;
 																	if (local115 > -local65 && local18 > 0 && local21 > 0) {
-																		LightingManager.method2393(anInt3555, anInt3947, anInt4903, local24, local18 - 1, local21 - 1);
+																		LightingManager.method2393(cameraX, cameraY, cameraZ, local24, local18 - 1, local21 - 1);
 																		break label882;
 																	}
 																}
 															}
-															LightingManager.method2393(anInt3555, anInt3947, anInt4903, local24, local18, local21);
+															LightingManager.method2393(cameraX, cameraY, cameraZ, local24, local18, local21);
 														}
 													}
-													var22.primary.render(0, anInt2886, anInt3038, anInt5205, anInt2222, var22.xFine - anInt3555, var22.anInt3051 - anInt3947, var22.zFine - anInt4903, var22.key, local24, null);
+													var22.primary.render(0, anInt2886, anInt3038, anInt5205, anInt2222, var22.xFine - cameraX, var22.anInt3051 - cameraY, var22.zFine - cameraZ, var22.key, local24, null);
 												}
 												local8.anInt663 = 0;
 											}
@@ -2076,10 +2076,10 @@ public class SceneGraph {
 															local65 = local1628.anInt1705;
 															local115 = local1332;
 														} else if (local1628.anInt1705 == local65) {
-															local899 = local1628.anInt1699 - anInt3555;
-															local904 = local1628.anInt1703 - anInt4903;
-															var17 = aClass31Array2[local115].anInt1699 - anInt3555;
-															var18 = aClass31Array2[local115].anInt1703 - anInt4903;
+															local899 = local1628.anInt1699 - cameraX;
+															local904 = local1628.anInt1703 - cameraZ;
+															var17 = aClass31Array2[local115].anInt1699 - cameraX;
+															var18 = aClass31Array2[local115].anInt1703 - cameraZ;
 															if (local899 * local899 + local904 * local904 > var17 * var17 + var18 * var18) {
 																local115 = local1332;
 															}
@@ -2094,9 +2094,9 @@ public class SceneGraph {
 												if (!method1599(local27, local1697.xMin, local1697.xMax, local1697.zMin, local1697.zMax, local1697.entity.getMinY())) {
 													if (GlRenderer.enabled) {
 														if ((local1697.key & 0xFC000L) == 147456L) {
-															LightingManager.method2393(anInt3555, anInt3947, anInt4903, local24, local18, local21);
-															local894 = local1697.anInt1699 - anInt3555;
-															local899 = local1697.anInt1703 - anInt4903;
+															LightingManager.method2393(cameraX, cameraY, cameraZ, local24, local18, local21);
+															local894 = local1697.anInt1699 - cameraX;
+															local899 = local1697.anInt1703 - cameraZ;
 															local904 = (int) (local1697.key >> 20 & 0x3L);
 															if (local904 == 1 || local904 == 3) {
 																if (local899 > -local894) {
@@ -2110,10 +2110,10 @@ public class SceneGraph {
 																LightingManager.method2397(local24, local18, local21 + 1, local18 - 1, local21);
 															}
 														} else {
-															LightingManager.method2391(anInt3555, anInt3947, anInt4903, local24, local1697.xMin, local1697.zMin, local1697.xMax, local1697.zMax);
+															LightingManager.method2391(cameraX, cameraY, cameraZ, local24, local1697.xMin, local1697.zMin, local1697.xMax, local1697.zMax);
 														}
 													}
-													local1697.entity.render(local1697.anInt1714, anInt2886, anInt3038, anInt5205, anInt2222, local1697.anInt1699 - anInt3555, local1697.anInt1706 - anInt3947, local1697.anInt1703 - anInt4903, local1697.key, local24, null);
+													local1697.entity.render(local1697.anInt1714, anInt2886, anInt3038, anInt5205, anInt2222, local1697.anInt1699 - cameraX, local1697.anInt1706 - cameraY, local1697.anInt1703 - cameraZ, local1697.key, local24, null);
 												}
 												for (local894 = local1697.xMin; local894 <= local1697.xMax; local894++) {
 													for (local899 = local1697.zMin; local899 <= local1697.zMax; local899++) {
@@ -2161,16 +2161,16 @@ public class SceneGraph {
 			@Pc(1999) ObjStackEntity local1999 = local8.objStack;
 			if (local1999 != null && local1999.anInt3063 != 0) {
 				if (GlRenderer.enabled) {
-					LightingManager.method2393(anInt3555, anInt3947, anInt4903, local24, local18, local21);
+					LightingManager.method2393(cameraX, cameraY, cameraZ, local24, local18, local21);
 				}
 				if (local1999.secondary != null) {
-					local1999.secondary.render(0, anInt2886, anInt3038, anInt5205, anInt2222, local1999.xFine - anInt3555, local1999.anInt3057 - anInt3947 - local1999.anInt3063, local1999.zFine - anInt4903, local1999.key, local24, null);
+					local1999.secondary.render(0, anInt2886, anInt3038, anInt5205, anInt2222, local1999.xFine - cameraX, local1999.anInt3057 - cameraY - local1999.anInt3063, local1999.zFine - cameraZ, local1999.key, local24, null);
 				}
 				if (local1999.tertiary != null) {
-					local1999.tertiary.render(0, anInt2886, anInt3038, anInt5205, anInt2222, local1999.xFine - anInt3555, local1999.anInt3057 - anInt3947 - local1999.anInt3063, local1999.zFine - anInt4903, local1999.key, local24, null);
+					local1999.tertiary.render(0, anInt2886, anInt3038, anInt5205, anInt2222, local1999.xFine - cameraX, local1999.anInt3057 - cameraY - local1999.anInt3063, local1999.zFine - cameraZ, local1999.key, local24, null);
 				}
 				if (local1999.primary != null) {
-					local1999.primary.render(0, anInt2886, anInt3038, anInt5205, anInt2222, local1999.xFine - anInt3555, local1999.anInt3057 - anInt3947 - local1999.anInt3063, local1999.zFine - anInt4903, local1999.key, local24, null);
+					local1999.primary.render(0, anInt2886, anInt3038, anInt5205, anInt2222, local1999.xFine - cameraX, local1999.anInt3057 - cameraY - local1999.anInt3063, local1999.zFine - cameraZ, local1999.key, local24, null);
 				}
 			}
 			if (local8.anInt670 != 0) {
@@ -2178,13 +2178,13 @@ public class SceneGraph {
 				if (local2109 != null && !method4611(local27, local18, local21, local2109.primary.getMinY())) {
 					if ((local2109.anInt1395 & local8.anInt670) != 0) {
 						if (GlRenderer.enabled) {
-							LightingManager.method2393(anInt3555, anInt3947, anInt4903, local24, local18, local21);
+							LightingManager.method2393(cameraX, cameraY, cameraZ, local24, local18, local21);
 						}
-						local2109.primary.render(0, anInt2886, anInt3038, anInt5205, anInt2222, local2109.xFine + local2109.xOffset - anInt3555, local2109.anInt1391 - anInt3947, local2109.zFine + local2109.zOffset - anInt4903, local2109.key, local24, null);
+						local2109.primary.render(0, anInt2886, anInt3038, anInt5205, anInt2222, local2109.xFine + local2109.xOffset - cameraX, local2109.anInt1391 - cameraY, local2109.zFine + local2109.zOffset - cameraZ, local2109.key, local24, null);
 					} else if (local2109.anInt1395 == 256) {
-						local65 = local2109.xFine - anInt3555;
-						local115 = local2109.anInt1391 - anInt3947;
-						local1332 = local2109.zFine - anInt4903;
+						local65 = local2109.xFine - cameraX;
+						local115 = local2109.anInt1391 - cameraY;
+						local1332 = local2109.zFine - cameraZ;
 						local894 = local2109.anInt1388;
 						if (local894 == 1 || local894 == 2) {
 							local899 = -local65;
@@ -2198,12 +2198,12 @@ public class SceneGraph {
 						}
 						if (local904 >= local899) {
 							if (GlRenderer.enabled) {
-								LightingManager.method2393(anInt3555, anInt3947, anInt4903, local24, local18, local21);
+								LightingManager.method2393(cameraX, cameraY, cameraZ, local24, local18, local21);
 							}
 							local2109.primary.render(0, anInt2886, anInt3038, anInt5205, anInt2222, local65 + local2109.xOffset, local115, local1332 + local2109.zOffset, local2109.key, local24, null);
 						} else if (local2109.secondary != null) {
 							if (GlRenderer.enabled) {
-								LightingManager.method2393(anInt3555, anInt3947, anInt4903, local24, local18, local21);
+								LightingManager.method2393(cameraX, cameraY, cameraZ, local24, local18, local21);
 							}
 							local2109.secondary.render(0, anInt2886, anInt3038, anInt5205, anInt2222, local65, local115, local1332, local2109.key, local24, null);
 						}
@@ -2213,15 +2213,15 @@ public class SceneGraph {
 				if (local2275 != null) {
 					if ((local2275.anInt3052 & local8.anInt670) != 0 && !method3850(local27, local18, local21, local2275.anInt3052)) {
 						if (GlRenderer.enabled) {
-							LightingManager.method2388(local2275.anInt3052, anInt3555, anInt3947, anInt4903, local27, local18, local21);
+							LightingManager.method2388(local2275.anInt3052, cameraX, cameraY, cameraZ, local27, local18, local21);
 						}
-						local2275.secondary.render(0, anInt2886, anInt3038, anInt5205, anInt2222, local2275.xFine - anInt3555, local2275.anInt3051 - anInt3947, local2275.zFine - anInt4903, local2275.key, local24, null);
+						local2275.secondary.render(0, anInt2886, anInt3038, anInt5205, anInt2222, local2275.xFine - cameraX, local2275.anInt3051 - cameraY, local2275.zFine - cameraZ, local2275.key, local24, null);
 					}
 					if ((local2275.anInt3049 & local8.anInt670) != 0 && !method3850(local27, local18, local21, local2275.anInt3049)) {
 						if (GlRenderer.enabled) {
-							LightingManager.method2388(local2275.anInt3049, anInt3555, anInt3947, anInt4903, local27, local18, local21);
+							LightingManager.method2388(local2275.anInt3049, cameraX, cameraY, cameraZ, local27, local18, local21);
 						}
-						local2275.primary.render(0, anInt2886, anInt3038, anInt5205, anInt2222, local2275.xFine - anInt3555, local2275.anInt3051 - anInt3947, local2275.zFine - anInt4903, local2275.key, local24, null);
+						local2275.primary.render(0, anInt2886, anInt3038, anInt5205, anInt2222, local2275.xFine - cameraX, local2275.anInt3051 - cameraY, local2275.zFine - cameraZ, local2275.key, local24, null);
 					}
 				}
 			}
@@ -2283,7 +2283,7 @@ public class SceneGraph {
 		@Pc(36) int local36 = local24 - 238;
 		if (arg3 < 16) {
 			if (arg3 == 1) {
-				if (local10 > anInt3555) {
+				if (local10 > cameraX) {
 					if (!method4394(local10, local24, local14)) {
 						return false;
 					}
@@ -2305,7 +2305,7 @@ public class SceneGraph {
 				return method4394(local10, local32, local14 + 128);
 			}
 			if (arg3 == 2) {
-				if (local14 < anInt4903) {
+				if (local14 < cameraZ) {
 					if (!method4394(local10, local24, local14 + 128)) {
 						return false;
 					}
@@ -2327,7 +2327,7 @@ public class SceneGraph {
 				return method4394(local10 + 128, local32, local14 + 128);
 			}
 			if (arg3 == 4) {
-				if (local10 < anInt3555) {
+				if (local10 < cameraX) {
 					if (!method4394(local10 + 128, local24, local14)) {
 						return false;
 					}
@@ -2349,7 +2349,7 @@ public class SceneGraph {
 				return method4394(local10 + 128, local32, local14 + 128);
 			}
 			if (arg3 == 8) {
-				if (local14 > anInt4903) {
+				if (local14 > cameraZ) {
 					if (!method4394(local10, local24, local14)) {
 						return false;
 					}
@@ -2908,9 +2908,9 @@ public class SceneGraph {
 		anInt3038 = MathUtils.cos[arg3];
 		anInt5205 = MathUtils.sin[arg4];
 		anInt2222 = MathUtils.cos[arg4];
-		anInt3555 = arg0;
-		anInt3947 = arg1;
-		anInt4903 = arg2;
+		cameraX = arg0;
+		cameraY = arg1;
+		cameraZ = arg2;
 		anInt4069 = arg0 / 128;
 		anInt4539 = arg2 / 128;
 		LightingManager.anInt987 = anInt4069 - visibility;
@@ -2939,18 +2939,18 @@ public class SceneGraph {
 		@Pc(113) int local113;
 		for (local104 = 0; local104 < visibility + visibility + 2; local104++) {
 			for (local113 = 0; local113 < visibility + visibility + 2; local113++) {
-				@Pc(130) int local130 = (local104 - visibility << 7) - (anInt3555 & 0x7F);
-				@Pc(140) int local140 = (local113 - visibility << 7) - (anInt4903 & 0x7F);
+				@Pc(130) int local130 = (local104 - visibility << 7) - (cameraX & 0x7F);
+				@Pc(140) int local140 = (local113 - visibility << 7) - (cameraZ & 0x7F);
 				@Pc(146) int local146 = anInt4069 + local104 - visibility;
 				@Pc(152) int local152 = anInt4539 + local113 - visibility;
 				if (local146 >= 0 && local152 >= 0 && local146 < width && local152 < length) {
 					@Pc(176) int local176;
 					if (underwaterTileHeights == null) {
-						local176 = surfaceTileHeights[0][local146][local152] + 128 - anInt3947;
+						local176 = surfaceTileHeights[0][local146][local152] + 128 - cameraY;
 					} else {
-						local176 = underwaterTileHeights[0][local146][local152] + 128 - anInt3947;
+						local176 = underwaterTileHeights[0][local146][local152] + 128 - cameraY;
 					}
-					@Pc(201) int local201 = surfaceTileHeights[3][local146][local152] - anInt3947 - 1000;
+					@Pc(201) int local201 = surfaceTileHeights[3][local146][local152] - cameraY - 1000;
 					aBooleanArrayArray3[local104][local113] = method3049(local130, local201, local176, local140, local99);
 				} else {
 					aBooleanArrayArray3[local104][local113] = false;
@@ -3854,17 +3854,17 @@ public class SceneGraph {
 	@OriginalMember(owner = "client!ke", name = "a", descriptor = "(Lclient!rh;IIIIIIIZ)V")
 	public static void method2610(@OriginalArg(0) PlainTile arg0, @OriginalArg(1) int arg1, @OriginalArg(2) int arg2, @OriginalArg(3) int arg3, @OriginalArg(4) int arg4, @OriginalArg(5) int arg5, @OriginalArg(6) int arg6, @OriginalArg(7) int arg7, @OriginalArg(8) boolean arg8) {
 		@Pc(6) int local6;
-		@Pc(7) int local7 = local6 = (arg6 << 7) - anInt3555;
+		@Pc(7) int local7 = local6 = (arg6 << 7) - cameraX;
 		@Pc(14) int local14;
-		@Pc(15) int local15 = local14 = (arg7 << 7) - anInt4903;
+		@Pc(15) int local15 = local14 = (arg7 << 7) - cameraZ;
 		@Pc(20) int local20;
 		@Pc(21) int local21 = local20 = local7 + 128;
 		@Pc(26) int local26;
 		@Pc(27) int local27 = local26 = local15 + 128;
-		@Pc(37) int local37 = tileHeights[arg1][arg6][arg7] - anInt3947;
-		@Pc(49) int local49 = tileHeights[arg1][arg6 + 1][arg7] - anInt3947;
-		@Pc(63) int local63 = tileHeights[arg1][arg6 + 1][arg7 + 1] - anInt3947;
-		@Pc(75) int local75 = tileHeights[arg1][arg6][arg7 + 1] - anInt3947;
+		@Pc(37) int local37 = tileHeights[arg1][arg6][arg7] - cameraY;
+		@Pc(49) int local49 = tileHeights[arg1][arg6 + 1][arg7] - cameraY;
+		@Pc(63) int local63 = tileHeights[arg1][arg6 + 1][arg7 + 1] - cameraY;
+		@Pc(75) int local75 = tileHeights[arg1][arg6][arg7 + 1] - cameraY;
 		@Pc(85) int local85 = local15 * arg4 + local7 * arg5 >> 16;
 		@Pc(95) int local95 = local15 * arg5 - local7 * arg4 >> 16;
 		@Pc(97) int local97 = local85;
@@ -4109,7 +4109,7 @@ public class SceneGraph {
 						}
 					}
 					if (local137) {
-						local158 = anInt3555 - local10.anInt4460;
+						local158 = cameraX - local10.anInt4460;
 						if (local158 > 32) {
 							local10.anInt4462 = 1;
 						} else {
@@ -4119,10 +4119,10 @@ public class SceneGraph {
 							local10.anInt4462 = 2;
 							local158 = -local158;
 						}
-						local10.anInt4454 = (local10.anInt4458 - anInt4903 << 8) / local158;
-						local10.anInt4450 = (local10.anInt4449 - anInt4903 << 8) / local158;
-						local10.anInt4459 = (local10.anInt4444 - anInt3947 << 8) / local158;
-						local10.anInt4463 = (local10.anInt4447 - anInt3947 << 8) / local158;
+						local10.anInt4454 = (local10.anInt4458 - cameraZ << 8) / local158;
+						local10.anInt4450 = (local10.anInt4449 - cameraZ << 8) / local158;
+						local10.anInt4459 = (local10.anInt4444 - cameraY << 8) / local158;
+						local10.anInt4463 = (local10.anInt4447 - cameraY << 8) / local158;
 						aClass120Array2[anInt4870++] = local10;
 					}
 				}
@@ -4145,7 +4145,7 @@ public class SceneGraph {
 						}
 					}
 					if (local137) {
-						local158 = anInt4903 - local10.anInt4458;
+						local158 = cameraZ - local10.anInt4458;
 						if (local158 > 32) {
 							local10.anInt4462 = 3;
 						} else {
@@ -4155,15 +4155,15 @@ public class SceneGraph {
 							local10.anInt4462 = 4;
 							local158 = -local158;
 						}
-						local10.anInt4448 = (local10.anInt4460 - anInt3555 << 8) / local158;
-						local10.anInt4456 = (local10.anInt4445 - anInt3555 << 8) / local158;
-						local10.anInt4459 = (local10.anInt4444 - anInt3947 << 8) / local158;
-						local10.anInt4463 = (local10.anInt4447 - anInt3947 << 8) / local158;
+						local10.anInt4448 = (local10.anInt4460 - cameraX << 8) / local158;
+						local10.anInt4456 = (local10.anInt4445 - cameraX << 8) / local158;
+						local10.anInt4459 = (local10.anInt4444 - cameraY << 8) / local158;
+						local10.anInt4463 = (local10.anInt4447 - cameraY << 8) / local158;
 						aClass120Array2[anInt4870++] = local10;
 					}
 				}
 			} else if (local10.anInt4453 == 4) {
-				local14 = local10.anInt4444 - anInt3947;
+				local14 = local10.anInt4444 - cameraY;
 				if (local14 > 128) {
 					local115 = local10.anInt4461 + visibility - anInt4539;
 					if (local115 < 0) {
@@ -4194,10 +4194,10 @@ public class SceneGraph {
 						}
 						if (local430) {
 							local10.anInt4462 = 5;
-							local10.anInt4448 = (local10.anInt4460 - anInt3555 << 8) / local14;
-							local10.anInt4456 = (local10.anInt4445 - anInt3555 << 8) / local14;
-							local10.anInt4454 = (local10.anInt4458 - anInt4903 << 8) / local14;
-							local10.anInt4450 = (local10.anInt4449 - anInt4903 << 8) / local14;
+							local10.anInt4448 = (local10.anInt4460 - cameraX << 8) / local14;
+							local10.anInt4456 = (local10.anInt4445 - cameraX << 8) / local14;
+							local10.anInt4454 = (local10.anInt4458 - cameraZ << 8) / local14;
+							local10.anInt4450 = (local10.anInt4449 - cameraZ << 8) / local14;
 							aClass120Array2[anInt4870++] = local10;
 						}
 					}
@@ -4233,9 +4233,9 @@ public class SceneGraph {
 		@Pc(29) int local29;
 		@Pc(39) int local39;
 		for (local5 = 0; local5 < local3; local5++) {
-			local15 = arg0.anIntArray168[local5] - anInt3555;
-			local22 = arg0.anIntArray160[local5] - anInt3947;
-			local29 = arg0.anIntArray163[local5] - anInt4903;
+			local15 = arg0.anIntArray168[local5] - cameraX;
+			local22 = arg0.anIntArray160[local5] - cameraY;
+			local29 = arg0.anIntArray163[local5] - cameraZ;
 			local39 = local29 * arg3 + local15 * arg4 >> 16;
 			@Pc(49) int local49 = local29 * arg4 - local15 * arg3 >> 16;
 			@Pc(61) int local61 = local22 * arg2 - local49 * arg1 >> 16;

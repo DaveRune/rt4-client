@@ -20,6 +20,9 @@ public final class GlRenderer {
 
 	@OriginalMember(owner = "client!tf", name = "b", descriptor = "Ljava/lang/String;")
 	private static String renderer;
+	public static float vFOV = 0;
+	public static float hFOV = 0;
+
 
 	@OriginalMember(owner = "client!tf", name = "c", descriptor = "F")
 	private static float aFloat30;
@@ -594,23 +597,31 @@ public final class GlRenderer {
 	}
 
 	@OriginalMember(owner = "client!tf", name = "a", descriptor = "(FFFFFF)V")
-	private static void method4175(@OriginalArg(0) float arg0, @OriginalArg(1) float arg1, @OriginalArg(2) float arg2, @OriginalArg(3) float arg3, @OriginalArg(4) float arg4, @OriginalArg(5) float arg5) {
-		@Pc(3) float local3 = arg4 * 2.0F;
-		matrix[0] = local3 / (arg1 - arg0);
+	private static void method4175(@OriginalArg(0) float xMin, @OriginalArg(1) float xMax, @OriginalArg(2) float yMin, @OriginalArg(3) float yMax, @OriginalArg(4) float nearClip, @OriginalArg(5) float farClip) {
+		float width = xMax - xMin;
+		float height = yMax - yMin;
+
+		hFOV = 2 * (float)Math.atan(width / (2 * nearClip));
+		vFOV = 2 * (float)Math.atan(height / (2 * nearClip));
+		hFOV = (float)Math.toDegrees(hFOV);
+		vFOV = (float)Math.toDegrees(vFOV);
+
+		@Pc(3) float local3 = nearClip * 2.0F;
+		matrix[0] = local3 / (xMax - xMin);
 		matrix[1] = 0.0F;
 		matrix[2] = 0.0F;
 		matrix[3] = 0.0F;
 		matrix[4] = 0.0F;
-		matrix[5] = local3 / (arg3 - arg2);
+		matrix[5] = local3 / (yMax - yMin);
 		matrix[6] = 0.0F;
 		matrix[7] = 0.0F;
-		matrix[8] = (arg1 + arg0) / (arg1 - arg0);
-		matrix[9] = (arg3 + arg2) / (arg3 - arg2);
-		matrix[10] = aFloat30 = -(arg5 + arg4) / (arg5 - arg4);
+		matrix[8] = (xMax + xMin) / (xMax - xMin);
+		matrix[9] = (yMax + yMin) / (yMax - yMin);
+		matrix[10] = aFloat30 = -(farClip + nearClip) / (farClip - nearClip);
 		matrix[11] = -1.0F;
 		matrix[12] = 0.0F;
 		matrix[13] = 0.0F;
-		matrix[14] = aFloat32 = -(local3 * arg5) / (arg5 - arg4);
+		matrix[14] = aFloat32 = -(local3 * farClip) / (farClip - nearClip);
 		matrix[15] = 0.0F;
 		gl.glLoadMatrixf(matrix, 0);
 		aFloat33 = 0.0F;
