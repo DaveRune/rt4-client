@@ -44,7 +44,7 @@ open class plugin : Plugin() {
     }
 
     private val colorMap = mapOf(
-        "tagged" to "#A020F0",
+        "tagged" to "#AA00FF",
         "hidden" to "#808080",
         "lowValue" to "#66B2FF",
         "mediumValue" to "#99FF99",
