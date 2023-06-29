@@ -61,14 +61,14 @@ public final class GlTexture extends SecondaryNode {
 	@OriginalMember(owner = "client!uh", name = "<init>", descriptor = "(Lclient!wa;)V")
 	public GlTexture(@OriginalArg(0) Buffer arg0) {
 		this.aClass88_1 = new Texture(arg0);
-		this.aBoolean286 = arg0.g1() == 1;
-		this.aBoolean288 = arg0.g1() == 1;
-		this.aBoolean285 = arg0.g1() == 1;
-		this.aBoolean284 = arg0.g1() == 1;
-		@Pc(68) int local68 = arg0.g1() & 0x3;
-		this.anInt5485 = arg0.g1b();
-		this.anInt5497 = arg0.g1b();
-		@Pc(82) int local82 = arg0.g1();
+		this.aBoolean286 = arg0.g1() == 1; 		// Unsure
+		this.aBoolean288 = arg0.g1() == 1; 		// Wrap Horizontal?
+		this.aBoolean285 = arg0.g1() == 1; 		// Wrap Horizontal?
+		this.aBoolean284 = arg0.g1() == 1; 		// Wrap Vertical?
+		@Pc(68) int local68 = arg0.g1() & 0x3;  // Material Brightness
+		this.anInt5485 = arg0.g1b();			// Speed U
+		this.anInt5497 = arg0.g1b();			// Speed V
+		@Pc(82) int local82 = arg0.g1();		// Mipmap related? how texture behaves the further out it is from the camera
 		arg0.g1();
 		if (local68 == 1) {
 			this.anInt5486 = 2;

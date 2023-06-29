@@ -41,11 +41,11 @@ public final class GlFont extends Font {
 	}
 
 	@OriginalMember(owner = "client!dj", name = "a", descriptor = "(Lclient!cf;)V")
-	public static void method1188(@OriginalArg(0) GlSprite arg0) {
-		if (arg0.height != GlRaster.clipBottom - GlRaster.clipTop) {
+	public static void method1188(@OriginalArg(0) GlSprite sprite) {
+		if (sprite.height != GlRaster.clipBottom - GlRaster.clipTop) {
 			throw new IllegalArgumentException();
 		}
-		masked = arg0;
+		masked = sprite;
 	}
 
 	@OriginalMember(owner = "client!mb", name = "finalize", descriptor = "()V")

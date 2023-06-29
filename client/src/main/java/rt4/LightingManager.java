@@ -342,13 +342,13 @@ public class LightingManager {
 
 	@OriginalMember(owner = "client!jf", name = "e", descriptor = "()V")
 	public static void method2400() {
-		@Pc(1) GL2 local1 = GlRenderer.gl;
+		@Pc(1) GL2 gl = GlRenderer.gl;
 		@Pc(3) int local3;
 		for (local3 = 0; local3 < 4; local3++) {
 			@Pc(10) int local10 = local3 + 16388;
-			local1.glLightfv(local10, GL2.GL_AMBIENT, new float[]{0.0F, 0.0F, 0.0F, 1.0F}, 0);
-			local1.glLightf(local10, GL2.GL_LINEAR_ATTENUATION, 0.0F);
-			local1.glLightf(local10, GL2.GL_CONSTANT_ATTENUATION, 0.0F);
+			gl.glLightfv(local10, GL2.GL_AMBIENT, new float[]{0.0F, 0.0F, 0.0F, 1.0F}, 0);
+			gl.glLightf(local10, GL2.GL_LINEAR_ATTENUATION, 0.0F);
+			gl.glLightf(local10, GL2.GL_CONSTANT_ATTENUATION, 0.0F);
 		}
 		for (local3 = 0; local3 < 4; local3++) {
 			anIntArray284[local3] = -1;

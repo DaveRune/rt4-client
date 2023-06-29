@@ -262,8 +262,8 @@ public final class GlRenderer {
 		gl.glPolygonMode(GL2.GL_FRONT, GL2.GL_FILL);
 		gl.glEnable(GL2.GL_CULL_FACE);
 		gl.glCullFace(GL2.GL_BACK);
-		gl.glEnable(GL2.GL_BLEND);
-		gl.glBlendFunc(GL2.GL_SRC_ALPHA, GL2.GL_ONE_MINUS_SRC_ALPHA);
+		gl.glEnable(GL2.GL_BLEND);										// Enable the OpenGL Blending functionality
+		gl.glBlendFunc(GL2.GL_SRC_ALPHA, GL2.GL_ONE_MINUS_SRC_ALPHA);	// Set the blend mode to blend our current RGBA with what is already in the buffer
 		gl.glEnable(GL2.GL_ALPHA_TEST);
 		gl.glAlphaFunc(GL2.GL_GREATER, 0.0F);
 		gl.glEnableClientState(GL2.GL_VERTEX_ARRAY);
@@ -360,12 +360,12 @@ public final class GlRenderer {
 		if (aBoolean266) {
 			return;
 		}
-		gl.glMatrixMode(GL2.GL_PROJECTION);
-		gl.glLoadIdentity();
+		gl.glMatrixMode(GL2.GL_PROJECTION);		// Switch to the projection matrix so that we can manipulate how our scene is viewed
+		gl.glLoadIdentity();					// Reset the projection matrix to the identity matrix so that we don't get any artifacts (cleaning up)
 		gl.glOrtho(0, canvasWidth, 0, canvasHeight, -1.0D, 1.0D);
 		setViewportBounds(0, 0, canvasWidth, canvasHeight);
-		gl.glMatrixMode(GL2.GL_MODELVIEW);
-		gl.glLoadIdentity();
+		gl.glMatrixMode(GL2.GL_MODELVIEW);		// Switch back to the model view matrix, so that we can start drawing shapes correctly
+		gl.glLoadIdentity();					// Reset the projection matrix to the identity matrix so that we don't get any artifacts (cleaning up)
 		aBoolean266 = true;
 	}
 

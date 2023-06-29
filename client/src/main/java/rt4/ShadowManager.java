@@ -120,13 +120,13 @@ public final class ShadowManager {
 
 	@OriginalMember(owner = "client!tj", name = "a", descriptor = "(IIII[[Z[[I)V")
 	public static void method4198(@OriginalArg(0) int arg0, @OriginalArg(1) int arg1, @OriginalArg(2) int arg2, @OriginalArg(3) int arg3, @OriginalArg(4) boolean[][] arg4, @OriginalArg(5) int[][] arg5) {
-		@Pc(1) GL2 local1 = GlRenderer.gl;
+		@Pc(1) GL2 gl = GlRenderer.gl;
 		GlRenderer.setTextureCombineRgbMode(1);
 		GlRenderer.setTextureCombineAlphaMode(1);
 		GlRenderer.resetTextureMatrix();
 		GlRenderer.setLightingEnabled(false);
 		MaterialManager.setMaterial(0, 0);
-		local1.glDepthMask(false);
+		gl.glDepthMask(false);
 		for (@Pc(17) int local17 = 0; local17 < anInt5346; local17++) {
 			label52:
 			for (@Pc(22) int local22 = 0; local22 < anInt5345; local22++) {
@@ -139,10 +139,10 @@ public final class ShadowManager {
 									local89.method4677(shadowMapImage, local17, local22);
 									local89.outputToSprite = false;
 								}
-								local1.glPushMatrix();
-								local1.glTranslatef((float) (local17 * 1024), 0.0F, (float) (local22 * 1024));
+								gl.glPushMatrix();
+								gl.glTranslatef((float) (local17 * 1024), 0.0F, (float) (local22 * 1024));
 								local89.method4679();
-								local1.glPopMatrix();
+								gl.glPopMatrix();
 								continue label52;
 							}
 						}
@@ -150,8 +150,8 @@ public final class ShadowManager {
 				}
 			}
 		}
-		local1.glEnableClientState(GL2.GL_COLOR_ARRAY);
-		local1.glDepthMask(true);
+		gl.glEnableClientState(GL2.GL_COLOR_ARRAY);
+		gl.glDepthMask(true);
 		GlRenderer.restoreLighting();
 	}
 

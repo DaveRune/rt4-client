@@ -61,78 +61,78 @@ public final class WaterMaterialRenderer implements MaterialRenderer {
 	@OriginalMember(owner = "client!pd", name = "d", descriptor = "()V")
 	private void method3435() {
 		@Pc(2) byte[] local2 = new byte[]{0, -1};
-		@Pc(12) GL2 local12 = GlRenderer.gl;
+		@Pc(12) GL2 gl = GlRenderer.gl;
 		@Pc(15) int[] local15 = new int[1];
-		local12.glGenTextures(1, local15, 0);
-		local12.glBindTexture(GL2.GL_TEXTURE_1D, local15[0]);
-		local12.glTexImage1D(GL2.GL_TEXTURE_1D, 0, GL2.GL_ALPHA, 2, 0, GL2.GL_ALPHA, GL2.GL_UNSIGNED_BYTE, ByteBuffer.wrap(local2));
-		local12.glTexParameteri(GL2.GL_TEXTURE_1D, GL2.GL_TEXTURE_MIN_FILTER, GL2.GL_LINEAR);
-		local12.glTexParameteri(GL2.GL_TEXTURE_1D, GL2.GL_TEXTURE_MAG_FILTER, GL2.GL_LINEAR);
-		local12.glTexParameteri(GL2.GL_TEXTURE_1D, GL2.GL_TEXTURE_WRAP_S, GL2.GL_CLAMP_TO_EDGE);
+		gl.glGenTextures(1, local15, 0);
+		gl.glBindTexture(GL2.GL_TEXTURE_1D, local15[0]);
+		gl.glTexImage1D(GL2.GL_TEXTURE_1D, 0, GL2.GL_ALPHA, 2, 0, GL2.GL_ALPHA, GL2.GL_UNSIGNED_BYTE, ByteBuffer.wrap(local2));
+		gl.glTexParameteri(GL2.GL_TEXTURE_1D, GL2.GL_TEXTURE_MIN_FILTER, GL2.GL_LINEAR);
+		gl.glTexParameteri(GL2.GL_TEXTURE_1D, GL2.GL_TEXTURE_MAG_FILTER, GL2.GL_LINEAR);
+		gl.glTexParameteri(GL2.GL_TEXTURE_1D, GL2.GL_TEXTURE_WRAP_S, GL2.GL_CLAMP_TO_EDGE);
 		this.anInt4441 = local15[0];
 	}
 
 	@OriginalMember(owner = "client!pd", name = "f", descriptor = "()V")
 	private void method3437() {
-		@Pc(1) GL2 local1 = GlRenderer.gl;
-		this.anInt4440 = local1.glGenLists(2);
-		local1.glNewList(this.anInt4440, GL2.GL_COMPILE);
-		local1.glTexEnvi(GL2.GL_TEXTURE_ENV, GL2.GL_OPERAND0_RGB, GL2.GL_SRC_COLOR);
-		local1.glTexEnvi(GL2.GL_TEXTURE_ENV, GL2.GL_SRC1_RGB, GL2.GL_CONSTANT);
-		local1.glTexEnvf(GL2.GL_TEXTURE_ENV, GL2.GL_RGB_SCALE, 2.0F);
-		local1.glTexEnvi(GL2.GL_TEXTURE_ENV, GL2GL3.GL_SRC1_ALPHA, GL2.GL_CONSTANT);
-		local1.glTexGeni(GL2.GL_S, GL2.GL_TEXTURE_GEN_MODE, GL2.GL_OBJECT_LINEAR);
-		local1.glTexGeni(GL2.GL_T, GL2.GL_TEXTURE_GEN_MODE, GL2.GL_OBJECT_LINEAR);
-		local1.glTexGenfv(GL2.GL_S, GL2.GL_OBJECT_PLANE, new float[]{9.765625E-4F, 0.0F, 0.0F, 0.0F}, 0);
-		local1.glTexGenfv(GL2.GL_T, GL2.GL_OBJECT_PLANE, new float[]{0.0F, 0.0F, 9.765625E-4F, 0.0F}, 0);
-		local1.glEnable(GL2.GL_TEXTURE_GEN_S);
-		local1.glEnable(GL2.GL_TEXTURE_GEN_T);
+		@Pc(1) GL2 gl = GlRenderer.gl;
+		this.anInt4440 = gl.glGenLists(2);
+		gl.glNewList(this.anInt4440, GL2.GL_COMPILE);
+		gl.glTexEnvi(GL2.GL_TEXTURE_ENV, GL2.GL_OPERAND0_RGB, GL2.GL_SRC_COLOR);
+		gl.glTexEnvi(GL2.GL_TEXTURE_ENV, GL2.GL_SRC1_RGB, GL2.GL_CONSTANT);
+		gl.glTexEnvf(GL2.GL_TEXTURE_ENV, GL2.GL_RGB_SCALE, 2.0F);
+		gl.glTexEnvi(GL2.GL_TEXTURE_ENV, GL2GL3.GL_SRC1_ALPHA, GL2.GL_CONSTANT);
+		gl.glTexGeni(GL2.GL_S, GL2.GL_TEXTURE_GEN_MODE, GL2.GL_OBJECT_LINEAR);
+		gl.glTexGeni(GL2.GL_T, GL2.GL_TEXTURE_GEN_MODE, GL2.GL_OBJECT_LINEAR);
+		gl.glTexGenfv(GL2.GL_S, GL2.GL_OBJECT_PLANE, new float[]{9.765625E-4F, 0.0F, 0.0F, 0.0F}, 0);
+		gl.glTexGenfv(GL2.GL_T, GL2.GL_OBJECT_PLANE, new float[]{0.0F, 0.0F, 9.765625E-4F, 0.0F}, 0);
+		gl.glEnable(GL2.GL_TEXTURE_GEN_S);
+		gl.glEnable(GL2.GL_TEXTURE_GEN_T);
 		if (MaterialManager.allows3DTextureMapping) {
-			local1.glBindTexture(GL2.GL_TEXTURE_3D, MaterialManager.texture3D);
-			local1.glTexGeni(GL2.GL_R, GL2.GL_TEXTURE_GEN_MODE, GL2.GL_OBJECT_LINEAR);
-			local1.glTexGeni(GL2.GL_Q, GL2.GL_TEXTURE_GEN_MODE, GL2.GL_OBJECT_LINEAR);
-			local1.glTexGenfv(GL2.GL_Q, GL2.GL_OBJECT_PLANE, new float[]{0.0F, 0.0F, 0.0F, 1.0F}, 0);
-			local1.glEnable(GL2.GL_TEXTURE_GEN_R);
-			local1.glEnable(GL2.GL_TEXTURE_GEN_Q);
-			local1.glEnable(GL2.GL_TEXTURE_3D);
+			gl.glBindTexture(GL2.GL_TEXTURE_3D, MaterialManager.texture3D);
+			gl.glTexGeni(GL2.GL_R, GL2.GL_TEXTURE_GEN_MODE, GL2.GL_OBJECT_LINEAR);
+			gl.glTexGeni(GL2.GL_Q, GL2.GL_TEXTURE_GEN_MODE, GL2.GL_OBJECT_LINEAR);
+			gl.glTexGenfv(GL2.GL_Q, GL2.GL_OBJECT_PLANE, new float[]{0.0F, 0.0F, 0.0F, 1.0F}, 0);
+			gl.glEnable(GL2.GL_TEXTURE_GEN_R);
+			gl.glEnable(GL2.GL_TEXTURE_GEN_Q);
+			gl.glEnable(GL2.GL_TEXTURE_3D);
 		}
-		local1.glActiveTexture(GL2.GL_TEXTURE1);
-		local1.glEnable(GL2.GL_TEXTURE_1D);
-		local1.glBindTexture(GL2.GL_TEXTURE_1D, this.anInt4441);
-		local1.glTexEnvi(GL2.GL_TEXTURE_ENV, GL2.GL_COMBINE_RGB, GL2.GL_INTERPOLATE);
-		local1.glTexEnvi(GL2.GL_TEXTURE_ENV, GL2.GL_SRC0_RGB, GL2.GL_CONSTANT);
-		local1.glTexEnvi(GL2.GL_TEXTURE_ENV, GL2.GL_SRC2_RGB, GL2.GL_TEXTURE);
-		local1.glTexEnvi(GL2.GL_TEXTURE_ENV, GL2.GL_COMBINE_ALPHA, GL2.GL_INTERPOLATE);
-		local1.glTexEnvi(GL2.GL_TEXTURE_ENV, GL2.GL_SRC0_ALPHA, GL2.GL_CONSTANT);
-		local1.glTexEnvi(GL2.GL_TEXTURE_ENV, GL2.GL_SRC2_ALPHA, GL2.GL_TEXTURE);
-		local1.glEnable(GL2.GL_TEXTURE_GEN_S);
-		local1.glTexGeni(GL2.GL_S, GL2.GL_TEXTURE_GEN_MODE, GL2.GL_EYE_LINEAR);
-		local1.glPushMatrix();
-		local1.glLoadIdentity();
-		local1.glEndList();
-		local1.glNewList(this.anInt4440 + 1, GL2.GL_COMPILE);
-		local1.glActiveTexture(GL2.GL_TEXTURE1);
-		local1.glDisable(GL2.GL_TEXTURE_1D);
-		local1.glDisable(GL2.GL_TEXTURE_GEN_S);
-		local1.glTexEnvi(GL2.GL_TEXTURE_ENV, GL2.GL_COMBINE_RGB, GL2.GL_MODULATE);
-		local1.glTexEnvi(GL2.GL_TEXTURE_ENV, GL2.GL_SRC0_RGB, GL2.GL_TEXTURE);
-		local1.glTexEnvi(GL2.GL_TEXTURE_ENV, GL2.GL_SRC2_RGB, GL2.GL_CONSTANT);
-		local1.glTexEnvi(GL2.GL_TEXTURE_ENV, GL2.GL_COMBINE_ALPHA, GL2.GL_MODULATE);
-		local1.glTexEnvi(GL2.GL_TEXTURE_ENV, GL2.GL_SRC0_ALPHA, GL2.GL_TEXTURE);
-		local1.glTexEnvi(GL2.GL_TEXTURE_ENV, GL2.GL_SRC2_ALPHA, GL2.GL_CONSTANT);
-		local1.glActiveTexture(GL2.GL_TEXTURE0);
-		local1.glTexEnvi(GL2.GL_TEXTURE_ENV, GL2.GL_OPERAND0_RGB, GL2.GL_SRC_COLOR);
-		local1.glTexEnvi(GL2.GL_TEXTURE_ENV, GL2.GL_SRC1_RGB, GL2.GL_PREVIOUS);
-		local1.glTexEnvf(GL2.GL_TEXTURE_ENV, GL2.GL_RGB_SCALE, 1.0F);
-		local1.glTexEnvi(GL2.GL_TEXTURE_ENV, GL2GL3.GL_SRC1_ALPHA, GL2.GL_PREVIOUS);
-		local1.glDisable(GL2.GL_TEXTURE_GEN_S);
-		local1.glDisable(GL2.GL_TEXTURE_GEN_T);
+		gl.glActiveTexture(GL2.GL_TEXTURE1);
+		gl.glEnable(GL2.GL_TEXTURE_1D);
+		gl.glBindTexture(GL2.GL_TEXTURE_1D, this.anInt4441);
+		gl.glTexEnvi(GL2.GL_TEXTURE_ENV, GL2.GL_COMBINE_RGB, GL2.GL_INTERPOLATE);
+		gl.glTexEnvi(GL2.GL_TEXTURE_ENV, GL2.GL_SRC0_RGB, GL2.GL_CONSTANT);
+		gl.glTexEnvi(GL2.GL_TEXTURE_ENV, GL2.GL_SRC2_RGB, GL2.GL_TEXTURE);
+		gl.glTexEnvi(GL2.GL_TEXTURE_ENV, GL2.GL_COMBINE_ALPHA, GL2.GL_INTERPOLATE);
+		gl.glTexEnvi(GL2.GL_TEXTURE_ENV, GL2.GL_SRC0_ALPHA, GL2.GL_CONSTANT);
+		gl.glTexEnvi(GL2.GL_TEXTURE_ENV, GL2.GL_SRC2_ALPHA, GL2.GL_TEXTURE);
+		gl.glEnable(GL2.GL_TEXTURE_GEN_S);
+		gl.glTexGeni(GL2.GL_S, GL2.GL_TEXTURE_GEN_MODE, GL2.GL_EYE_LINEAR);
+		gl.glPushMatrix();
+		gl.glLoadIdentity();
+		gl.glEndList();
+		gl.glNewList(this.anInt4440 + 1, GL2.GL_COMPILE);
+		gl.glActiveTexture(GL2.GL_TEXTURE1);
+		gl.glDisable(GL2.GL_TEXTURE_1D);
+		gl.glDisable(GL2.GL_TEXTURE_GEN_S);
+		gl.glTexEnvi(GL2.GL_TEXTURE_ENV, GL2.GL_COMBINE_RGB, GL2.GL_MODULATE);
+		gl.glTexEnvi(GL2.GL_TEXTURE_ENV, GL2.GL_SRC0_RGB, GL2.GL_TEXTURE);
+		gl.glTexEnvi(GL2.GL_TEXTURE_ENV, GL2.GL_SRC2_RGB, GL2.GL_CONSTANT);
+		gl.glTexEnvi(GL2.GL_TEXTURE_ENV, GL2.GL_COMBINE_ALPHA, GL2.GL_MODULATE);
+		gl.glTexEnvi(GL2.GL_TEXTURE_ENV, GL2.GL_SRC0_ALPHA, GL2.GL_TEXTURE);
+		gl.glTexEnvi(GL2.GL_TEXTURE_ENV, GL2.GL_SRC2_ALPHA, GL2.GL_CONSTANT);
+		gl.glActiveTexture(GL2.GL_TEXTURE0);
+		gl.glTexEnvi(GL2.GL_TEXTURE_ENV, GL2.GL_OPERAND0_RGB, GL2.GL_SRC_COLOR);
+		gl.glTexEnvi(GL2.GL_TEXTURE_ENV, GL2.GL_SRC1_RGB, GL2.GL_PREVIOUS);
+		gl.glTexEnvf(GL2.GL_TEXTURE_ENV, GL2.GL_RGB_SCALE, 1.0F);
+		gl.glTexEnvi(GL2.GL_TEXTURE_ENV, GL2GL3.GL_SRC1_ALPHA, GL2.GL_PREVIOUS);
+		gl.glDisable(GL2.GL_TEXTURE_GEN_S);
+		gl.glDisable(GL2.GL_TEXTURE_GEN_T);
 		if (MaterialManager.allows3DTextureMapping) {
-			local1.glDisable(GL2.GL_TEXTURE_GEN_R);
-			local1.glDisable(GL2.GL_TEXTURE_GEN_Q);
-			local1.glDisable(GL2.GL_TEXTURE_3D);
+			gl.glDisable(GL2.GL_TEXTURE_GEN_R);
+			gl.glDisable(GL2.GL_TEXTURE_GEN_Q);
+			gl.glDisable(GL2.GL_TEXTURE_3D);
 		}
-		local1.glEndList();
+		gl.glEndList();
 	}
 
 	@OriginalMember(owner = "client!pd", name = "a", descriptor = "()V")
@@ -144,10 +144,10 @@ public final class WaterMaterialRenderer implements MaterialRenderer {
 	@OriginalMember(owner = "client!pd", name = "a", descriptor = "(I)V")
 	@Override
 	public final void setArgument(@OriginalArg(0) int arg0) {
-		@Pc(1) GL2 local1 = GlRenderer.gl;
-		local1.glActiveTexture(GL2.GL_TEXTURE1);
-		local1.glTexEnvfv(GL2.GL_TEXTURE_ENV, GL2.GL_TEXTURE_ENV_COLOR, aFloatArray2, 0);
-		local1.glActiveTexture(GL2.GL_TEXTURE0);
+		@Pc(1) GL2 gl = GlRenderer.gl;
+		gl.glActiveTexture(GL2.GL_TEXTURE1);
+		gl.glTexEnvfv(GL2.GL_TEXTURE_ENV, GL2.GL_TEXTURE_ENV_COLOR, aFloatArray2, 0);
+		gl.glActiveTexture(GL2.GL_TEXTURE0);
 		if ((arg0 & 0x1) == 1) {
 			if (!MaterialManager.allows3DTextureMapping) {
 				GlRenderer.setTextureId(MaterialManager.anIntArray341[GlRenderer.anInt5323 * 64 / 100 % 64]);
@@ -156,7 +156,7 @@ public final class WaterMaterialRenderer implements MaterialRenderer {
 				this.aFloatArray23[1] = 0.0F;
 				this.aFloatArray23[2] = 0.0F;
 				this.aFloatArray23[3] = (float) GlRenderer.anInt5323 * 0.005F;
-				local1.glTexGenfv(GL2.GL_R, GL2.GL_OBJECT_PLANE, this.aFloatArray23, 0);
+				gl.glTexGenfv(GL2.GL_R, GL2.GL_OBJECT_PLANE, this.aFloatArray23, 0);
 				this.anInt4442 = GlRenderer.anInt5323;
 			}
 		} else if (MaterialManager.allows3DTextureMapping) {
@@ -164,7 +164,7 @@ public final class WaterMaterialRenderer implements MaterialRenderer {
 			this.aFloatArray23[1] = 0.0F;
 			this.aFloatArray23[2] = 0.0F;
 			this.aFloatArray23[3] = 0.0F;
-			local1.glTexGenfv(GL2.GL_R, GL2.GL_OBJECT_PLANE, this.aFloatArray23, 0);
+			gl.glTexGenfv(GL2.GL_R, GL2.GL_OBJECT_PLANE, this.aFloatArray23, 0);
 		} else {
 			GlRenderer.setTextureId(MaterialManager.anIntArray341[0]);
 		}
@@ -173,11 +173,11 @@ public final class WaterMaterialRenderer implements MaterialRenderer {
 	@OriginalMember(owner = "client!pd", name = "b", descriptor = "()V")
 	@Override
 	public final void bind() {
-		@Pc(1) GL2 local1 = GlRenderer.gl;
+		@Pc(1) GL2 gl = GlRenderer.gl;
 		GlRenderer.setTextureCombineRgbMode(2);
 		GlRenderer.setTextureCombineAlphaMode(2);
 		GlRenderer.resetTextureMatrix();
-		local1.glCallList(this.anInt4440);
+		gl.glCallList(this.anInt4440);
 		@Pc(12) float local12 = 2662.4001F;
 		local12 += (float) (MaterialManager.anInt5559 - 128) * 0.5F;
 		float max = (float) GlobalConfig.VIEW_DISTANCE - GlobalConfig.VIEW_FADE_DISTANCE;
@@ -188,10 +188,10 @@ public final class WaterMaterialRenderer implements MaterialRenderer {
 		this.aFloatArray23[1] = 0.0F;
 		this.aFloatArray23[2] = 1.0F / (local12 - max);
 		this.aFloatArray23[3] = local12 / (local12 - max);
-		local1.glTexGenfv(GL2.GL_S, GL2.GL_EYE_PLANE, this.aFloatArray23, 0);
-		local1.glPopMatrix();
-		local1.glActiveTexture(GL2.GL_TEXTURE0);
-		local1.glTexEnvfv(GL2.GL_TEXTURE_ENV, GL2.GL_TEXTURE_ENV_COLOR, aFloatArray22, 0);
+		gl.glTexGenfv(GL2.GL_S, GL2.GL_EYE_PLANE, this.aFloatArray23, 0);
+		gl.glPopMatrix();
+		gl.glActiveTexture(GL2.GL_TEXTURE0);
+		gl.glTexEnvfv(GL2.GL_TEXTURE_ENV, GL2.GL_TEXTURE_ENV_COLOR, aFloatArray22, 0);
 	}
 
 	@OriginalMember(owner = "client!pd", name = "c", descriptor = "()I")
