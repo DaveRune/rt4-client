@@ -23,7 +23,7 @@ public final class GlRaster {
 
 	@OriginalMember(owner = "client!dj", name = "a", descriptor = "(IIII)V")
 	public static void drawHorizontalLine(@OriginalArg(0) int x, @OriginalArg(1) int y, @OriginalArg(2) int length, @OriginalArg(3) int color) {
-		GlRenderer.method4162();
+		GlRenderer.setupRenderingWithNoTexture();
 		@Pc(5) float xCoordinateStart = (float) x + 0.3F;
 		@Pc(10) float xCoordinateEnd = xCoordinateStart + (float) length;
 		@Pc(18) float yCoordinate = (float) GlRenderer.canvasHeight - (float) y - 0.3F;
@@ -37,7 +37,7 @@ public final class GlRaster {
 
 	@OriginalMember(owner = "client!dj", name = "b", descriptor = "(IIII)V")
 	public static void drawVerticalLine(@OriginalArg(0) int x, @OriginalArg(1) int y, @OriginalArg(2) int height, @OriginalArg(3) int color) {
-		GlRenderer.method4162();
+		GlRenderer.setupRenderingWithNoTexture();
 		@Pc(5) float xCoordinate = (float) x + 0.3F;
 		@Pc(13) float yCoordinateStart = (float) GlRenderer.canvasHeight - (float) y - 0.3F;
 		@Pc(18) float yCoordinateEnd = yCoordinateStart - (float) height;
@@ -62,7 +62,7 @@ public final class GlRaster {
 
 	@OriginalMember(owner = "client!dj", name = "a", descriptor = "([IIIII)V")
 	public static void drawPixels(@OriginalArg(0) int[] pixels, @OriginalArg(1) int x, @OriginalArg(2) int y, @OriginalArg(3) int width, @OriginalArg(4) int height) {
-		GlRenderer.method4162();
+		GlRenderer.setupRenderingWithNoTexture();
 		@Pc(2) GL2 gl = GlRenderer.gl;
 		gl.glRasterPos2i(x, GlRenderer.canvasHeight - y);
 		gl.glPixelZoom((float) GameShell.canvasScale, (float) -GameShell.canvasScale);
@@ -76,7 +76,7 @@ public final class GlRaster {
 
 	@OriginalMember(owner = "client!dj", name = "a", descriptor = "(IIIII)V")
 	public static void drawRect(@OriginalArg(0) int x, @OriginalArg(1) int y, @OriginalArg(2) int width, @OriginalArg(3) int height, @OriginalArg(4) int color) {
-		GlRenderer.method4162();
+		GlRenderer.setupRenderingWithNoTexture();
 		@Pc(5) float local5 = (float) x + 0.3F;
 		@Pc(12) float local12 = local5 + (float) (width - 1);
 		@Pc(20) float local20 = (float) GlRenderer.canvasHeight - (float) y - 0.3F;
@@ -93,7 +93,7 @@ public final class GlRaster {
 
 	@OriginalMember(owner = "client!dj", name = "a", descriptor = "(IIIIII)V")
 	public static void drawRectAlpha(@OriginalArg(0) int x, @OriginalArg(1) int y, @OriginalArg(2) int width, @OriginalArg(3) int height, @OriginalArg(4) int color, @OriginalArg(5) int alpha) {
-		GlRenderer.method4162();
+		GlRenderer.setupRenderingWithNoTexture();
 		@Pc(5) float local5 = (float) x + 0.3F;
 		@Pc(12) float local12 = local5 + (float) (width - 1);
 		@Pc(20) float local20 = (float) GlRenderer.canvasHeight - (float) y - 0.3F;
@@ -140,7 +140,7 @@ public final class GlRaster {
 		@Pc(109) int local109 = arg1 - local81;
 		@Pc(115) int local115 = arg1 + local7 - local81;
 		@Pc(121) int local121 = arg1 + local7 + local73;
-		GlRenderer.method4162();
+		GlRenderer.setupRenderingWithNoTexture();
 		@Pc(124) GL2 gl = GlRenderer.gl;
 		gl.glColor3ub((byte) (arg4 >> 16), (byte) (arg4 >> 8), (byte) arg4);
 		gl.glBegin(GL2.GL_TRIANGLE_FAN);
@@ -160,7 +160,7 @@ public final class GlRaster {
 
 	@OriginalMember(owner = "client!dj", name = "c", descriptor = "(IIIIII)V")
 	public static void fillRectAlpha(@OriginalArg(0) int x, @OriginalArg(1) int y, @OriginalArg(2) int width, @OriginalArg(3) int height, @OriginalArg(4) int color, @OriginalArg(5) int alpha) {
-		GlRenderer.method4162();
+		GlRenderer.setupRenderingWithNoTexture();
 		@Pc(3) float local3 = (float) x;
 		@Pc(8) float local8 = local3 + (float) width;
 		@Pc(13) float local13 = (float) (GlRenderer.canvasHeight - y);
@@ -206,7 +206,7 @@ public final class GlRaster {
 
 	@OriginalMember(owner = "client!dj", name = "b", descriptor = "(IIIII)V")
 	public static void method1185(@OriginalArg(0) int arg0, @OriginalArg(1) int arg1, @OriginalArg(2) int arg2, @OriginalArg(3) int arg3, @OriginalArg(4) int arg4) {
-		GlRenderer.method4162();
+		GlRenderer.setupRenderingWithNoTexture();
 		@Pc(5) float local5 = (float) arg0 + 0.3F;
 		@Pc(10) float local10 = (float) arg2 + 0.3F;
 		@Pc(18) float local18 = (float) GlRenderer.canvasHeight - (float) arg1 - 0.3F;
@@ -221,7 +221,7 @@ public final class GlRaster {
 
 	@OriginalMember(owner = "client!dj", name = "c", descriptor = "(IIIII)V")
 	public static void fillRect(@OriginalArg(0) int arg0, @OriginalArg(1) int arg1, @OriginalArg(2) int arg2, @OriginalArg(3) int arg3, @OriginalArg(4) int arg4) {
-		GlRenderer.method4162();
+		GlRenderer.setupRenderingWithNoTexture();
 		@Pc(3) float local3 = (float) arg0;
 		@Pc(8) float local8 = local3 + (float) arg2;
 		@Pc(13) float local13 = (float) (GlRenderer.canvasHeight - arg1);

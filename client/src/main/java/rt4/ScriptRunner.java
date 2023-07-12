@@ -278,7 +278,7 @@ public final class ScriptRunner {
 				local248 = Camera.aFloat15 * 360.0F / 6.2831855F;
 				local253 = Camera.aFloat10 * 360.0F / 6.2831855F;
 			}
-			GlRenderer.method4171(arg2, arg4, arg3, arg0, arg3 / 2 + arg2, arg4 - -(arg0 / 2), local248, local253, anInt5029, anInt5029);
+			GlRenderer.setupViewTransformations(arg2, arg4, arg3, arg0, arg3 / 2 + arg2, arg4 - -(arg0 / 2), local248, local253, anInt5029, anInt5029);
 		} else {
 			SoftwareRaster.setClip(arg2, arg4, arg3 + arg2, arg0 + arg4);
 			Rasteriser.prepare();

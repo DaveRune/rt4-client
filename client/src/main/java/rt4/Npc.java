@@ -70,10 +70,10 @@ public final class Npc extends PathingEntity {
 				@Pc(144) float local144 = GlRenderer.method4179();
 				@Pc(146) float local146 = GlRenderer.method4166();
 				GlRenderer.disableDepthMask();
-				GlRenderer.method4152(local144, local146 - 150.0F);
+				GlRenderer.configureDepthAdjustment(local144, local146 - 150.0F);
 				model.render(0, arg1, arg2, arg3, arg4, x, z, y, -1L, arg9, this.particleSystem);
 				GlRenderer.enableDepthMask();
-				GlRenderer.method4152(local144, local146);
+				GlRenderer.configureDepthAdjustment(local144, local146);
 			} else {
 				model.render(0, arg1, arg2, arg3, arg4, x, z, y, -1L, arg9, this.particleSystem);
 			}

@@ -948,10 +948,10 @@ public class Cs1ScriptRunner {
 												objId = component.height / 2 + local114 + (cardMemory * component.anInt481 >> 8);
 												if (GlRenderer.enabled) {
 													if (component.modelOrtho) {
-														GlRenderer.method4182(local556, objId, component.modelZoom, component.aShort11, color, cardMemory);
+														GlRenderer.setupOrthographicProjection(local556, objId, component.modelZoom, component.aShort11, color, cardMemory);
 													} else {
 														GlRenderer.method4148(local556, objId, color, cardMemory);
-														GlRenderer.method4152(component.aShort10, (float) component.aShort11 * 1.5F);
+														GlRenderer.configureDepthAdjustment(component.aShort10, (float) component.aShort11 * 1.5F);
 													}
 													GlRenderer.restoreLighting();
 													GlRenderer.setDepthTestEnabled(true);

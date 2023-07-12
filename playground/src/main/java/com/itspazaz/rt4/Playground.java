@@ -250,7 +250,7 @@ public class Playground extends GameShell {
 			GlRenderer.restoreLighting();
 			float yaw1 = yaw * 360.0F / 6.2831855F;
 			float pitch1 = pitch * 360.0F / 6.2831855F;
-			GlRenderer.method4171(0, 0, GameShell.canvasWidth, GameShell.canvasHeight, GameShell.canvasWidth / 2, GameShell.canvasHeight / 2, yaw1, pitch1, zoom2d, zoom3d);
+			GlRenderer.setupViewTransformations(0, 0, GameShell.canvasWidth, GameShell.canvasHeight, GameShell.canvasWidth / 2, GameShell.canvasHeight / 2, yaw1, pitch1, zoom2d, zoom3d);
 			GlRenderer.setViewportBounds(0, 0, GameShell.canvasWidth, GameShell.canvasHeight);
 			GlRenderer.setDepthTestEnabled(true);
 			GlRenderer.enableDepthMask();
@@ -563,7 +563,7 @@ public class Playground extends GameShell {
 				if (perspectiveChanged) {
 					float yaw1 = yaw * 360.0F / 6.2831855F;
 					float pitch1 = pitch * 360.0F / 6.2831855F;
-					GlRenderer.method4171(0, 0, GameShell.canvasWidth, GameShell.canvasHeight, GameShell.canvasWidth / 2, GameShell.canvasHeight / 2, yaw1, pitch1, zoom2d, zoom2d);
+					GlRenderer.setupViewTransformations(0, 0, GameShell.canvasWidth, GameShell.canvasHeight, GameShell.canvasWidth / 2, GameShell.canvasHeight / 2, yaw1, pitch1, zoom2d, zoom2d);
 					perspectiveChanged = false;
 				}
 

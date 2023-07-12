@@ -439,10 +439,10 @@ public final class Player extends PathingEntity {
 				@Pc(188) float local188 = GlRenderer.method4179();
 				@Pc(190) float local190 = GlRenderer.method4166();
 				GlRenderer.disableDepthMask();
-				GlRenderer.method4152(local188, local190 - 150.0F);
+				GlRenderer.configureDepthAdjustment(local188, local190 - 150.0F);
 				local184.render(0, arg1, arg2, arg3, arg4, arg5, arg6, arg7, -1L, arg9, null);
 				GlRenderer.enableDepthMask();
-				GlRenderer.method4152(local188, local190);
+				GlRenderer.configureDepthAdjustment(local188, local190);
 			} else {
 				local184.render(0, arg1, arg2, arg3, arg4, arg5, arg6, arg7, -1L, arg9, null);
 			}
@@ -567,10 +567,10 @@ public final class Player extends PathingEntity {
 		@Pc(52) float local52 = GlRenderer.method4179();
 		@Pc(54) float local54 = GlRenderer.method4166();
 		GlRenderer.disableDepthMask();
-		GlRenderer.method4152(local52, local54 - 150.0F);
+		GlRenderer.configureDepthAdjustment(local52, local54 - 150.0F);
 		local46.render(0, arg10, arg12, arg9, arg8, arg4, arg13, arg7, -1L, arg5, arg0);
 		GlRenderer.enableDepthMask();
-		GlRenderer.method4152(local52, local54);
+		GlRenderer.configureDepthAdjustment(local52, local54);
 	}
 
 	@OriginalMember(owner = "client!e", name = "a", descriptor = "(B)Z")

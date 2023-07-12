@@ -83,7 +83,7 @@ public final class GlIndexedSprite extends IndexedSprite {
 	@OriginalMember(owner = "client!oh", name = "a", descriptor = "(III)V")
 	@Override
 	public final void method3335(@OriginalArg(0) int arg0, @OriginalArg(1) int arg1, @OriginalArg(2) int arg2) {
-		GlRenderer.method4155();
+		GlRenderer.setupRgbAlphaMode0Rendering();
 		@Pc(5) int local5 = arg0 + this.xOffset;
 		@Pc(10) int local10 = arg1 + this.yOffset;
 		@Pc(12) GL2 gl = GlRenderer.gl;
@@ -108,7 +108,7 @@ public final class GlIndexedSprite extends IndexedSprite {
 	@OriginalMember(owner = "client!oh", name = "a", descriptor = "(II)V")
 	@Override
 	public final void renderTransparent(@OriginalArg(0) int arg0, @OriginalArg(1) int arg1) {
-		GlRenderer.method4149();
+		GlRenderer.setupRgbAlphaMode1Rendering();
 		@Pc(5) int local5 = arg0 + this.xOffset;
 		@Pc(10) int local10 = arg1 + this.yOffset;
 		@Pc(12) GL2 gl = GlRenderer.gl;

@@ -31,10 +31,8 @@ public final class GlRenderer {
 
 	public static int viewportHeight;
 
-
-
 	@OriginalMember(owner = "client!tf", name = "c", descriptor = "F")
-	private static float aFloat30;
+	private static float depthScaleFactor;
 
 	@OriginalMember(owner = "client!tf", name = "e", descriptor = "I")
 	public static int maxTextureUnits;
@@ -43,7 +41,7 @@ public final class GlRenderer {
 	public static boolean bigEndian;
 
 	@OriginalMember(owner = "client!tf", name = "k", descriptor = "F")
-	private static float aFloat32;
+	private static float scaledFarClipDistance;
 
 	@OriginalMember(owner = "client!tf", name = "p", descriptor = "Lgl!javax/media/opengl/GLContext;")
 	private static GLContext context;
@@ -100,22 +98,22 @@ public final class GlRenderer {
 	private static int textureCombineRgbMode = 0;
 
 	@OriginalMember(owner = "client!tf", name = "j", descriptor = "F")
-	private static float aFloat31 = 0.0F;
+	private static float depthAdjustmentFactor = 0.0F;
 
 	@OriginalMember(owner = "client!tf", name = "l", descriptor = "Z")
 	private static boolean lightingEnabled = true;
 
 	@OriginalMember(owner = "client!tf", name = "m", descriptor = "F")
-	private static float aFloat33 = 0.0F;
+	private static float depthAdjustmentParameter = 0.0F;
 
 	@OriginalMember(owner = "client!tf", name = "n", descriptor = "Z")
 	public static boolean normalArrayEnabled = true;
 
 	@OriginalMember(owner = "client!tf", name = "o", descriptor = "Z")
-	private static boolean aBoolean266 = false;
+	private static boolean isOrthoViewConfigured = false;
 
 	@OriginalMember(owner = "client!tf", name = "q", descriptor = "F")
-	private static final float aFloat34 = 0.09765625F;
+	private static final float projectionCoordinateScaleFactor = 0.09765625F;
 
 	@OriginalMember(owner = "client!tf", name = "s", descriptor = "I")
 	private static int textureId = -1;
@@ -146,13 +144,13 @@ public final class GlRenderer {
 
 	@OriginalMember(owner = "client!tf", name = "a", descriptor = "(IIII)V")
 	public static void method4148(@OriginalArg(0) int arg0, @OriginalArg(1) int arg1, @OriginalArg(2) int arg2, @OriginalArg(3) int arg3) {
-		method4171(0, 0, canvasWidth, canvasHeight, arg0, arg1, 0.0F, 0.0F, arg2, arg3);
+		setupViewTransformations(0, 0, canvasWidth, canvasHeight, arg0, arg1, 0.0F, 0.0F, arg2, arg3);
 	}
 
 	@OriginalMember(owner = "client!tf", name = "a", descriptor = "()V")
-	public static void method4149() {
+	public static void setupRgbAlphaMode1Rendering() {
 		MaterialManager.setMaterial(0, 0);
-		method4163();
+		configureOrthographicView();
 		setTextureCombineRgbMode(1);
 		setTextureCombineAlphaMode(1);
 		setLightingEnabled(false);
@@ -162,9 +160,9 @@ public final class GlRenderer {
 	}
 
 	@OriginalMember(owner = "client!tf", name = "c", descriptor = "()V")
-	public static void method4151() {
-		MaterialManager.setMaterial(0, 0); // MaterialManager
-		method4163();
+	public static void setupRgbAlphaMode0Rendering() {
+		MaterialManager.setMaterial(0, 0);
+		configureOrthographicView();
 		setTextureCombineRgbMode(0);
 		setTextureCombineAlphaMode(0);
 		setLightingEnabled(false);
@@ -173,12 +171,11 @@ public final class GlRenderer {
 		resetTextureMatrix();
 	}
 
-	@OriginalMember(owner = "client!tf", name = "e", descriptor = "()V")
-	public static void method4155() {
+	@OriginalMember(owner = "client!tf", name = "i", descriptor = "()V")
+	public static void setupRenderingWithNoTexture() {
 		MaterialManager.setMaterial(0, 0);
-		method4163();
-		setTextureCombineRgbMode(0);
-		setTextureCombineAlphaMode(0);
+		configureOrthographicView();
+		setTextureId(-1);
 		setLightingEnabled(false);
 		setDepthTestEnabled(false);
 		setFogEnabled(false);
@@ -187,21 +184,8 @@ public final class GlRenderer {
 
 	@OriginalMember(owner = "client!tf", name = "a", descriptor = "(F)V")
 	public static void method4159(@OriginalArg(0) float arg0) {
-		method4152(3000.0F, arg0 * 1.5F);
+		configureDepthAdjustment(3000.0F, arg0 * 1.5F);
 	}
-
-	@OriginalMember(owner = "client!tf", name = "i", descriptor = "()V")
-	public static void method4162() {
-		MaterialManager.setMaterial(0, 0);
-		method4163();
-		setTextureId(-1);
-		setLightingEnabled(false);
-		setDepthTestEnabled(false);
-		setFogEnabled(false);
-		resetTextureMatrix();
-	}
-
-
 
 	@OriginalMember(owner = "client!tf", name = "b", descriptor = "()V")
 	public static void resetTextureMatrix() {
@@ -211,29 +195,6 @@ public final class GlRenderer {
 			gl.glMatrixMode(GL2.GL_MODELVIEW);
 			textureMatrixModified = false;
 		}
-	}
-
-
-	@OriginalMember(owner = "client!tf", name = "a", descriptor = "(FF)V")
-	public static void method4152(@OriginalArg(0) float arg0, @OriginalArg(1) float arg1) {
-		if (aBoolean266 || arg0 == aFloat33 && arg1 == aFloat31) {
-			return;
-		}
-		aFloat33 = arg0;
-		aFloat31 = arg1;
-		if (arg1 == 0.0F) {
-			matrix[10] = aFloat30;
-			matrix[14] = aFloat32;
-		} else {
-			@Pc(25) float local25 = arg0 / (arg1 + arg0);
-			@Pc(29) float local29 = local25 * local25;
-			@Pc(42) float local42 = -aFloat32 * (1.0F - local25) * (1.0F - local25) / arg1;
-			matrix[10] = aFloat30 + local42;
-			matrix[14] = aFloat32 * local29;
-		}
-		gl.glMatrixMode(GL2.GL_PROJECTION);
-		gl.glLoadMatrixf(matrix, 0);
-		gl.glMatrixMode(GL2.GL_MODELVIEW);
 	}
 
 	@OriginalMember(owner = "client!tf", name = "d", descriptor = "()V")
@@ -257,10 +218,9 @@ public final class GlRenderer {
 		fogEnabled = enabled;
 	}
 
-
 	@OriginalMember(owner = "client!tf", name = "f", descriptor = "()V")
-	private static void method4156() {
-		aBoolean266 = false;
+	private static void resetOpenGLState() {
+		isOrthoViewConfigured = false;
 		gl.glDisable(GL2.GL_TEXTURE_2D);
 		textureId = -1;
 		gl.glTexEnvi(GL2.GL_TEXTURE_ENV, GL2.GL_TEXTURE_ENV_MODE, GL2.GL_COMBINE);
@@ -316,10 +276,10 @@ public final class GlRenderer {
 	public static void disableDepthMask() { gl.glDepthMask(false); }
 
 	@OriginalMember(owner = "client!tf", name = "r", descriptor = "()F")
-	public static float method4179() { return aFloat33; }
+	public static float method4179() { return depthAdjustmentParameter; }
 
 	@OriginalMember(owner = "client!tf", name = "l", descriptor = "()F")
-	public static float method4166() { return aFloat31; }
+	public static float method4166() { return depthAdjustmentFactor; }
 
 	@OriginalMember(owner = "client!gj", name = "b", descriptor = "(I)V")
 	public static void resetMaterial() {
@@ -342,9 +302,9 @@ public final class GlRenderer {
 
 	@OriginalMember(owner = "client!tf", name = "h", descriptor = "()V")
 	public static void draw() {
-		@Pc(2) int[] local2 = new int[2];
-		gl.glGetIntegerv(GL2.GL_DRAW_BUFFER, local2, 0);
-		gl.glGetIntegerv(GL2.GL_READ_BUFFER, local2, 1);
+		@Pc(2) int[] ints = new int[2];
+		gl.glGetIntegerv(GL2.GL_DRAW_BUFFER, ints, 0);
+		gl.glGetIntegerv(GL2.GL_READ_BUFFER, ints, 1);
 		gl.glDrawBuffer(GL2.GL_BACK_LEFT);
 		gl.glReadBuffer(GL2.GL_FRONT_LEFT);
 		setTextureId(-1);
@@ -356,8 +316,8 @@ public final class GlRenderer {
 		gl.glRasterPos2i(0, 0);
 		gl.glCopyPixels(0, 0, canvasWidth, canvasHeight, GL2.GL_COLOR);
 		gl.glPopAttrib();
-		gl.glDrawBuffer(local2[0]);
-		gl.glReadBuffer(local2[1]);
+		gl.glDrawBuffer(ints[0]);
+		gl.glReadBuffer(ints[1]);
 	}
 
 	@OriginalMember(owner = "client!tf", name = "a", descriptor = "(Ljava/awt/Canvas;)V")
@@ -385,8 +345,8 @@ public final class GlRenderer {
 	}
 
 	@OriginalMember(owner = "client!tf", name = "j", descriptor = "()V")
-	private static void method4163() {
-		if (aBoolean266) {
+	private static void configureOrthographicView() {
+		if (isOrthoViewConfigured) {
 			return;
 		}
 		gl.glMatrixMode(GL2.GL_PROJECTION);		// Switch to the projection matrix so that we can manipulate how our scene is viewed
@@ -395,7 +355,7 @@ public final class GlRenderer {
 		setViewportBounds(0, 0, canvasWidth, canvasHeight);
 		gl.glMatrixMode(GL2.GL_MODELVIEW);		// Switch back to the model view matrix, so that we can start drawing shapes correctly
 		gl.glLoadIdentity();					// Reset the projection matrix to the identity matrix so that we don't get any artifacts (cleaning up)
-		aBoolean266 = true;
+		isOrthoViewConfigured = true;
 	}
 
 	@OriginalMember(owner = "client!tf", name = "c", descriptor = "(Z)V")
@@ -494,8 +454,6 @@ public final class GlRenderer {
 		return 0;
 	}
 
-
-
 	@OriginalMember(owner = "client!tf", name = "o", descriptor = "()V")
 	public static void quit() {
 		if (gl != null) {
@@ -551,29 +509,29 @@ public final class GlRenderer {
 	}
 
 	@OriginalMember(owner = "client!tf", name = "a", descriptor = "(IIIIIIFFII)V")
-	public static void method4171(@OriginalArg(0) int arg0, @OriginalArg(1) int arg1, @OriginalArg(2) int arg2, @OriginalArg(3) int arg3, @OriginalArg(4) int arg4, @OriginalArg(5) int arg5, @OriginalArg(6) float arg6, @OriginalArg(7) float arg7, @OriginalArg(8) int arg8, @OriginalArg(9) int arg9) {
-		@Pc(7) int local7 = (arg0 - arg4 << 8) / arg8;
-		@Pc(17) int local17 = (arg0 + arg2 - arg4 << 8) / arg8;
-		@Pc(25) int local25 = (arg1 - arg5 << 8) / arg9;
-		@Pc(35) int local35 = (arg1 + arg3 - arg5 << 8) / arg9;
+	public static void setupViewTransformations(@OriginalArg(0) int boxX, @OriginalArg(1) int boxY, @OriginalArg(2) int boxWidth, @OriginalArg(3) int boxHeight, @OriginalArg(4) int offsetX, @OriginalArg(5) int offsetY, @OriginalArg(6) float rotationX, @OriginalArg(7) float rotationY, @OriginalArg(8) int scaleX, @OriginalArg(9) int scaleY) {
+		@Pc(7) int scaledBoxStartX = (boxX - offsetX << 8) / scaleX;
+		@Pc(17) int scaledBoxEndX = (boxX + boxWidth - offsetX << 8) / scaleX;
+		@Pc(25) int scaledBoxStartY = (boxY - offsetY << 8) / scaleY;
+		@Pc(35) int scaledBoxEndY = (boxY + boxHeight - offsetY << 8) / scaleY;
 		gl.glMatrixMode(GL2.GL_PROJECTION);
 		gl.glLoadIdentity();
-		method4175((float) local7 * aFloat34, (float) local17 * aFloat34, (float) -local35 * aFloat34, (float) -local25 * aFloat34, 50.0F, (float) GlobalConfig.VIEW_DISTANCE);
-		setViewportBounds(arg0, canvasHeight - arg1 - arg3, arg2, arg3);
+		configureProjectionMatrix((float) scaledBoxStartX * projectionCoordinateScaleFactor, (float) scaledBoxEndX * projectionCoordinateScaleFactor, (float) -scaledBoxEndY * projectionCoordinateScaleFactor, (float) -scaledBoxStartY * projectionCoordinateScaleFactor, 50.0F, (float) GlobalConfig.VIEW_DISTANCE);
+		setViewportBounds(boxX, canvasHeight - boxY - boxHeight, boxWidth, boxHeight);
 		gl.glMatrixMode(GL2.GL_MODELVIEW);
 		gl.glLoadIdentity();
 		gl.glRotatef(180.0F, 1.0F, 0.0F, 0.0F);
-		if (arg6 != 0.0F) {
-			gl.glRotatef(arg6, 1.0F, 0.0F, 0.0F);
+		if (rotationX != 0.0F) {
+			gl.glRotatef(rotationX, 1.0F, 0.0F, 0.0F);
 		}
-		if (arg7 != 0.0F) {
-			gl.glRotatef(arg7, 0.0F, 1.0F, 0.0F);
+		if (rotationY != 0.0F) {
+			gl.glRotatef(rotationY, 0.0F, 1.0F, 0.0F);
 		}
-		aBoolean266 = false;
-		Rasteriser.screenLowerX = local7;
-		Rasteriser.screenUpperX = local17;
-		Rasteriser.screenLowerY = local25;
-		Rasteriser.screenUpperY = local35;
+		isOrthoViewConfigured = false;
+		Rasteriser.screenLowerX = scaledBoxStartX;
+		Rasteriser.screenUpperX = scaledBoxEndX;
+		Rasteriser.screenLowerY = scaledBoxStartY;
+		Rasteriser.screenUpperY = scaledBoxEndY;
 	}
 
 	@OriginalMember(owner = "client!tf", name = "d", descriptor = "(Z)V")
@@ -618,7 +576,7 @@ public final class GlRenderer {
 	}
 
 	@OriginalMember(owner = "client!tf", name = "a", descriptor = "(FFFFFF)V")
-	private static void method4175(@OriginalArg(0) float xMin, @OriginalArg(1) float xMax, @OriginalArg(2) float yMin, @OriginalArg(3) float yMax, @OriginalArg(4) float nearClip, @OriginalArg(5) float farClip) {
+	private static void configureProjectionMatrix(@OriginalArg(0) float xMin, @OriginalArg(1) float xMax, @OriginalArg(2) float yMin, @OriginalArg(3) float yMax, @OriginalArg(4) float nearClip, @OriginalArg(5) float farClip) {
 		float width = xMax - xMin;
 		float height = yMax - yMin;
 
@@ -627,26 +585,48 @@ public final class GlRenderer {
 		hFOV = (float)Math.toDegrees(hFOV);
 		vFOV = (float)Math.toDegrees(vFOV);
 
-		@Pc(3) float local3 = nearClip * 2.0F;
-		matrix[0] = local3 / (xMax - xMin);
+		@Pc(3) float doubleNearClip = nearClip * 2.0F;
+		matrix[0] = doubleNearClip / (xMax - xMin);
 		matrix[1] = 0.0F;
 		matrix[2] = 0.0F;
 		matrix[3] = 0.0F;
 		matrix[4] = 0.0F;
-		matrix[5] = local3 / (yMax - yMin);
+		matrix[5] = doubleNearClip / (yMax - yMin);
 		matrix[6] = 0.0F;
 		matrix[7] = 0.0F;
 		matrix[8] = (xMax + xMin) / (xMax - xMin);
 		matrix[9] = (yMax + yMin) / (yMax - yMin);
-		matrix[10] = aFloat30 = -(farClip + nearClip) / (farClip - nearClip);
+		matrix[10] = depthScaleFactor = -(farClip + nearClip) / (farClip - nearClip);
 		matrix[11] = -1.0F;
 		matrix[12] = 0.0F;
 		matrix[13] = 0.0F;
-		matrix[14] = aFloat32 = -(local3 * farClip) / (farClip - nearClip);
+		matrix[14] = scaledFarClipDistance = -(doubleNearClip * farClip) / (farClip - nearClip);
 		matrix[15] = 0.0F;
 		gl.glLoadMatrixf(matrix, 0);
-		aFloat33 = 0.0F;
-		aFloat31 = 0.0F;
+		depthAdjustmentParameter = 0.0F;
+		depthAdjustmentFactor = 0.0F;
+	}
+
+	@OriginalMember(owner = "client!tf", name = "a", descriptor = "(FF)V")
+	public static void configureDepthAdjustment(@OriginalArg(0) float arg0, @OriginalArg(1) float arg1) {
+		if (isOrthoViewConfigured || arg0 == depthAdjustmentParameter && arg1 == depthAdjustmentFactor) {
+			return;
+		}
+		depthAdjustmentParameter = arg0;
+		depthAdjustmentFactor = arg1;
+		if (arg1 == 0.0F) {
+			matrix[10] = depthScaleFactor;
+			matrix[14] = scaledFarClipDistance;
+		} else {
+			@Pc(25) float depthRatio = arg0 / (arg1 + arg0);
+			@Pc(29) float depthRatioSquared = depthRatio * depthRatio;
+			@Pc(42) float depthAdjustment = -scaledFarClipDistance * (1.0F - depthRatio) * (1.0F - depthRatio) / arg1;
+			matrix[10] = depthScaleFactor + depthAdjustment;
+			matrix[14] = scaledFarClipDistance * depthRatioSquared;
+		}
+		gl.glMatrixMode(GL2.GL_PROJECTION);
+		gl.glLoadMatrixf(matrix, 0);
+		gl.glMatrixMode(GL2.GL_MODELVIEW);
 	}
 
 	@OriginalMember(owner = "client!tf", name = "b", descriptor = "(I)V")
@@ -726,7 +706,7 @@ public final class GlRenderer {
 				return result;
 			}
 			method4184();
-			method4156();
+			resetOpenGLState();
 			gl.glClear(GL2.GL_COLOR_BUFFER_BIT);
 			swapBuffersAttempts = 0;
 			while (true) {
@@ -753,8 +733,9 @@ public final class GlRenderer {
 	public static void setCanvasSize(@OriginalArg(0) int width, @OriginalArg(1) int height) {
 		canvasWidth = width;
 		canvasHeight = height;
-		aBoolean266 = false;
+		isOrthoViewConfigured = false;
 	}
+
 	public static void setViewportBounds(@OriginalArg(0) int x, @OriginalArg(1) int y, @OriginalArg(2) int width, @OriginalArg(3) int height) {
 		leftMargin = x;
 		topMargin = y;
@@ -770,22 +751,22 @@ public final class GlRenderer {
 	}
 
 	@OriginalMember(owner = "client!tf", name = "a", descriptor = "(IIIIII)V")
-	public static void method4182(@OriginalArg(0) int arg0, @OriginalArg(1) int arg1, @OriginalArg(2) int arg2, @OriginalArg(3) int arg3, @OriginalArg(4) int arg4, @OriginalArg(5) int arg5) {
-		@Pc(2) int local2 = -arg0;
-		@Pc(6) int local6 = canvasWidth - arg0;
-		@Pc(9) int local9 = -arg1;
-		@Pc(13) int local13 = canvasHeight - arg1;
+	public static void setupOrthographicProjection(@OriginalArg(0) int xOffset, @OriginalArg(1) int yOffset, @OriginalArg(2) int resolution, @OriginalArg(3) int arg3, @OriginalArg(4) int color, @OriginalArg(5) int cardMemory) {
+		@Pc(2) int negXOffset = -xOffset;
+		@Pc(6) int adjustedCanvasWidth = canvasWidth - xOffset;
+		@Pc(9) int negYOffset = -yOffset;
+		@Pc(13) int adjustedCanvasHeight = canvasHeight - yOffset;
 		gl.glMatrixMode(GL2.GL_PROJECTION);
 		gl.glLoadIdentity();
-		@Pc(23) float local23 = (float) arg2 / 512.0F;
-		@Pc(30) float local30 = local23 * (256.0F / (float) arg4);
-		@Pc(37) float local37 = local23 * (256.0F / (float) arg5);
-		gl.glOrtho((float) local2 * local30, (float) local6 * local30, (float) -local13 * local37, (float) -local9 * local37, 50 - arg3, GlobalConfig.VIEW_DISTANCE - arg3);
+		@Pc(23) float resolutionFactor = (float) resolution / 512.0F;
+		@Pc(30) float colorDepthFactor = resolutionFactor * (256.0F / (float) color);
+		@Pc(37) float memoryFactor = resolutionFactor * (256.0F / (float) cardMemory);
+		gl.glOrtho((float) negXOffset * colorDepthFactor, (float) adjustedCanvasWidth * colorDepthFactor, (float) -adjustedCanvasHeight * memoryFactor, (float) -negYOffset * memoryFactor, 50 - arg3, GlobalConfig.VIEW_DISTANCE - arg3);
 		setViewportBounds(0, 0, canvasWidth, canvasHeight);
 		gl.glMatrixMode(GL2.GL_MODELVIEW);
 		gl.glLoadIdentity();
 		gl.glRotatef(180.0F, 1.0F, 0.0F, 0.0F);
-		aBoolean266 = false;
+		isOrthoViewConfigured = false;
 	}
 
 	@OriginalMember(owner = "client!tf", name = "d", descriptor = "(I)V")
