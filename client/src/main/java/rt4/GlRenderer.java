@@ -23,6 +23,15 @@ public final class GlRenderer {
 	public static float vFOV = 0;
 	public static float hFOV = 0;
 
+	public static int leftMargin;
+
+	public static int topMargin;
+
+	public static int viewportWidth;
+
+	public static int viewportHeight;
+
+
 
 	@OriginalMember(owner = "client!tf", name = "c", descriptor = "F")
 	private static float aFloat30;
@@ -129,10 +138,10 @@ public final class GlRenderer {
 	private static JAWTWindow window;
 
 	@OriginalMember(owner = "client!tf", name = "a", descriptor = "(Ljava/lang/String;)Lclient!na;")
-	private static JagString method4147(@OriginalArg(0) String arg0) {
-		@Pc(3) byte[] local3;
-		local3 = arg0.getBytes(StandardCharsets.ISO_8859_1);
-		return JagString.decodeString(local3, local3.length, 0);
+	private static JagString convertStringToJagString(@OriginalArg(0) String s) {
+		@Pc(3) byte[] bytes;
+		bytes = s.getBytes(StandardCharsets.ISO_8859_1);
+		return JagString.decodeString(bytes, bytes.length, 0);
 	}
 
 	@OriginalMember(owner = "client!tf", name = "a", descriptor = "(IIII)V")
@@ -152,16 +161,6 @@ public final class GlRenderer {
 		resetTextureMatrix();
 	}
 
-	@OriginalMember(owner = "client!tf", name = "b", descriptor = "()V")
-	public static void resetTextureMatrix() {
-		if (textureMatrixModified) {
-			gl.glMatrixMode(GL2.GL_TEXTURE);
-			gl.glLoadIdentity();
-			gl.glMatrixMode(GL2.GL_MODELVIEW);
-			textureMatrixModified = false;
-		}
-	}
-
 	@OriginalMember(owner = "client!tf", name = "c", descriptor = "()V")
 	public static void method4151() {
 		MaterialManager.setMaterial(0, 0); // MaterialManager
@@ -173,6 +172,47 @@ public final class GlRenderer {
 		setFogEnabled(false);
 		resetTextureMatrix();
 	}
+
+	@OriginalMember(owner = "client!tf", name = "e", descriptor = "()V")
+	public static void method4155() {
+		MaterialManager.setMaterial(0, 0);
+		method4163();
+		setTextureCombineRgbMode(0);
+		setTextureCombineAlphaMode(0);
+		setLightingEnabled(false);
+		setDepthTestEnabled(false);
+		setFogEnabled(false);
+		resetTextureMatrix();
+	}
+
+	@OriginalMember(owner = "client!tf", name = "a", descriptor = "(F)V")
+	public static void method4159(@OriginalArg(0) float arg0) {
+		method4152(3000.0F, arg0 * 1.5F);
+	}
+
+	@OriginalMember(owner = "client!tf", name = "i", descriptor = "()V")
+	public static void method4162() {
+		MaterialManager.setMaterial(0, 0);
+		method4163();
+		setTextureId(-1);
+		setLightingEnabled(false);
+		setDepthTestEnabled(false);
+		setFogEnabled(false);
+		resetTextureMatrix();
+	}
+
+
+
+	@OriginalMember(owner = "client!tf", name = "b", descriptor = "()V")
+	public static void resetTextureMatrix() {
+		if (textureMatrixModified) {
+			gl.glMatrixMode(GL2.GL_TEXTURE);
+			gl.glLoadIdentity();
+			gl.glMatrixMode(GL2.GL_MODELVIEW);
+			textureMatrixModified = false;
+		}
+	}
+
 
 	@OriginalMember(owner = "client!tf", name = "a", descriptor = "(FF)V")
 	public static void method4152(@OriginalArg(0) float arg0, @OriginalArg(1) float arg1) {
@@ -217,17 +257,6 @@ public final class GlRenderer {
 		fogEnabled = enabled;
 	}
 
-	@OriginalMember(owner = "client!tf", name = "e", descriptor = "()V")
-	public static void method4155() {
-		MaterialManager.setMaterial(0, 0);
-		method4163();
-		setTextureCombineRgbMode(0);
-		setTextureCombineAlphaMode(0);
-		setLightingEnabled(false);
-		setDepthTestEnabled(false);
-		setFogEnabled(false);
-		resetTextureMatrix();
-	}
 
 	@OriginalMember(owner = "client!tf", name = "f", descriptor = "()V")
 	private static void method4156() {
@@ -278,8 +307,23 @@ public final class GlRenderer {
 	}
 
 	@OriginalMember(owner = "client!tf", name = "g", descriptor = "()V")
-	public static void enableDepthMask() {
-		gl.glDepthMask(true);
+	public static void enableDepthMask() { gl.glDepthMask(true); }
+
+	@OriginalMember(owner = "client!tf", name = "n", descriptor = "()V")
+	public static void clearDepthBuffer() { gl.glClear(GL2.GL_DEPTH_BUFFER_BIT); }
+
+	@OriginalMember(owner = "client!tf", name = "q", descriptor = "()V")
+	public static void disableDepthMask() { gl.glDepthMask(false); }
+
+	@OriginalMember(owner = "client!tf", name = "r", descriptor = "()F")
+	public static float method4179() { return aFloat33; }
+
+	@OriginalMember(owner = "client!tf", name = "l", descriptor = "()F")
+	public static float method4166() { return aFloat31; }
+
+	@OriginalMember(owner = "client!gj", name = "b", descriptor = "(I)V")
+	public static void resetMaterial() {
+		MaterialManager.setMaterial(0, 0);
 	}
 
 	@OriginalMember(owner = "client!tf", name = "b", descriptor = "(Z)V")
@@ -295,10 +339,6 @@ public final class GlRenderer {
 		depthTestEnabled = enabled;
 	}
 
-	@OriginalMember(owner = "client!tf", name = "a", descriptor = "(F)V")
-	public static void method4159(@OriginalArg(0) float arg0) {
-		method4152(3000.0F, arg0 * 1.5F);
-	}
 
 	@OriginalMember(owner = "client!tf", name = "h", descriptor = "()V")
 	public static void draw() {
@@ -344,17 +384,6 @@ public final class GlRenderer {
 		}
 	}
 
-	@OriginalMember(owner = "client!tf", name = "i", descriptor = "()V")
-	public static void method4162() {
-		MaterialManager.setMaterial(0, 0);
-		method4163();
-		setTextureId(-1);
-		setLightingEnabled(false);
-		setDepthTestEnabled(false);
-		setFogEnabled(false);
-		resetTextureMatrix();
-	}
-
 	@OriginalMember(owner = "client!tf", name = "j", descriptor = "()V")
 	private static void method4163() {
 		if (aBoolean266) {
@@ -380,11 +409,6 @@ public final class GlRenderer {
 			gl.glDisable(GL2.GL_LIGHTING);
 		}
 		lightingEnabled = enabled;
-	}
-
-	@OriginalMember(owner = "client!tf", name = "l", descriptor = "()F")
-	public static float method4166() {
-		return aFloat31;
 	}
 
 	@OriginalMember(owner = "client!tf", name = "m", descriptor = "()I")
@@ -440,7 +464,7 @@ public final class GlRenderer {
 		arbTextureCubeMapSupported = gl.isExtensionAvailable("GL_ARB_texture_cube_map");
 		arbVertexProgramSupported = gl.isExtensionAvailable("GL_ARB_vertex_program");
 		extTexture3dSupported = gl.isExtensionAvailable("GL_EXT_texture3D");
-		@Pc(176) JagString renderer = method4147(GlRenderer.renderer).toLowerCase();
+		@Pc(176) JagString renderer = convertStringToJagString(GlRenderer.renderer).toLowerCase();
 		if (renderer.indexOf(RADEON) != -1) {
 			@Pc(184) int v = 0;
 			@Pc(193) JagString[] rendererParts = renderer.replaceSlashWithSpace().split(32);
@@ -470,10 +494,7 @@ public final class GlRenderer {
 		return 0;
 	}
 
-	@OriginalMember(owner = "client!tf", name = "n", descriptor = "()V")
-	public static void clearDepthBuffer() {
-		gl.glClear(GL2.GL_DEPTH_BUFFER_BIT);
-	}
+
 
 	@OriginalMember(owner = "client!tf", name = "o", descriptor = "()V")
 	public static void quit() {
@@ -651,16 +672,6 @@ public final class GlRenderer {
 		textureId = id;
 	}
 
-	@OriginalMember(owner = "client!tf", name = "q", descriptor = "()V")
-	public static void disableDepthMask() {
-		gl.glDepthMask(false);
-	}
-
-	@OriginalMember(owner = "client!tf", name = "r", descriptor = "()F")
-	public static float method4179() {
-		return aFloat33;
-	}
-
 	@OriginalMember(owner = "client!tf", name = "a", descriptor = "(Ljava/awt/Canvas;I)I")
 	public static int init(@OriginalArg(0) Canvas canvas, @OriginalArg(1) int numSamples) {
 		try {
@@ -744,15 +755,6 @@ public final class GlRenderer {
 		canvasHeight = height;
 		aBoolean266 = false;
 	}
-
-	public static int leftMargin;
-
-	public static int topMargin;
-
-	public static int viewportWidth;
-
-	public static int viewportHeight;
-
 	public static void setViewportBounds(@OriginalArg(0) int x, @OriginalArg(1) int y, @OriginalArg(2) int width, @OriginalArg(3) int height) {
 		leftMargin = x;
 		topMargin = y;
@@ -823,8 +825,4 @@ public final class GlRenderer {
 		MaterialManager.init();
 	}
 
-	@OriginalMember(owner = "client!gj", name = "b", descriptor = "(I)V")
-	public static void resetMaterial() {
-		MaterialManager.setMaterial(0, 0);
-	}
 }

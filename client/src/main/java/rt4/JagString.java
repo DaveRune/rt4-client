@@ -205,16 +205,16 @@ public final class JagString implements StringInterface {
 	}
 
 	@OriginalMember(owner = "client!an", name = "a", descriptor = "([BIII)Lclient!na;")
-	public static JagString decodeString(@OriginalArg(0) byte[] arg0, @OriginalArg(2) int arg1, @OriginalArg(3) int arg2) {
-		@Pc(7) JagString local7 = new JagString();
-		local7.chars = new byte[arg1];
-		local7.length = 0;
-		for (@Pc(22) int local22 = arg2; local22 < arg1 + arg2; local22++) {
-			if (arg0[local22] != 0) {
-				local7.chars[local7.length++] = arg0[local22];
+	public static JagString decodeString(@OriginalArg(0) byte[] inputBytes, @OriginalArg(2) int targetLength, @OriginalArg(3) int startIndex) {
+		@Pc(7) JagString jagString = new JagString();
+		jagString.chars = new byte[targetLength];
+		jagString.length = 0;
+		for (@Pc(22) int i = startIndex; i < targetLength + startIndex; i++) {
+			if (inputBytes[i] != 0) {
+				jagString.chars[jagString.length++] = inputBytes[i];
 			}
 		}
-		return local7;
+		return jagString;
 	}
 
 	@OriginalMember(owner = "client!bg", name = "d", descriptor = "(II)Z")
