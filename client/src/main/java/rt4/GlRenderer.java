@@ -182,11 +182,6 @@ public final class GlRenderer {
 		resetTextureMatrix();
 	}
 
-	@OriginalMember(owner = "client!tf", name = "a", descriptor = "(F)V")
-	public static void method4159(@OriginalArg(0) float arg0) {
-		configureDepthAdjustment(3000.0F, arg0 * 1.5F);
-	}
-
 	@OriginalMember(owner = "client!tf", name = "b", descriptor = "()V")
 	public static void resetTextureMatrix() {
 		if (textureMatrixModified) {
@@ -263,7 +258,7 @@ public final class GlRenderer {
 		gl.glMatrixMode(GL2.GL_MODELVIEW);
 		gl.glLoadIdentity();
 		FogManager.setup();
-		LightingManager.method2400();
+		LightingManager.resetLightingState();
 	}
 
 	@OriginalMember(owner = "client!tf", name = "g", descriptor = "()V")
@@ -298,7 +293,6 @@ public final class GlRenderer {
 		}
 		depthTestEnabled = enabled;
 	}
-
 
 	@OriginalMember(owner = "client!tf", name = "h", descriptor = "()V")
 	public static void draw() {
@@ -493,7 +487,7 @@ public final class GlRenderer {
 		gl = null;
 		context = null;
 		drawable = null;
-		LightingManager.method2398(); // LightingManager
+		LightingManager.releaseLighting();
 		enabled = false;
 	}
 
@@ -605,6 +599,11 @@ public final class GlRenderer {
 		gl.glLoadMatrixf(matrix, 0);
 		depthAdjustmentParameter = 0.0F;
 		depthAdjustmentFactor = 0.0F;
+	}
+
+	@OriginalMember(owner = "client!tf", name = "a", descriptor = "(F)V")
+	public static void configureFixedDepthAdjustment(@OriginalArg(0) float multiplier) {
+		configureDepthAdjustment(3000.0F, multiplier * 1.5F);
 	}
 
 	@OriginalMember(owner = "client!tf", name = "a", descriptor = "(FF)V")
@@ -802,7 +801,7 @@ public final class GlRenderer {
 		anInt5328 = local2[0];
 		gl.glBindTexture(GL2.GL_TEXTURE_2D, anInt5328);
 		gl.glTexImage2D(GL2.GL_TEXTURE_2D, 0, 4, 1, 1, 0, GL2.GL_RGBA, GL2.GL_UNSIGNED_BYTE, IntBuffer.wrap(new int[]{-1}));
-		LightingManager.method2401();
+		LightingManager.init();
 		MaterialManager.init();
 	}
 

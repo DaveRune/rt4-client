@@ -351,7 +351,7 @@ public final class GlTile extends Node {
 			}
 			aByteBuffer5.put(aClass3_Sub15_3.data, 0, aClass3_Sub15_3.offset);
 			aByteBuffer5.flip();
-			GlRenderer.method4159(arg1);
+			GlRenderer.configureFixedDepthAdjustment(arg1);
 			gl.glDrawElements(GL2.GL_TRIANGLES, aClass3_Sub15_3.offset / 4, GL2.GL_UNSIGNED_INT, aByteBuffer5);
 		}
 		if (aClass3_Sub15_2.offset == 0) {
@@ -364,7 +364,7 @@ public final class GlTile extends Node {
 		}
 		aByteBuffer4.put(aClass3_Sub15_2.data, 0, aClass3_Sub15_2.offset);
 		aByteBuffer4.flip();
-		GlRenderer.method4159(arg1 - 100.0F);
+		GlRenderer.configureFixedDepthAdjustment(arg1 - 100.0F);
 		GlRenderer.disableDepthMask();
 		gl.glDrawElements(GL2.GL_TRIANGLES, aClass3_Sub15_2.offset / 4, GL2.GL_UNSIGNED_INT, aByteBuffer4);
 		GlRenderer.enableDepthMask();

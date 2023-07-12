@@ -1693,10 +1693,10 @@ public class SceneGraph {
 													local115 = surfaceTileHeights[0][local18][local21] + surfaceTileHeights[0][local18 + 1][local21] + surfaceTileHeights[0][local18][local21 + 1] + surfaceTileHeights[0][local18 + 1][local21 + 1] >> 2;
 													MaterialManager.setMaterial(-local115, 3);
 													local33 = 201.5F;
-													GlRenderer.method4159(local33);
+													GlRenderer.configureFixedDepthAdjustment(local33);
 												} else {
 													local33 = 201.5F - (float) (local27 + 1) * 50.0F;
-													GlRenderer.method4159(local33);
+													GlRenderer.configureFixedDepthAdjustment(local33);
 												}
 											}
 											if (!local8.aBoolean45) {
@@ -1740,7 +1740,7 @@ public class SceneGraph {
 											if (local8.aClass3_Sub5_1 != null) {
 												local153 = local8.aClass3_Sub5_1;
 												if (GlRenderer.enabled) {
-													GlRenderer.method4159(201.5F - (float) (local153.anInt668 + 1) * 50.0F);
+													GlRenderer.configureFixedDepthAdjustment(201.5F - (float) (local153.anInt668 + 1) * 50.0F);
 												}
 												if (local153.plainTile == null) {
 													if (local153.shapedTile != null) {
@@ -1769,7 +1769,7 @@ public class SceneGraph {
 													}
 												}
 												if (GlRenderer.enabled) {
-													GlRenderer.method4159(local33);
+													GlRenderer.configureFixedDepthAdjustment(local33);
 												}
 											}
 											var24 = false;
@@ -1794,14 +1794,14 @@ public class SceneGraph {
 												@Pc(549) GroundDecor local549 = local8.groundDecor;
 												if (local549 != null && (local549.key & 0x80000000L) != 0L) {
 													if (GlRenderer.enabled && local549.aBoolean49) {
-														GlRenderer.method4159(local33 + 50.0F - 1.5F);
+														GlRenderer.configureFixedDepthAdjustment(local33 + 50.0F - 1.5F);
 													}
 													if (GlRenderer.enabled) {
 														LightingManager.method2393(cameraX, cameraY, cameraZ, local24, local18, local21);
 													}
 													local549.entity.render(0, anInt2886, anInt3038, anInt5205, anInt2222, local549.xFine - cameraX, local549.anInt733 - cameraY, local549.zFine - cameraZ, local549.key, local24, null);
 													if (GlRenderer.enabled && local549.aBoolean49) {
-														GlRenderer.method4159(local33);
+														GlRenderer.configureFixedDepthAdjustment(local33);
 													}
 												}
 											}
@@ -1858,7 +1858,7 @@ public class SceneGraph {
 											}
 											if (local619 != null && !method4611(local27, local18, local21, local619.primary.getMinY())) {
 												if (GlRenderer.enabled) {
-													GlRenderer.method4159(local33 - 0.5F);
+													GlRenderer.configureFixedDepthAdjustment(local33 - 0.5F);
 												}
 												if ((local619.anInt1395 & local65) != 0) {
 													if (GlRenderer.enabled) {
@@ -1894,21 +1894,21 @@ public class SceneGraph {
 													}
 												}
 												if (GlRenderer.enabled) {
-													GlRenderer.method4159(local33);
+													GlRenderer.configureFixedDepthAdjustment(local33);
 												}
 											}
 											if (var24) {
 												@Pc(1001) GroundDecor local1001 = local8.groundDecor;
 												if (local1001 != null && (local1001.key & 0x80000000L) == 0L) {
 													if (GlRenderer.enabled && local1001.aBoolean49) {
-														GlRenderer.method4159(local33 + 50.0F - 1.5F);
+														GlRenderer.configureFixedDepthAdjustment(local33 + 50.0F - 1.5F);
 													}
 													if (GlRenderer.enabled) {
 														LightingManager.method2393(cameraX, cameraY, cameraZ, local24, local18, local21);
 													}
 													local1001.entity.render(0, anInt2886, anInt3038, anInt5205, anInt2222, local1001.xFine - cameraX, local1001.anInt733 - cameraY, local1001.zFine - cameraZ, local1001.key, local24, null);
 													if (GlRenderer.enabled && local1001.aBoolean49) {
-														GlRenderer.method4159(local33);
+														GlRenderer.configureFixedDepthAdjustment(local33);
 													}
 												}
 												@Pc(1064) ObjStackEntity local1064 = local8.objStack;
@@ -3078,7 +3078,7 @@ public class SceneGraph {
 						local336.method1944(tiles, local350, false);
 					}
 					if (local32 == 0 && Preferences.sceneryShadowsType > 0) {
-						GlRenderer.method4159(101.5F);
+						GlRenderer.configureFixedDepthAdjustment(101.5F);
 						ShadowManager.method4198(anInt4069, anInt4539, visibility, arg1, aBooleanArrayArray1, tileHeights[0]);
 					}
 					local32++;
@@ -5257,19 +5257,19 @@ public class SceneGraph {
 					break label270;
 				} while (local515 <= 0);
 				for (local243 = 0; local243 < local515; local243++) {
-					@Pc(529) Light local529 = new Light(local95);
-					if (local529.anInt2243 == 31) {
+					@Pc(529) Light light = new Light(local95);
+					if (light.anInt2243 == 31) {
 						@Pc(541) LightType local541 = LightTypeList.get(local95.g2());
-						local529.method1762(local541.anInt2865, local541.anInt2873, local541.anInt2867, local541.anInt2872);
+						light.method1762(local541.anInt2865, local541.anInt2873, local541.anInt2867, local541.anInt2872);
 					}
-					local529.z += arg3 << 7;
-					local529.x += arg4 << 7;
-					local194 = local529.z >> 7;
-					local190 = local529.x >> 7;
+					light.z += arg3 << 7;
+					light.x += arg4 << 7;
+					local194 = light.z >> 7;
+					local190 = light.x >> 7;
 					if (local190 >= 0 && local194 >= 0 && local190 < 104 && local194 < 104) {
-						local529.aBoolean125 = (renderFlags[1][local190][local194] & 0x2) != 0;
-						local529.y = tileHeights[local529.level][local190][local194] - local529.y;
-						LightingManager.method2389(local529);
+						light.aBoolean125 = (renderFlags[1][local190][local194] & 0x2) != 0;
+						light.y = tileHeights[light.level][local190][local194] - light.y;
+						LightingManager.addLight(light);
 					}
 				}
 			}
@@ -5435,7 +5435,7 @@ public class SceneGraph {
 						if (local417 >= 0 && local255 >= 0 && local417 < 104 && local255 < 104) {
 							local517.aBoolean125 = (renderFlags[1][local417][local255] & 0x2) != 0;
 							local517.y = tileHeights[local517.level][local417][local255] - local517.y;
-							LightingManager.method2389(local517);
+							LightingManager.addLight(local517);
 						}
 					}
 				}

@@ -88,48 +88,6 @@ public class MaterialManager {
 		method2808();
 	}
 
-	@OriginalMember(owner = "client!te", name = "e", descriptor = "(I)V")
-	public static void init() {
-		method2809();
-		renderers = new MaterialRenderer[7];
-		renderers[1] = new SpecularMaterialRenderer();
-		renderers[2] = new LiquidMaterialRenderer();
-		renderers[3] = new UnderwaterMaterialRenderer();
-		renderers[4] = new WaterMaterialRenderer();
-		renderers[5] = new WaterfallMaterialRenderer();
-		renderers[6] = new UnlitMaterialRenderer();
-	}
-
-	@OriginalMember(owner = "client!ld", name = "a", descriptor = "(IIIIZI)V")
-	public static void method2731(@OriginalArg(0) int arg0, @OriginalArg(1) int arg1, @OriginalArg(2) int arg2, @OriginalArg(3) int arg3, @OriginalArg(5) int arg4) {
-		anInt5158 = arg1;
-		anInt1815 = arg4;
-		anInt5559 = arg0;
-		anInt406 = arg3;
-		anInt4675 = arg2;
-	}
-
-	@OriginalMember(owner = "client!lm", name = "a", descriptor = "()V")
-	public static void method2807() {
-		@Pc(11) byte[] local11;
-		if (textureBuffer == null) {
-			@Pc(5) MaterialManager_Class106_Sub1_Sub1 local5 = new MaterialManager_Class106_Sub1_Sub1();
-			local11 = local5.method3215();
-			textureBuffer = ByteBuffer.allocateDirect(local11.length);
-			textureBuffer.position(0);
-			textureBuffer.put(local11);
-			textureBuffer.flip();
-		}
-		if (aByteBuffer6 == null) {
-			@Pc(32) MaterialManager_Class106_Sub2_Sub1 local32 = new MaterialManager_Class106_Sub2_Sub1();
-			local11 = local32.method3854();
-			aByteBuffer6 = ByteBuffer.allocateDirect(local11.length);
-			aByteBuffer6.position(0);
-			aByteBuffer6.put(local11);
-			aByteBuffer6.flip();
-		}
-	}
-
 	@OriginalMember(owner = "client!lm", name = "b", descriptor = "()V")
 	public static void method2808() {
 		@Pc(4) GL2 gl;
@@ -162,12 +120,54 @@ public class MaterialManager {
 		}
 	}
 
+	@OriginalMember(owner = "client!te", name = "e", descriptor = "(I)V")
+	public static void init() {
+		method2809();
+		renderers = new MaterialRenderer[7];
+		renderers[1] = new SpecularMaterialRenderer();
+		renderers[2] = new LiquidMaterialRenderer();
+		renderers[3] = new UnderwaterMaterialRenderer();
+		renderers[4] = new WaterMaterialRenderer();
+		renderers[5] = new WaterfallMaterialRenderer();
+		renderers[6] = new UnlitMaterialRenderer();
+	}
+
 	@OriginalMember(owner = "client!lm", name = "c", descriptor = "()V")
 	public static void method2809() {
 		allows3DTextureMapping = GlRenderer.extTexture3dSupported;
 		method2807();
 		method2811();
 		method2812();
+	}
+
+	@OriginalMember(owner = "client!ld", name = "a", descriptor = "(IIIIZI)V")
+	public static void method2731(@OriginalArg(0) int arg0, @OriginalArg(1) int arg1, @OriginalArg(2) int arg2, @OriginalArg(3) int arg3, @OriginalArg(5) int arg4) {
+		anInt5158 = arg1;
+		anInt1815 = arg4;
+		anInt5559 = arg0;
+		anInt406 = arg3;
+		anInt4675 = arg2;
+	}
+
+	@OriginalMember(owner = "client!lm", name = "a", descriptor = "()V")
+	public static void method2807() {
+		@Pc(11) byte[] local11;
+		if (textureBuffer == null) {
+			@Pc(5) MaterialManager_Class106_Sub1_Sub1 local5 = new MaterialManager_Class106_Sub1_Sub1();
+			local11 = local5.method3215();
+			textureBuffer = ByteBuffer.allocateDirect(local11.length);
+			textureBuffer.position(0);
+			textureBuffer.put(local11);
+			textureBuffer.flip();
+		}
+		if (aByteBuffer6 == null) {
+			@Pc(32) MaterialManager_Class106_Sub2_Sub1 local32 = new MaterialManager_Class106_Sub2_Sub1();
+			local11 = local32.method3854();
+			aByteBuffer6 = ByteBuffer.allocateDirect(local11.length);
+			aByteBuffer6.position(0);
+			aByteBuffer6.put(local11);
+			aByteBuffer6.flip();
+		}
 	}
 
 	@OriginalMember(owner = "client!lm", name = "e", descriptor = "()V")

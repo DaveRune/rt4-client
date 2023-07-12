@@ -50,7 +50,7 @@ public final class Light {
 	private int anInt2246;
 
 	@OriginalMember(owner = "client!gi", name = "z", descriptor = "F")
-	public float aFloat9;
+	public float attenuation;
 
 	@OriginalMember(owner = "client!gi", name = "A", descriptor = "Z")
 	public final boolean aBoolean126;
@@ -130,7 +130,7 @@ public final class Light {
 	@OriginalMember(owner = "client!gi", name = "a", descriptor = "(I)V")
 	private void method1763() {
 		@Pc(10) int local10 = (this.radius << 7) + 64;
-		this.aFloat9 = 1.0F / (float) (local10 * local10);
+		this.attenuation = 1.0F / (float) (local10 * local10);
 	}
 
 	@OriginalMember(owner = "client!gi", name = "a", descriptor = "(ZII)V")

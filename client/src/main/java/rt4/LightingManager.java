@@ -5,9 +5,12 @@ import org.openrs2.deob.annotation.OriginalArg;
 import org.openrs2.deob.annotation.OriginalMember;
 import org.openrs2.deob.annotation.Pc;
 
+import static com.jogamp.opengl.fixedfunc.GLLightingFunc.GL_LIGHT0;
+import static com.jogamp.opengl.fixedfunc.GLLightingFunc.GL_LIGHT4;
+
 public class LightingManager {
 	@OriginalMember(owner = "client!jf", name = "b", descriptor = "[F")
-	private static final float[] aFloatArray17 = new float[]{0.0F, 0.0F, 0.0F, 1.0F};
+	private static final float[] lightPosition = new float[]{0.0F, 0.0F, 0.0F, 1.0F};
 	@OriginalMember(owner = "client!jf", name = "l", descriptor = "I")
 	public static int lightCount = 0;
 	@OriginalMember(owner = "client!jf", name = "a", descriptor = "[Lclient!gi;")
@@ -31,13 +34,13 @@ public class LightingManager {
 	@OriginalMember(owner = "client!jf", name = "f", descriptor = "[Z")
 	private static boolean[] enabledLights;
 	@OriginalMember(owner = "client!jf", name = "g", descriptor = "[[[I")
-	private static int[][][] anIntArrayArrayArray11;
+	private static int[][][] lightingGraph;
 	@OriginalMember(owner = "client!jf", name = "h", descriptor = "[I")
 	private static int[] anIntArray284;
 	@OriginalMember(owner = "client!jf", name = "i", descriptor = "I")
 	private static int anInt3031;
 	@OriginalMember(owner = "client!jf", name = "j", descriptor = "I")
-	private static int anInt3032;
+	private static int planeMax;
 	@OriginalMember(owner = "client!jf", name = "k", descriptor = "I")
 	private static int anInt3033;
 	@OriginalMember(owner = "client!jf", name = "m", descriptor = "[Z")
@@ -45,9 +48,9 @@ public class LightingManager {
 	@OriginalMember(owner = "client!jf", name = "n", descriptor = "I")
 	private static int anInt3035;
 	@OriginalMember(owner = "client!jf", name = "o", descriptor = "I")
-	private static int length;
+	private static int zMax;
 	@OriginalMember(owner = "client!jf", name = "p", descriptor = "I")
-	private static int width;
+	private static int xMax;
 
 	@OriginalMember(owner = "client!jf", name = "a", descriptor = "(IIIIIII)V")
 	public static void method2388(@OriginalArg(0) int arg0, @OriginalArg(1) int arg1, @OriginalArg(2) int arg2, @OriginalArg(3) int arg3, @OriginalArg(4) int arg4, @OriginalArg(5) int arg5, @OriginalArg(6) int arg6) {
@@ -56,37 +59,37 @@ public class LightingManager {
 		}
 		if (arg0 == 1 && arg5 > 0) {
 			method2393(arg1, arg2, arg3, arg4, arg5 - 1, arg6);
-		} else if (arg0 == 4 && arg5 < width - 1) {
+		} else if (arg0 == 4 && arg5 < xMax - 1) {
 			method2393(arg1, arg2, arg3, arg4, arg5 + 1, arg6);
 		} else if (arg0 == 8 && arg6 > 0) {
 			method2393(arg1, arg2, arg3, arg4, arg5, arg6 - 1);
-		} else if (arg0 == 2 && arg6 < length - 1) {
+		} else if (arg0 == 2 && arg6 < zMax - 1) {
 			method2393(arg1, arg2, arg3, arg4, arg5, arg6 + 1);
-		} else if (arg0 == 16 && arg5 > 0 && arg6 < length - 1) {
+		} else if (arg0 == 16 && arg5 > 0 && arg6 < zMax - 1) {
 			method2393(arg1, arg2, arg3, arg4, arg5 - 1, arg6 + 1);
-		} else if (arg0 == 32 && arg5 < width - 1 && arg6 < length - 1) {
+		} else if (arg0 == 32 && arg5 < xMax - 1 && arg6 < zMax - 1) {
 			method2393(arg1, arg2, arg3, arg4, arg5 + 1, arg6 + 1);
 		} else if (arg0 == 128 && arg5 > 0 && arg6 > 0) {
 			method2393(arg1, arg2, arg3, arg4, arg5 - 1, arg6 - 1);
-		} else if (arg0 == 64 && arg5 < width - 1 && arg6 > 0) {
+		} else if (arg0 == 64 && arg5 < xMax - 1 && arg6 > 0) {
 			method2393(arg1, arg2, arg3, arg4, arg5 + 1, arg6 - 1);
 		}
 	}
 
 	@OriginalMember(owner = "client!jf", name = "a", descriptor = "(Lclient!gi;)V")
-	public static void method2389(@OriginalArg(0) Light arg0) {
+	public static void addLight(@OriginalArg(0) Light light) {
 		if (lightCount >= 255) {
 			System.out.println("Number of lights added exceeds maximum!");
 		} else {
-			lights[lightCount++] = arg0;
+			lights[lightCount++] = light;
 		}
 	}
 
 	@OriginalMember(owner = "client!jf", name = "a", descriptor = "()V")
 	public static void method2390() {
-		for (@Pc(1) int local1 = 0; local1 < 4; local1++) {
-			anIntArray284[local1] = -1;
-			disableLight(local1);
+		for (@Pc(1) int lightIndex = 0; lightIndex < 4; lightIndex++) {
+			anIntArray284[lightIndex] = -1;
+			disableLight(lightIndex);
 		}
 	}
 
@@ -107,7 +110,7 @@ public class LightingManager {
 		for (local35 = arg4; local35 <= arg6; local35++) {
 			label110:
 			for (local40 = arg5; local40 <= arg7; local40++) {
-				@Pc(51) int local51 = anIntArrayArrayArray11[arg3][local35][local40];
+				@Pc(51) int local51 = lightingGraph[arg3][local35][local40];
 				while (true) {
 					while (true) {
 						label96:
@@ -170,10 +173,10 @@ public class LightingManager {
 
 	@OriginalMember(owner = "client!jf", name = "a", descriptor = "(III)V")
 	public static void method2392() {
-		anInt3032 = 4;
-		width = 104;
-		length = 104;
-		anIntArrayArrayArray11 = new int[anInt3032][width][length];
+		planeMax = 4;
+		xMax = 104;
+		zMax = 104;
+		lightingGraph = new int[planeMax][xMax][zMax];
 	}
 
 	@OriginalMember(owner = "client!jf", name = "a", descriptor = "(IIIIII)V")
@@ -186,7 +189,7 @@ public class LightingManager {
 			aBooleanArray66[local20] = false;
 		}
 		local20 = 0;
-		@Pc(39) int local39 = anIntArrayArrayArray11[arg3][arg4][arg5];
+		@Pc(39) int local39 = lightingGraph[arg3][arg4][arg5];
 		while (true) {
 			@Pc(47) int local47;
 			@Pc(53) int local53;
@@ -229,8 +232,8 @@ public class LightingManager {
 
 	@OriginalMember(owner = "client!jf", name = "a", descriptor = "(IZ)V")
 	public static void method2394(@OriginalArg(0) int arg0, @OriginalArg(1) boolean arg1) {
-		for (@Pc(1) int local1 = 0; local1 < lightCount; local1++) {
-			lights[local1].method1765(arg1, arg0);
+		for (@Pc(1) int i = 0; i < lightCount; i++) {
+			lights[i].method1765(arg1, arg0);
 		}
 		anInt3031 = -1;
 		anInt3033 = -1;
@@ -259,8 +262,8 @@ public class LightingManager {
 					local39 = 0;
 				}
 				@Pc(55) int local55 = (local8.z >> 7) + local8.radius;
-				if (local55 > length - 1) {
-					local55 = length - 1;
+				if (local55 > zMax - 1) {
+					local55 = zMax - 1;
 				}
 				for (@Pc(66) int local66 = local39; local66 <= local55; local66++) {
 					@Pc(75) short local75 = local8.aShortArray30[local31++];
@@ -269,19 +272,19 @@ public class LightingManager {
 					if (local87 < 0) {
 						local87 = 0;
 					}
-					if (local95 > width - 1) {
-						local95 = width - 1;
+					if (local95 > xMax - 1) {
+						local95 = xMax - 1;
 					}
 					for (@Pc(110) int local110 = local87; local110 <= local95; local110++) {
-						@Pc(121) int local121 = anIntArrayArrayArray11[local26][local110][local66];
+						@Pc(121) int local121 = lightingGraph[local26][local110][local66];
 						if ((local121 & 0xFF) == 0) {
-							anIntArrayArrayArray11[local26][local110][local66] = local121 | local1 + 1;
+							lightingGraph[local26][local110][local66] = local121 | local1 + 1;
 						} else if ((local121 & 0xFF00) == 0) {
-							anIntArrayArrayArray11[local26][local110][local66] = local121 | local1 + 1 << 8;
+							lightingGraph[local26][local110][local66] = local121 | local1 + 1 << 8;
 						} else if ((local121 & 0xFF0000) == 0) {
-							anIntArrayArrayArray11[local26][local110][local66] = local121 | local1 + 1 << 16;
+							lightingGraph[local26][local110][local66] = local121 | local1 + 1 << 16;
 						} else if ((local121 & 0xFF000000) == 0) {
-							anIntArrayArrayArray11[local26][local110][local66] = local121 | local1 + 1 << 24;
+							lightingGraph[local26][local110][local66] = local121 | local1 + 1 << 24;
 						}
 					}
 				}
@@ -293,7 +296,7 @@ public class LightingManager {
 	private static void disableLight(@OriginalArg(0) int i) {
 		if (enabledLights[i]) {
 			enabledLights[i] = false;
-			@Pc(14) int light = i + 16384 + 4;
+			@Pc(14) int light = i + GL_LIGHT4;
 			@Pc(16) GL2 gl = GlRenderer.gl;
 			gl.glDisable(light);
 		}
@@ -307,7 +310,7 @@ public class LightingManager {
 		label43:
 		for (@Pc(4) int local4 = 0; local4 < 4; local4++) {
 			if (anIntArray284[local4] != -1) {
-				@Pc(20) int local20 = anIntArrayArrayArray11[arg0][arg1][arg2];
+				@Pc(20) int local20 = lightingGraph[arg0][arg1][arg2];
 				@Pc(28) int local28;
 				while (local20 != 0) {
 					local28 = (local20 & 0xFF) - 1;
@@ -316,7 +319,7 @@ public class LightingManager {
 						continue label43;
 					}
 				}
-				local20 = anIntArrayArrayArray11[arg0][arg3][arg4];
+				local20 = lightingGraph[arg0][arg3][arg4];
 				while (local20 != 0) {
 					local28 = (local20 & 0xFF) - 1;
 					local20 >>>= 0x8;
@@ -329,41 +332,39 @@ public class LightingManager {
 			disableLight(local4);
 		}
 	}
-
-	@OriginalMember(owner = "client!jf", name = "c", descriptor = "()V")
-	public static void method2398() {
-		lights = null;
-		anIntArray284 = null;
-		enabledLights = null;
-		anIntArray283 = null;
-		aBooleanArray66 = null;
-		anIntArrayArrayArray11 = null;
-	}
-
-	@OriginalMember(owner = "client!jf", name = "e", descriptor = "()V")
-	public static void method2400() {
-		@Pc(1) GL2 gl = GlRenderer.gl;
-		@Pc(3) int local3;
-		for (local3 = 0; local3 < 4; local3++) {
-			@Pc(10) int local10 = local3 + 16388;
-			gl.glLightfv(local10, GL2.GL_AMBIENT, new float[]{0.0F, 0.0F, 0.0F, 1.0F}, 0);
-			gl.glLightf(local10, GL2.GL_LINEAR_ATTENUATION, 0.0F);
-			gl.glLightf(local10, GL2.GL_CONSTANT_ATTENUATION, 0.0F);
-		}
-		for (local3 = 0; local3 < 4; local3++) {
-			anIntArray284[local3] = -1;
-			disableLight(local3);
-		}
-	}
-
 	@OriginalMember(owner = "client!jf", name = "f", descriptor = "()V")
-	public static void method2401() {
+	public static void init() {
 		lights = new Light[255];
 		anIntArray284 = new int[4];
 		enabledLights = new boolean[4];
 		anIntArray283 = new int[4];
 		aBooleanArray66 = new boolean[4];
-		anIntArrayArrayArray11 = new int[anInt3032][width][length];
+		lightingGraph = new int[planeMax][xMax][zMax];
+	}
+	@OriginalMember(owner = "client!jf", name = "c", descriptor = "()V")
+	public static void releaseLighting() {
+		lights = null;
+		anIntArray284 = null;
+		enabledLights = null;
+		anIntArray283 = null;
+		aBooleanArray66 = null;
+		lightingGraph = null;
+	}
+
+	@OriginalMember(owner = "client!jf", name = "e", descriptor = "()V")
+	public static void resetLightingState() {
+		@Pc(1) GL2 gl = GlRenderer.gl;
+		@Pc(3) int lightIndex;
+		for (lightIndex = 0; lightIndex < 4; lightIndex++) {
+			@Pc(10) int glLightIndex = lightIndex + GL_LIGHT0; // Constant from OpenGL for lighting
+			gl.glLightfv(glLightIndex, GL2.GL_AMBIENT, new float[]{0.0F, 0.0F, 0.0F, 1.0F}, 0);
+			gl.glLightf(glLightIndex, GL2.GL_LINEAR_ATTENUATION, 0.0F);
+			gl.glLightf(glLightIndex, GL2.GL_CONSTANT_ATTENUATION, 0.0F);
+		}
+		for (lightIndex = 0; lightIndex < 4; lightIndex++) {
+			anIntArray284[lightIndex] = -1;
+			disableLight(lightIndex);
+		}
 	}
 
 	@OriginalMember(owner = "client!jf", name = "a", descriptor = "(II[[[Lclient!bj;)V")
@@ -416,7 +417,7 @@ public class LightingManager {
 							local160 = arg2[local66][local155][local112];
 						}
 						if (local66 < 0 || local160 != null && local160.aBoolean45) {
-							GlRenderer.method4159(201.5F - (float) local63.level * 50.0F - 1.5F);
+							GlRenderer.configureFixedDepthAdjustment(201.5F - (float) local63.level * 50.0F - 1.5F);
 							gl.glTexEnvfv(GL2.GL_TEXTURE_ENV, GL2.GL_TEXTURE_ENV_COLOR, new float[]{0.0F, 0.0F, 0.0F, local63.alpha}, 0);
 							local63.aClass45_1.method1556();
 							continue label71;
@@ -435,28 +436,28 @@ public class LightingManager {
 	}
 
 	@OriginalMember(owner = "client!jf", name = "a", descriptor = "(ILclient!gi;III)V")
-	private static void method2403(@OriginalArg(0) int arg0, @OriginalArg(1) Light arg1, @OriginalArg(2) int arg2, @OriginalArg(3) int arg3, @OriginalArg(4) int arg4) {
-		@Pc(5) int local5 = arg0 + 16384 + 4;
+	private static void method2403(@OriginalArg(0) int lightIndex, @OriginalArg(1) Light light, @OriginalArg(2) int arg2, @OriginalArg(3) int arg3, @OriginalArg(4) int arg4) {
+		@Pc(5) int glLight = lightIndex + GL_LIGHT4;
 		@Pc(7) GL2 gl = GlRenderer.gl;
-		if (!enabledLights[arg0]) {
-			gl.glEnable(local5);
-			enabledLights[arg0] = true;
+		if (!enabledLights[lightIndex]) {
+			gl.glEnable(glLight);
+			enabledLights[lightIndex] = true;
 		}
-		gl.glLightf(local5, GL2.GL_QUADRATIC_ATTENUATION, arg1.aFloat9);
-		gl.glLightfv(local5, GL2.GL_DIFFUSE, arg1.diffuse, 0);
-		aFloatArray17[0] = arg1.x - arg2;
-		aFloatArray17[1] = arg1.y - arg3;
-		aFloatArray17[2] = arg1.z - arg4;
-		gl.glLightfv(local5, GL2.GL_POSITION, aFloatArray17, 0);
+		gl.glLightf(glLight, GL2.GL_QUADRATIC_ATTENUATION, light.attenuation);
+		gl.glLightfv(glLight, GL2.GL_DIFFUSE, light.diffuse, 0);
+		lightPosition[0] = light.x - arg2;
+		lightPosition[1] = light.y - arg3;
+		lightPosition[2] = light.z - arg4;
+		gl.glLightfv(glLight, GL2.GL_POSITION, lightPosition, 0);
 	}
 
 	@OriginalMember(owner = "client!jf", name = "g", descriptor = "()V")
-	public static void method2404() {
+	public static void clearLightingGraph() {
 		lightCount = 0;
-		for (@Pc(3) int local3 = 0; local3 < anInt3032; local3++) {
-			for (@Pc(8) int local8 = 0; local8 < width; local8++) {
-				for (@Pc(13) int local13 = 0; local13 < length; local13++) {
-					anIntArrayArrayArray11[local3][local8][local13] = 0;
+		for (@Pc(3) int plane = 0; plane < planeMax; plane++) {
+			for (@Pc(8) int x = 0; x < xMax; x++) {
+				for (@Pc(13) int z = 0; z < zMax; z++) {
+					lightingGraph[plane][x][z] = 0;
 				}
 			}
 		}
