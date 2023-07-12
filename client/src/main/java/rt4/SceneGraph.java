@@ -2100,14 +2100,14 @@ public class SceneGraph {
 															local904 = (int) (local1697.key >> 20 & 0x3L);
 															if (local904 == 1 || local904 == 3) {
 																if (local899 > -local894) {
-																	LightingManager.method2397(local24, local18, local21 - 1, local18 - 1, local21);
+																	LightingManager.refreshLightingStateForPlane(local24, local18, local21 - 1, local18 - 1, local21);
 																} else {
-																	LightingManager.method2397(local24, local18, local21 + 1, local18 + 1, local21);
+																	LightingManager.refreshLightingStateForPlane(local24, local18, local21 + 1, local18 + 1, local21);
 																}
 															} else if (local899 > local894) {
-																LightingManager.method2397(local24, local18, local21 - 1, local18 + 1, local21);
+																LightingManager.refreshLightingStateForPlane(local24, local18, local21 - 1, local18 + 1, local21);
 															} else {
-																LightingManager.method2397(local24, local18, local21 + 1, local18 - 1, local21);
+																LightingManager.refreshLightingStateForPlane(local24, local18, local21 + 1, local18 - 1, local21);
 															}
 														} else {
 															LightingManager.method2391(cameraX, cameraY, cameraZ, local24, local1697.xMin, local1697.zMin, local1697.xMax, local1697.zMax);
@@ -3066,7 +3066,7 @@ public class SceneGraph {
 				local32 = anInt5276;
 				while (true) {
 					if (local32 >= levels) {
-						LightingManager.method2402(anInt4069, anInt4539, tiles);
+						LightingManager.renderLighting(anInt4069, anInt4539, tiles);
 						break;
 					}
 					for (local37 = 0; local37 < underwaterHdTiles[local32].length; local37++) {
@@ -5267,7 +5267,7 @@ public class SceneGraph {
 					local194 = light.z >> 7;
 					local190 = light.x >> 7;
 					if (local190 >= 0 && local194 >= 0 && local190 < 104 && local194 < 104) {
-						light.aBoolean125 = (renderFlags[1][local190][local194] & 0x2) != 0;
+						light.doesNotInteractWithLight = (renderFlags[1][local190][local194] & 0x2) != 0;
 						light.y = tileHeights[light.level][local190][local194] - light.y;
 						LightingManager.addLight(light);
 					}
@@ -5433,7 +5433,7 @@ public class SceneGraph {
 						local417 = local517.x >> 7;
 						local255 = local517.z >> 7;
 						if (local417 >= 0 && local255 >= 0 && local417 < 104 && local255 < 104) {
-							local517.aBoolean125 = (renderFlags[1][local417][local255] & 0x2) != 0;
+							local517.doesNotInteractWithLight = (renderFlags[1][local417][local255] & 0x2) != 0;
 							local517.y = tileHeights[local517.level][local417][local255] - local517.y;
 							LightingManager.addLight(local517);
 						}

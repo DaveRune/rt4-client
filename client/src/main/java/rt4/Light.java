@@ -65,7 +65,7 @@ public final class Light {
 	private final int anInt2249;
 
 	@OriginalMember(owner = "client!gi", name = "g", descriptor = "Z")
-	public boolean aBoolean125 = false;
+	public boolean doesNotInteractWithLight = false;
 
 	@OriginalMember(owner = "client!gi", name = "I", descriptor = "[F")
 	public final float[] diffuse = new float[4];
