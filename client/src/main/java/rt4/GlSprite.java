@@ -1,6 +1,7 @@
 package rt4;
 
 import com.jogamp.opengl.GL2;
+import org.lwjgl.BufferUtils;
 import org.openrs2.deob.annotation.OriginalArg;
 import org.openrs2.deob.annotation.OriginalClass;
 import org.openrs2.deob.annotation.OriginalMember;
@@ -66,7 +67,6 @@ public class GlSprite extends Sprite {
 			return;
 		}
 		this.anInt1873 = arg0;
-		@Pc(9) GL2 gl = GlRenderer.gl;
 		if (arg0 == 2) {
 			glTexParameteri(GL2.GL_TEXTURE_2D, GL2.GL_TEXTURE_MIN_FILTER, GL2.GL_LINEAR);
 			glTexParameteri(GL2.GL_TEXTURE_2D, GL2.GL_TEXTURE_MAG_FILTER, GL2.GL_LINEAR);
@@ -84,7 +84,6 @@ public class GlSprite extends Sprite {
 		GlRenderer.setupRgbAlphaMode1Rendering();
 		GlRenderer.setTextureId(arg2.textureId);
 		arg2.method1424(1);
-		@Pc(11) GL2 gl = GlRenderer.gl;
 		GlRenderer.setTextureId(this.textureId);
 		this.method1424(1);
 		glActiveTexture(GL2.GL_TEXTURE1);
@@ -124,7 +123,7 @@ public class GlSprite extends Sprite {
 	@OriginalMember(owner = "client!cf", name = "c", descriptor = "(IIIII)V")
 	public final void method1426(@OriginalArg(0) int arg0, @OriginalArg(1) int arg1, @OriginalArg(2) int arg2, @OriginalArg(3) int arg3, @OriginalArg(4) int arg4) {
 		GlRenderer.setupRgbAlphaMode0Rendering();
-		@Pc(2) GL2 gl = GlRenderer.gl;
+
 		GlRenderer.setTextureId(this.textureId);
 		this.method1424(1);
 		@Pc(16) float local16 = (float) this.width / (float) this.powerOfTwoWidth;
@@ -157,7 +156,6 @@ public class GlSprite extends Sprite {
 		GlRenderer.setupRgbAlphaMode1Rendering();
 		GlRenderer.setTextureId(arg8.textureId);
 		arg8.method1424(1);
-		@Pc(11) GL2 gl = GlRenderer.gl;
 		GlRenderer.setTextureId(this.textureId);
 		if (GlobalConfig.BILINEAR_MINIMAP) {
 			this.method1424(2);
@@ -216,7 +214,6 @@ public class GlSprite extends Sprite {
 		GlRenderer.setupRgbAlphaMode1Rendering();
 		@Pc(5) int local5 = arg0 + this.anInt1863;
 		@Pc(10) int local10 = arg1 + this.anInt1861;
-		@Pc(12) GL2 gl = GlRenderer.gl;
 		GlRenderer.setTextureId(this.textureId);
 		this.method1424(1);
 		glTranslatef((float) local5, (float) (GlRenderer.canvasHeight - local10), 0.0F);
@@ -241,7 +238,6 @@ public class GlSprite extends Sprite {
 		GlRenderer.setupRgbAlphaMode1Rendering();
 		@Pc(5) int local5 = arg0 + this.anInt1863;
 		@Pc(10) int local10 = arg1 + this.anInt1861;
-		@Pc(12) GL2 gl = GlRenderer.gl;
 		GlRenderer.setTextureId(this.textureId);
 		this.method1424(1);
 		glTranslatef((float) local5, (float) (GlRenderer.canvasHeight - local10), 0.0F);
@@ -252,7 +248,7 @@ public class GlSprite extends Sprite {
 	@OriginalMember(owner = "client!cf", name = "b", descriptor = "(IIIIII)V")
 	public final void method1428(@OriginalArg(2) int arg0, @OriginalArg(3) int arg1, @OriginalArg(4) int arg2) {
 		GlRenderer.setupRgbAlphaMode1Rendering();
-		@Pc(2) GL2 gl = GlRenderer.gl;
+
 		GlRenderer.setTextureId(this.textureId);
 		this.method1424(2);
 		@Pc(15) int local15 = 240 - (this.anInt1863 << 4);
@@ -296,7 +292,6 @@ public class GlSprite extends Sprite {
 		if (local11 < local21) {
 			arg3 = ((local11 << 16) + local33 - local15 - 1) / local33;
 		}
-		@Pc(123) GL2 gl = GlRenderer.gl;
 		GlRenderer.setTextureId(this.textureId);
 		this.method1424(2);
 		@Pc(132) float local132 = (float) arg0;
@@ -323,7 +318,6 @@ public class GlSprite extends Sprite {
 		GlRenderer.setupRgbAlphaMode1Rendering();
 		@Pc(5) int local5 = arg0 + this.anInt1863;
 		@Pc(10) int local10 = arg1 + this.anInt1861;
-		@Pc(12) GL2 gl = GlRenderer.gl;
 		GlRenderer.setTextureId(this.textureId);
 		this.method1424(1);
 		glTranslatef((float) local5, (float) (GlRenderer.canvasHeight - local10), 0.0F);
@@ -350,7 +344,7 @@ public class GlSprite extends Sprite {
 	@Override
 	protected final void method1416(@OriginalArg(0) int arg0, @OriginalArg(1) int arg1, @OriginalArg(2) int arg2, @OriginalArg(3) int arg3, @OriginalArg(4) int arg4, @OriginalArg(5) int arg5) {
 		GlRenderer.setupRgbAlphaMode1Rendering();
-		@Pc(2) GL2 gl = GlRenderer.gl;
+
 		GlRenderer.setTextureId(this.textureId);
 		this.method1424(1);
 		@Pc(15) int local15 = arg0 - (this.anInt1863 << 4);
@@ -397,7 +391,6 @@ public class GlSprite extends Sprite {
 		if (local11 < local21) {
 			arg3 = ((local11 << 16) + local33 - local15 - 1) / local33;
 		}
-		@Pc(123) GL2 gl = GlRenderer.gl;
 		GlRenderer.setTextureId(this.textureId);
 		this.method1424(1);
 		@Pc(132) float local132 = (float) arg0;
@@ -423,7 +416,6 @@ public class GlSprite extends Sprite {
 	@OriginalMember(owner = "client!cf", name = "b", descriptor = "(IIII)V")
 	public final void method1429(@OriginalArg(0) int arg0, @OriginalArg(1) int arg1, @OriginalArg(2) int arg2, @OriginalArg(3) int arg3) {
 		GlRenderer.setupRgbAlphaMode1Rendering();
-		@Pc(2) GL2 gl = GlRenderer.gl;
 		GlRenderer.setTextureId(this.textureId);
 		this.method1424(1);
 		@Pc(16) float local16 = (float) this.width / (float) this.powerOfTwoWidth;
@@ -469,16 +461,20 @@ public class GlSprite extends Sprite {
 			}
 			local22 += local32;
 		}
-		@Pc(91) ByteBuffer local91 = ByteBuffer.wrap(local20);
-		@Pc(93) GL2 gl = GlRenderer.gl;
-		if (this.textureId == -1) {
-			@Pc(100) int[] local100 = new int[1];
-			gl.glGenTextures(1, local100, 0);
-			this.textureId = local100[0];
-			this.anInt1875 = GlCleaner.contextId;
+		@Pc(91) ByteBuffer local91;
+		if (textureId == -1) {
+			textureId = glGenTextures();
+			anInt1875 = GlCleaner.contextId;
 		}
+
 		GlRenderer.setTextureId(this.textureId);
-		gl.glTexImage2D(GL2.GL_TEXTURE_2D, 0, GL2.GL_RGBA, this.powerOfTwoWidth, this.powerOfTwoHeight, 0, GL2.GL_RGBA, GL2.GL_UNSIGNED_BYTE, local91);
+
+		@Pc(91) ByteBuffer tempBuffer = ByteBuffer.wrap(local20);
+		local91 = BufferUtils.createByteBuffer(tempBuffer.capacity());
+		local91.put(tempBuffer);
+		local91.flip();
+
+		glTexImage2D(GL2.GL_TEXTURE_2D, 0, GL2.GL_RGBA, this.powerOfTwoWidth, this.powerOfTwoHeight, 0, GL2.GL_RGBA, GL2.GL_UNSIGNED_BYTE, local91);
 		GlCleaner.onCard2d += local91.limit() - this.anInt1869;
 		this.anInt1869 = local91.limit();
 	}
@@ -489,7 +485,7 @@ public class GlSprite extends Sprite {
 		GlRenderer.setupRgbAlphaMode0Rendering();
 		@Pc(5) int local5 = arg0 + this.anInt1863;
 		@Pc(10) int local10 = arg1 + this.anInt1861;
-		@Pc(12) GL2 gl = GlRenderer.gl;
+
 		GlRenderer.setTextureId(this.textureId);
 		this.method1424(1);
 		glColor4f(1.0F, 1.0F, 1.0F, (float) arg2 / 256.0F);
@@ -502,7 +498,6 @@ public class GlSprite extends Sprite {
 	private void method1431() {
 		@Pc(7) float local7 = (float) this.width / (float) this.powerOfTwoWidth;
 		@Pc(15) float local15 = (float) this.height / (float) this.powerOfTwoHeight;
-		@Pc(17) GL2 gl = GlRenderer.gl;
 		if (this.anInt1871 == -1) {
 			this.anInt1871 = glGenLists(1);
 			this.anInt1875 = GlCleaner.contextId;
