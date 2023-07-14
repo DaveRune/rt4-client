@@ -3,10 +3,23 @@ package rt4;
 import com.jogamp.nativewindow.awt.AWTGraphicsConfiguration;
 import com.jogamp.nativewindow.awt.JAWTWindow;
 import com.jogamp.opengl.*;
+import com.jogamp.opengl.GLCapabilities;
 import jogamp.newt.awt.NewtFactoryAWT;
+import org.lwjgl.opengl.GL;
+import org.lwjgl.opengl.GL11;
 import org.openrs2.deob.annotation.OriginalArg;
 import org.openrs2.deob.annotation.OriginalMember;
 import org.openrs2.deob.annotation.Pc;
+
+import org.lwjgl.*;
+import org.lwjgl.glfw.*;
+import org.lwjgl.system.*;
+
+import static org.lwjgl.glfw.Callbacks.*;
+import static org.lwjgl.glfw.GLFW.*;
+import static org.lwjgl.opengl.GL11.*;
+import static org.lwjgl.system.MemoryStack.*;
+import static org.lwjgl.system.MemoryUtil.*;
 
 import java.awt.*;
 import java.nio.ByteOrder;
@@ -72,6 +85,8 @@ public final class GlRenderer {
 
 	@OriginalMember(owner = "client!tf", name = "D", descriptor = "I")
 	private static int maxTextureCoords;
+
+	private static long LWJGLwindow;
 
 	@OriginalMember(owner = "client!tf", name = "E", descriptor = "Lgl!javax/media/opengl/GLDrawable;")
 	private static GLDrawable drawable;
@@ -185,9 +200,9 @@ public final class GlRenderer {
 	@OriginalMember(owner = "client!tf", name = "b", descriptor = "()V")
 	public static void resetTextureMatrix() {
 		if (textureMatrixModified) {
-			gl.glMatrixMode(GL2.GL_TEXTURE);
-			gl.glLoadIdentity();
-			gl.glMatrixMode(GL2.GL_MODELVIEW);
+			glMatrixMode(GL2.GL_TEXTURE);
+			glLoadIdentity();
+			glMatrixMode(GL2.GL_MODELVIEW);
 			textureMatrixModified = false;
 		}
 	}
@@ -195,7 +210,15 @@ public final class GlRenderer {
 	@OriginalMember(owner = "client!tf", name = "d", descriptor = "()V")
 	public static void swapBuffers() {
 		try {
-			drawable.swapBuffers();
+			if ( !glfwWindowShouldClose(LWJGLwindow) ) {
+				//glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // clear the framebuffer
+
+				glfwSwapBuffers(LWJGLwindow); // swap the color buffers
+
+				// Poll for window events. The key callback above will only be
+				// invoked during this call.
+				glfwPollEvents();
+			}
 		} catch (@Pc(3) Exception local3) {
 		}
 	}
@@ -358,9 +381,9 @@ public final class GlRenderer {
 			return;
 		}
 		if (enabled) {
-			gl.glEnable(GL2.GL_LIGHTING);
+			glEnable(GL2.GL_LIGHTING);
 		} else {
-			gl.glDisable(GL2.GL_LIGHTING);
+			glDisable(GL2.GL_LIGHTING);
 		}
 		lightingEnabled = enabled;
 	}
@@ -368,8 +391,8 @@ public final class GlRenderer {
 	@OriginalMember(owner = "client!tf", name = "m", descriptor = "()I")
 	private static int checkContext() {
 		@Pc(1) int result = 0;
-		vendor = gl.glGetString(GL2.GL_VENDOR);
-		renderer = gl.glGetString(GL2.GL_RENDERER);
+		vendor = glGetString(GL2.GL_VENDOR);
+		renderer = glGetString(GL2.GL_RENDERER);
 		@Pc(12) String vendor = GlRenderer.vendor.toLowerCase();
 		if (vendor.contains("microsoft")) {
 			result = 1;
@@ -455,6 +478,14 @@ public final class GlRenderer {
 				MaterialManager.quit(); // MaterialManager
 			} catch (@Pc(5) Throwable local5) {
 			}
+			// Release LWJGL
+			// Free the window callbacks and destroy the window
+			glfwFreeCallbacks(LWJGLwindow);
+			glfwDestroyWindow(LWJGLwindow);
+
+			// Terminate GLFW and free the error callback
+			glfwTerminate();
+			glfwSetErrorCallback(null).free();
 		}
 
 		if (window != null) {
@@ -493,12 +524,12 @@ public final class GlRenderer {
 
 	@OriginalMember(owner = "client!tf", name = "a", descriptor = "(FFF)V")
 	public static void translateTextureMatrix(@OriginalArg(0) float x, @OriginalArg(1) float y, @OriginalArg(2) float z) {
-		gl.glMatrixMode(GL2.GL_TEXTURE);
+		glMatrixMode(GL2.GL_TEXTURE);
 		if (textureMatrixModified) {
 			gl.glLoadIdentity();
 		}
-		gl.glTranslatef(x, y, z);
-		gl.glMatrixMode(GL2.GL_MODELVIEW);
+		glTranslatef(x, y, z);
+		glMatrixMode(GL2.GL_MODELVIEW);
 		textureMatrixModified = true;
 	}
 
@@ -508,18 +539,18 @@ public final class GlRenderer {
 		@Pc(17) int scaledBoxEndX = (boxX + boxWidth - offsetX << 8) / scaleX;
 		@Pc(25) int scaledBoxStartY = (boxY - offsetY << 8) / scaleY;
 		@Pc(35) int scaledBoxEndY = (boxY + boxHeight - offsetY << 8) / scaleY;
-		gl.glMatrixMode(GL2.GL_PROJECTION);
-		gl.glLoadIdentity();
+		glMatrixMode(GL2.GL_PROJECTION);
+		glLoadIdentity();
 		configureProjectionMatrix((float) scaledBoxStartX * projectionCoordinateScaleFactor, (float) scaledBoxEndX * projectionCoordinateScaleFactor, (float) -scaledBoxEndY * projectionCoordinateScaleFactor, (float) -scaledBoxStartY * projectionCoordinateScaleFactor, 50.0F, (float) GlobalConfig.VIEW_DISTANCE);
 		setViewportBounds(boxX, canvasHeight - boxY - boxHeight, boxWidth, boxHeight);
-		gl.glMatrixMode(GL2.GL_MODELVIEW);
-		gl.glLoadIdentity();
-		gl.glRotatef(180.0F, 1.0F, 0.0F, 0.0F);
+		glMatrixMode(GL2.GL_MODELVIEW);
+		glLoadIdentity();
+		glRotatef(180.0F, 1.0F, 0.0F, 0.0F);
 		if (rotationX != 0.0F) {
-			gl.glRotatef(rotationX, 1.0F, 0.0F, 0.0F);
+			glRotatef(rotationX, 1.0F, 0.0F, 0.0F);
 		}
 		if (rotationY != 0.0F) {
-			gl.glRotatef(rotationY, 0.0F, 1.0F, 0.0F);
+			glRotatef(rotationY, 0.0F, 1.0F, 0.0F);
 		}
 		isOrthoViewConfigured = false;
 		Rasteriser.screenLowerX = scaledBoxStartX;
@@ -534,9 +565,9 @@ public final class GlRenderer {
 			return;
 		}
 		if (enabled) {
-			gl.glEnableClientState(GL2.GL_NORMAL_ARRAY);
+			glEnableClientState(GL2.GL_NORMAL_ARRAY);
 		} else {
-			gl.glDisableClientState(GL2.GL_NORMAL_ARRAY);
+			glDisableClientState(GL2.GL_NORMAL_ARRAY);
 		}
 		normalArrayEnabled = enabled;
 	}
@@ -558,13 +589,13 @@ public final class GlRenderer {
 			return;
 		}
 		if (mode == 0) {
-			gl.glTexEnvi(GL2.GL_TEXTURE_ENV, GL2.GL_COMBINE_ALPHA, GL2.GL_MODULATE);
+			glTexEnvi(GL2.GL_TEXTURE_ENV, GL2.GL_COMBINE_ALPHA, GL2.GL_MODULATE);
 		}
 		if (mode == 1) {
-			gl.glTexEnvi(GL2.GL_TEXTURE_ENV, GL2.GL_COMBINE_ALPHA, GL2.GL_REPLACE);
+			glTexEnvi(GL2.GL_TEXTURE_ENV, GL2.GL_COMBINE_ALPHA, GL2.GL_REPLACE);
 		}
 		if (mode == 2) {
-			gl.glTexEnvi(GL2.GL_TEXTURE_ENV, GL2.GL_COMBINE_ALPHA, GL2.GL_ADD);
+			glTexEnvi(GL2.GL_TEXTURE_ENV, GL2.GL_COMBINE_ALPHA, GL2.GL_ADD);
 		}
 		textureCombineAlphaMode = mode;
 	}
@@ -596,7 +627,7 @@ public final class GlRenderer {
 		matrix[13] = 0.0F;
 		matrix[14] = scaledFarClipDistance = -(doubleNearClip * farClip) / (farClip - nearClip);
 		matrix[15] = 0.0F;
-		gl.glLoadMatrixf(matrix, 0);
+		glLoadMatrixf(matrix);
 		depthAdjustmentParameter = 0.0F;
 		depthAdjustmentFactor = 0.0F;
 	}
@@ -623,16 +654,16 @@ public final class GlRenderer {
 			matrix[10] = depthScaleFactor + depthAdjustment;
 			matrix[14] = scaledFarClipDistance * depthRatioSquared;
 		}
-		gl.glMatrixMode(GL2.GL_PROJECTION);
-		gl.glLoadMatrixf(matrix, 0);
-		gl.glMatrixMode(GL2.GL_MODELVIEW);
+		glMatrixMode(GL2.GL_PROJECTION);
+		glLoadMatrixf(matrix);
+		glMatrixMode(GL2.GL_MODELVIEW);
 	}
 
 	@OriginalMember(owner = "client!tf", name = "b", descriptor = "(I)V")
 	public static void clearColorAndDepthBuffers(@OriginalArg(0) int rgb) {
-		gl.glClearColor((float) (rgb >> 16 & 0xFF) / 255.0F, (float) (rgb >> 8 & 0xFF) / 255.0F, (float) (rgb & 0xFF) / 255.0F, 0.0F);
-		gl.glClear(GL2.GL_DEPTH_BUFFER_BIT | GL2.GL_COLOR_BUFFER_BIT);
-		gl.glClearColor(0.0F, 0.0F, 0.0F, 0.0F);
+		glClearColor((float) (rgb >> 16 & 0xFF) / 255.0F, (float) (rgb >> 8 & 0xFF) / 255.0F, (float) (rgb & 0xFF) / 255.0F, 0.0F);
+		glClear(GL2.GL_DEPTH_BUFFER_BIT | GL2.GL_COLOR_BUFFER_BIT);
+		glClearColor(0.0F, 0.0F, 0.0F, 0.0F);
 	}
 
 	@OriginalMember(owner = "client!tf", name = "c", descriptor = "(I)V")
@@ -641,14 +672,93 @@ public final class GlRenderer {
 			return;
 		}
 		if (id == -1) {
-			gl.glDisable(GL2.GL_TEXTURE_2D);
+			glDisable(GL2.GL_TEXTURE_2D);
 		} else {
 			if (textureId == -1) {
-				gl.glEnable(GL2.GL_TEXTURE_2D);
+				glEnable(GL2.GL_TEXTURE_2D);
 			}
-			gl.glBindTexture(GL2.GL_TEXTURE_2D, id);
+			glBindTexture(GL2.GL_TEXTURE_2D, id);
 		}
 		textureId = id;
+	}
+
+	private static void initLWJGL() {
+		// Setup an error callback. The default implementation
+		// will print the error message in System.err.
+		GLFWErrorCallback.createPrint(System.err).set();
+
+		// Initialize GLFW. Most GLFW functions will not work before doing this.
+		if ( !glfwInit() )
+			throw new IllegalStateException("Unable to initialize GLFW");
+
+		// Configure GLFW
+		glfwDefaultWindowHints(); // optional, the current window hints are already the default
+		glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE); // the window will stay hidden after creation
+		glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE); // the window will be resizable
+
+		// Create the window
+		LWJGLwindow = glfwCreateWindow(300, 300, "Hello World!", NULL, NULL);
+		if ( LWJGLwindow == NULL )
+			throw new RuntimeException("Failed to create the GLFW window");
+
+		// Setup a key callback. It will be called every time a key is pressed, repeated or released.
+		glfwSetKeyCallback(LWJGLwindow, (window, key, scancode, action, mods) -> {
+			if ( key == GLFW_KEY_ESCAPE && action == GLFW_RELEASE )
+				glfwSetWindowShouldClose(window, true); // We will detect this in the rendering loop
+		});
+
+		// Get the thread stack and push a new frame
+		try ( MemoryStack stack = stackPush() ) {
+			IntBuffer pWidth = stack.mallocInt(1); // int*
+			IntBuffer pHeight = stack.mallocInt(1); // int*
+
+			// Get the window size passed to glfwCreateWindow
+			glfwGetWindowSize(LWJGLwindow, pWidth, pHeight);
+
+			// Get the resolution of the primary monitor
+			GLFWVidMode vidmode = glfwGetVideoMode(glfwGetPrimaryMonitor());
+
+			// Center the window
+			glfwSetWindowPos(
+					LWJGLwindow,
+					(vidmode.width() - pWidth.get(0)) / 2,
+					(vidmode.height() - pHeight.get(0)) / 2
+			);
+		} // the stack frame is popped automatically
+
+		// Make the OpenGL context current
+		glfwMakeContextCurrent(LWJGLwindow);
+		// Enable v-sync
+		glfwSwapInterval(1);
+
+		// Make the window visible
+		glfwShowWindow(LWJGLwindow);
+
+		GL.createCapabilities();
+	}
+
+	private static void loop() {
+		// This line is critical for LWJGL's interoperation with GLFW's
+		// OpenGL context, or any context that is managed externally.
+		// LWJGL detects the context that is current in the current thread,
+		// creates the GLCapabilities instance and makes the OpenGL
+		// bindings available for use.
+		GL.createCapabilities();
+
+		// Set the clear color
+		glClearColor(1.0f, 0.0f, 0.0f, 0.0f);
+
+		// Run the rendering loop until the user has attempted to close
+		// the window or has pressed the ESCAPE key.
+		while ( !glfwWindowShouldClose(LWJGLwindow) ) {
+			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // clear the framebuffer
+
+			glfwSwapBuffers(LWJGLwindow); // swap the color buffers
+
+			// Poll for window events. The key callback above will only be
+			// invoked during this call.
+			glfwPollEvents();
+		}
 	}
 
 	@OriginalMember(owner = "client!tf", name = "a", descriptor = "(Ljava/awt/Canvas;I)I")
@@ -657,6 +767,9 @@ public final class GlRenderer {
 			if (!canvas.isDisplayable()) {
 				return -1;
 			}
+
+
+			// Create JOGL
 			GLProfile profile = GLProfile.get(GLProfile.GL3bc);
 			@Pc(8) GLCapabilities capabilities = new GLCapabilities(profile);
 			if (numSamples > 0) {
@@ -689,24 +802,29 @@ public final class GlRenderer {
 				if (swapBuffersAttempts++ > 5) {
 					return -2;
 				}
-				ThreadUtils.sleep(1000L);
+				ThreadUtils.sleep(100L);
 			}
 			if (window.getLock().isLocked()) {
 				window.unlockSurface();
 			}
+
+			// Create LWJGL
+			System.out.println("Hello LWJGL " + Version.getVersion() + "!");
+			initLWJGL();
+
 			gl = GLContext.getCurrentGL().getGL2();
-			gl.glLineWidth((float) GameShell.canvasScale);
+			glLineWidth((float) GameShell.canvasScale);
 			enabled = true;
 			canvasWidth = canvas.getSize().width;
 			canvasHeight = canvas.getSize().height;
-			result = checkContext();
-			if (result != 0) {
+			//result = checkContext();
+			if (LWJGLwindow == 0) {
 				quit();
 				return result;
 			}
 			method4184();
 			resetOpenGLState();
-			gl.glClear(GL2.GL_COLOR_BUFFER_BIT);
+			glClear(GL2.GL_COLOR_BUFFER_BIT);
 			swapBuffersAttempts = 0;
 			while (true) {
 				try {
@@ -720,7 +838,7 @@ public final class GlRenderer {
 					ThreadUtils.sleep(100L);
 				}
 			}
-			gl.glClear(GL2.GL_COLOR_BUFFER_BIT);
+			glClear(GL2.GL_COLOR_BUFFER_BIT);
 			return 0;
 		} catch (@Pc(103) Throwable ex) {
 			quit();
@@ -755,16 +873,16 @@ public final class GlRenderer {
 		@Pc(6) int adjustedCanvasWidth = canvasWidth - xOffset;
 		@Pc(9) int negYOffset = -yOffset;
 		@Pc(13) int adjustedCanvasHeight = canvasHeight - yOffset;
-		gl.glMatrixMode(GL2.GL_PROJECTION);
-		gl.glLoadIdentity();
 		@Pc(23) float resolutionFactor = (float) resolution / 512.0F;
 		@Pc(30) float colorDepthFactor = resolutionFactor * (256.0F / (float) color);
 		@Pc(37) float memoryFactor = resolutionFactor * (256.0F / (float) cardMemory);
-		gl.glOrtho((float) negXOffset * colorDepthFactor, (float) adjustedCanvasWidth * colorDepthFactor, (float) -adjustedCanvasHeight * memoryFactor, (float) -negYOffset * memoryFactor, 50 - arg3, GlobalConfig.VIEW_DISTANCE - arg3);
+		glMatrixMode(GL2.GL_PROJECTION);
+		glLoadIdentity();
+		glOrtho((float) negXOffset * colorDepthFactor, (float) adjustedCanvasWidth * colorDepthFactor, (float) -adjustedCanvasHeight * memoryFactor, (float) -negYOffset * memoryFactor, 50 - arg3, GlobalConfig.VIEW_DISTANCE - arg3);
 		setViewportBounds(0, 0, canvasWidth, canvasHeight);
-		gl.glMatrixMode(GL2.GL_MODELVIEW);
-		gl.glLoadIdentity();
-		gl.glRotatef(180.0F, 1.0F, 0.0F, 0.0F);
+		glMatrixMode(GL2.GL_MODELVIEW);
+		glLoadIdentity();
+		glRotatef(180.0F, 1.0F, 0.0F, 0.0F);
 		isOrthoViewConfigured = false;
 	}
 
@@ -774,22 +892,22 @@ public final class GlRenderer {
 			return;
 		}
 		if (mode == 0) {
-			gl.glTexEnvi(GL2.GL_TEXTURE_ENV, GL2.GL_COMBINE_RGB, GL2.GL_MODULATE);
+			glTexEnvi(GL2.GL_TEXTURE_ENV, GL2.GL_COMBINE_RGB, GL2.GL_MODULATE);
 		}
 		if (mode == 1) {
-			gl.glTexEnvi(GL2.GL_TEXTURE_ENV, GL2.GL_COMBINE_RGB, GL2.GL_REPLACE);
+			glTexEnvi(GL2.GL_TEXTURE_ENV, GL2.GL_COMBINE_RGB, GL2.GL_REPLACE);
 		}
 		if (mode == 2) {
-			gl.glTexEnvi(GL2.GL_TEXTURE_ENV, GL2.GL_COMBINE_RGB, GL2.GL_ADD);
+			glTexEnvi(GL2.GL_TEXTURE_ENV, GL2.GL_COMBINE_RGB, GL2.GL_ADD);
 		}
 		if (mode == 3) {
-			gl.glTexEnvi(GL2.GL_TEXTURE_ENV, GL2.GL_COMBINE_RGB, GL2.GL_SUBTRACT);
+			glTexEnvi(GL2.GL_TEXTURE_ENV, GL2.GL_COMBINE_RGB, GL2.GL_SUBTRACT);
 		}
 		if (mode == 4) {
-			gl.glTexEnvi(GL2.GL_TEXTURE_ENV, GL2.GL_COMBINE_RGB, GL2.GL_ADD_SIGNED);
+			glTexEnvi(GL2.GL_TEXTURE_ENV, GL2.GL_COMBINE_RGB, GL2.GL_ADD_SIGNED);
 		}
 		if (mode == 5) {
-			gl.glTexEnvi(GL2.GL_TEXTURE_ENV, GL2.GL_COMBINE_RGB, GL2.GL_INTERPOLATE);
+			glTexEnvi(GL2.GL_TEXTURE_ENV, GL2.GL_COMBINE_RGB, GL2.GL_INTERPOLATE);
 		}
 		textureCombineRgbMode = mode;
 	}
@@ -797,10 +915,10 @@ public final class GlRenderer {
 	@OriginalMember(owner = "client!tf", name = "s", descriptor = "()V")
 	private static void method4184() {
 		@Pc(2) int[] local2 = new int[1];
-		gl.glGenTextures(1, local2, 0);
+		glGenTextures(local2);
 		anInt5328 = local2[0];
-		gl.glBindTexture(GL2.GL_TEXTURE_2D, anInt5328);
-		gl.glTexImage2D(GL2.GL_TEXTURE_2D, 0, 4, 1, 1, 0, GL2.GL_RGBA, GL2.GL_UNSIGNED_BYTE, IntBuffer.wrap(new int[]{-1}));
+		glBindTexture(GL2.GL_TEXTURE_2D, anInt5328);
+		glTexImage2D(GL2.GL_TEXTURE_2D, 0, 4, 1, 1, 0, GL2.GL_RGBA, GL2.GL_UNSIGNED_BYTE, IntBuffer.wrap(new int[]{-1}));
 		LightingManager.init();
 		MaterialManager.init();
 	}
