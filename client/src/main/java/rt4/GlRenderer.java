@@ -6,6 +6,7 @@ import com.jogamp.opengl.*;
 import com.jogamp.opengl.GLCapabilities;
 import jogamp.newt.awt.NewtFactoryAWT;
 import org.lwjgl.opengl.GL;
+import org.lwjgl.opengl.GL11;
 import org.openrs2.deob.annotation.OriginalArg;
 import org.openrs2.deob.annotation.OriginalMember;
 import org.openrs2.deob.annotation.Pc;
@@ -320,12 +321,8 @@ public final class GlRenderer {
 	@OriginalMember(owner = "client!tf", name = "h", descriptor = "()V")
 	public static void draw() {
 		@Pc(2) int[] ints = new int[2];
-
-		// These 2 ones are special and can't be ported easily. Need to look up documentation
-		gl.glGetIntegerv(GL2.GL_DRAW_BUFFER, ints, 0);
-		gl.glGetIntegerv(GL2.GL_READ_BUFFER, ints, 1);
-
-
+		ints[0] = GL11.glGetInteger(GL11.GL_DRAW_BUFFER);
+		ints[1] = GL11.glGetInteger(GL11.GL_READ_BUFFER);
 		glDrawBuffer(GL2.GL_BACK_LEFT);
 		glReadBuffer(GL2.GL_FRONT_LEFT);
 		setTextureId(-1);
