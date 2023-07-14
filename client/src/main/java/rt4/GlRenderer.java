@@ -6,7 +6,6 @@ import com.jogamp.opengl.*;
 import com.jogamp.opengl.GLCapabilities;
 import jogamp.newt.awt.NewtFactoryAWT;
 import org.lwjgl.opengl.GL;
-import org.lwjgl.opengl.GL11;
 import org.openrs2.deob.annotation.OriginalArg;
 import org.openrs2.deob.annotation.OriginalMember;
 import org.openrs2.deob.annotation.Pc;
@@ -214,7 +213,6 @@ public final class GlRenderer {
 		try {
 			if ( !glfwWindowShouldClose(LWJGLwindow) ) {
 				//glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // clear the framebuffer
-
 				glfwSwapBuffers(LWJGLwindow); // swap the color buffers
 
 				// Poll for window events. The key callback above will only be
@@ -231,9 +229,9 @@ public final class GlRenderer {
 			return;
 		}
 		if (enabled) {
-			gl.glEnable(GL2.GL_FOG);
+			glEnable(GL2.GL_FOG);
 		} else {
-			gl.glDisable(GL2.GL_FOG);
+			glDisable(GL2.GL_FOG);
 		}
 		fogEnabled = enabled;
 	}
@@ -322,9 +320,12 @@ public final class GlRenderer {
 	@OriginalMember(owner = "client!tf", name = "h", descriptor = "()V")
 	public static void draw() {
 		@Pc(2) int[] ints = new int[2];
+
 		// These 2 ones are special and can't be ported easily. Need to look up documentation
 		gl.glGetIntegerv(GL2.GL_DRAW_BUFFER, ints, 0);
 		gl.glGetIntegerv(GL2.GL_READ_BUFFER, ints, 1);
+
+
 		glDrawBuffer(GL2.GL_BACK_LEFT);
 		glReadBuffer(GL2.GL_FRONT_LEFT);
 		setTextureId(-1);
@@ -365,89 +366,6 @@ public final class GlRenderer {
 			glDisable(GL2.GL_LIGHTING);
 		}
 		lightingEnabled = enabled;
-	}
-
-	@OriginalMember(owner = "client!tf", name = "m", descriptor = "()I")
-	private static int checkContext() {
-		@Pc(1) int result = 0;
-		vendor = glGetString(GL2.GL_VENDOR);
-		renderer = glGetString(GL2.GL_RENDERER);
-		@Pc(12) String vendor = GlRenderer.vendor.toLowerCase();
-		if (vendor.contains("microsoft")) {
-			result = 1;
-		}
-		if (vendor.contains("brian paul") || vendor.contains("mesa")) {
-			result |= 0x1;
-		}
-		@Pc(39) String version = glGetString(GL2.GL_VERSION);
-		@Pc(43) String[] versionParts = version.split("[. ]");
-		if (versionParts.length >= 2) {
-			try {
-				@Pc(52) int major = Integer.parseInt(versionParts[0]);
-				@Pc(57) int minor = Integer.parseInt(versionParts[1]);
-				GlRenderer.version = major * 10 + minor;
-			} catch (@Pc(65) NumberFormatException ex) {
-				result |= 0x4;
-			}
-		} else {
-			result |= 0x4;
-		}
-		if (GlRenderer.version < 12) {
-			result |= 0x2;
-		}
-		if (!gl.isExtensionAvailable("GL_ARB_multitexture")) {
-			result |= 0x8;
-		}
-		if (!gl.isExtensionAvailable("GL_ARB_texture_env_combine")) {
-			result |= 0x20;
-		}
-		@Pc(100) int[] data = new int[1];
-		glGetIntegerv(GL2.GL_MAX_TEXTURE_UNITS, data);
-		maxTextureUnits = data[0];
-		glGetIntegerv(GL2.GL_MAX_TEXTURE_COORDS, data);
-		maxTextureCoords = data[0];
-		glGetIntegerv(GL2.GL_MAX_TEXTURE_IMAGE_UNITS, data);
-		maxTextureImageUnits = data[0];
-		if (maxTextureUnits < 2 || maxTextureCoords < 2 || maxTextureImageUnits < 2) {
-			result |= 0x10;
-		}
-		if (result != 0) {
-			return result;
-		}
-		bigEndian = ByteOrder.nativeOrder() == ByteOrder.BIG_ENDIAN;
-		arbVboSupported = gl.isExtensionAvailable("GL_ARB_vertex_buffer_object");
-		arbMultisampleSupported = gl.isExtensionAvailable("GL_ARB_multisample");
-		arbTextureCubeMapSupported = gl.isExtensionAvailable("GL_ARB_texture_cube_map");
-		arbVertexProgramSupported = gl.isExtensionAvailable("GL_ARB_vertex_program");
-		extTexture3dSupported = gl.isExtensionAvailable("GL_EXT_texture3D");
-		@Pc(176) JagString renderer = convertStringToJagString(GlRenderer.renderer).toLowerCase();
-		if (renderer.indexOf(RADEON) != -1) {
-			@Pc(184) int v = 0;
-			@Pc(193) JagString[] rendererParts = renderer.replaceSlashWithSpace().split(32);
-			for (@Pc(195) int i = 0; i < rendererParts.length; i++) {
-				@Pc(203) JagString part = rendererParts[i];
-				if (part.length() >= 4 && part.substring(4, 0).isInt()) {
-					v = part.substring(4, 0).parseInt();
-					break;
-				}
-			}
-			if (v >= 7000 && v <= 7999) {
-				arbVboSupported = false;
-			}
-			if (v >= 7000 && v <= 9250) {
-				extTexture3dSupported = false;
-			}
-			GlModel.arbVboSupported = arbVboSupported;
-		}
-		if (arbVboSupported) {
-			try {
-				@Pc(250) int[] temp = new int[1];
-				glGenBuffers(temp);
-			} catch (@Pc(257) Throwable ex) {
-				return -4;
-			}
-		}
-		return 0;
 	}
 
 	@OriginalMember(owner = "client!tf", name = "o", descriptor = "()V")
@@ -505,7 +423,7 @@ public final class GlRenderer {
 	public static void translateTextureMatrix(@OriginalArg(0) float x, @OriginalArg(1) float y, @OriginalArg(2) float z) {
 		glMatrixMode(GL2.GL_TEXTURE);
 		if (textureMatrixModified) {
-			gl.glLoadIdentity();
+			glLoadIdentity();
 		}
 		glTranslatef(x, y, z);
 		glMatrixMode(GL2.GL_MODELVIEW);
@@ -744,6 +662,7 @@ public final class GlRenderer {
 			}
 			@Pc(29) int swapBuffersAttempts = 0;
 			@Pc(36) int result;
+
 			while (true) {
 				context = drawable.createContext(null);
 				try {
@@ -756,7 +675,6 @@ public final class GlRenderer {
 				if (swapBuffersAttempts++ > 5) {
 					return -2;
 				}
-				ThreadUtils.sleep(100L);
 			}
 
 			// Create LWJGL (I think we snatch the context in the thread from the above code)...
@@ -765,20 +683,22 @@ public final class GlRenderer {
 
 			gl = GLContext.getCurrentGL().getGL2();
 			glLineWidth((float) GameShell.canvasScale);
+
 			enabled = true;
 			canvasWidth = canvas.getSize().width;
 			canvasHeight = canvas.getSize().height;
-			//result = checkContext();
+
+
 			if (LWJGLwindow == 0) {
 				quit();
-				return result;
 			}
-			method4184();
+			genTextures();
 			resetOpenGLState();
 			glClear(GL2.GL_COLOR_BUFFER_BIT);
 			swapBuffersAttempts = 0;
 			while (true) {
 				try {
+					// Main draw loop
 					drawable.swapBuffers();
 					break;
 				} catch (@Pc(86) Exception ex) {
@@ -814,7 +734,7 @@ public final class GlRenderer {
 
 	@OriginalMember(owner = "client!gi", name = "b", descriptor = "()V")
 	private static void resizeViewport() {
-		gl.glViewport((int) (leftMargin * GameShell.canvasScale + GameShell.subpixelX), (int) (topMargin * GameShell.canvasScale + GameShell.subpixelY),
+		glViewport((int) (leftMargin * GameShell.canvasScale + GameShell.subpixelX), (int) (topMargin * GameShell.canvasScale + GameShell.subpixelY),
 			(int) (viewportWidth * GameShell.canvasScale + GameShell.subpixelX), (int) (viewportHeight * GameShell.canvasScale + GameShell.subpixelY));
 	}
 
@@ -864,7 +784,7 @@ public final class GlRenderer {
 	}
 
 	@OriginalMember(owner = "client!tf", name = "s", descriptor = "()V")
-	private static void method4184() {
+	private static void genTextures() {
 		@Pc(2) int[] local2 = new int[1];
 		glGenTextures(local2);
 		anInt5328 = local2[0];
