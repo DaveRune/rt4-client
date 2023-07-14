@@ -8,6 +8,8 @@ import org.openrs2.deob.annotation.Pc;
 
 import java.nio.ByteBuffer;
 
+import static org.lwjgl.opengl.GL11.*;
+
 @OriginalClass("client!sd")
 public final class GlSolidColorTexture extends SecondaryNode {
 
@@ -22,19 +24,20 @@ public final class GlSolidColorTexture extends SecondaryNode {
 
 	@OriginalMember(owner = "client!sd", name = "<init>", descriptor = "(I)V")
 	public GlSolidColorTexture(@OriginalArg(0) int hsl) {
-		@Pc(9) GL2 gl = GlRenderer.gl;
-		@Pc(12) int[] temp = new int[1];
-		gl.glGenTextures(1, temp, 0);
-		this.textureId = temp[0];
-		this.contextId = GlCleaner.contextId;
+		textureId = glGenTextures();
+		contextId = GlCleaner.contextId;
+		GlRenderer.setTextureId(textureId);
 		GlRenderer.setTextureId(this.textureId);
+
 		@Pc(32) int rgb = Rasteriser.palette[hsl];
 		@Pc(58) byte[] bytes = new byte[]{(byte) (rgb >> 16), (byte) (rgb >> 8), (byte) rgb, -1};
 		@Pc(61) ByteBuffer buffer = ByteBuffer.wrap(bytes);
-		gl.glTexImage2D(GL2.GL_TEXTURE_2D, 0, GL2.GL_RGBA, 1, 1, 0, GL2.GL_RGBA, GL2.GL_UNSIGNED_BYTE, buffer);
-		gl.glTexParameteri(GL2.GL_TEXTURE_2D, GL2.GL_TEXTURE_MIN_FILTER, GL2.GL_LINEAR);
-		gl.glTexParameteri(GL2.GL_TEXTURE_2D, GL2.GL_TEXTURE_MAG_FILTER, GL2.GL_LINEAR);
+
+		glTexImage2D(GL2.GL_TEXTURE_2D, 0, GL2.GL_RGBA, 1, 1, 0, GL2.GL_RGBA, GL2.GL_UNSIGNED_BYTE, buffer);
+		glTexParameteri(GL2.GL_TEXTURE_2D, GL2.GL_TEXTURE_MIN_FILTER, GL2.GL_LINEAR);
+		glTexParameteri(GL2.GL_TEXTURE_2D, GL2.GL_TEXTURE_MAG_FILTER, GL2.GL_LINEAR);
 		GlCleaner.onCardTexture += buffer.limit() - this.textureSize;
+
 		this.textureSize = buffer.limit();
 	}
 
