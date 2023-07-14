@@ -18,6 +18,8 @@ import org.lwjgl.system.*;
 import static org.lwjgl.glfw.Callbacks.*;
 import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.opengl.GL11.*;
+import static org.lwjgl.opengl.GL13.glActiveTexture;
+import static org.lwjgl.opengl.GL15.glGenBuffers;
 import static org.lwjgl.system.MemoryStack.*;
 import static org.lwjgl.system.MemoryUtil.*;
 
@@ -239,59 +241,59 @@ public final class GlRenderer {
 	@OriginalMember(owner = "client!tf", name = "f", descriptor = "()V")
 	private static void resetOpenGLState() {
 		isOrthoViewConfigured = false;
-		gl.glDisable(GL2.GL_TEXTURE_2D);
+		glDisable(GL2.GL_TEXTURE_2D);
 		textureId = -1;
-		gl.glTexEnvi(GL2.GL_TEXTURE_ENV, GL2.GL_TEXTURE_ENV_MODE, GL2.GL_COMBINE);
-		gl.glTexEnvi(GL2.GL_TEXTURE_ENV, GL2.GL_COMBINE_RGB, GL2.GL_MODULATE);
+		glTexEnvi(GL2.GL_TEXTURE_ENV, GL2.GL_TEXTURE_ENV_MODE, GL2.GL_COMBINE);
+		glTexEnvi(GL2.GL_TEXTURE_ENV, GL2.GL_COMBINE_RGB, GL2.GL_MODULATE);
 		textureCombineRgbMode = 0;
-		gl.glTexEnvi(GL2.GL_TEXTURE_ENV, GL2.GL_COMBINE_ALPHA, GL2.GL_MODULATE);
+		glTexEnvi(GL2.GL_TEXTURE_ENV, GL2.GL_COMBINE_ALPHA, GL2.GL_MODULATE);
 		textureCombineAlphaMode = 0;
-		gl.glEnable(GL2.GL_LIGHTING);
-		gl.glEnable(GL2.GL_FOG);
-		gl.glEnable(GL2.GL_DEPTH_TEST);
+		glEnable(GL2.GL_LIGHTING);
+		glEnable(GL2.GL_FOG);
+		glEnable(GL2.GL_DEPTH_TEST);
 		lightingEnabled = true;
 		depthTestEnabled = true;
 		fogEnabled = true;
 		resetMaterial();
-		gl.glActiveTexture(GL2.GL_TEXTURE1);
-		gl.glTexEnvi(GL2.GL_TEXTURE_ENV, GL2.GL_TEXTURE_ENV_MODE, GL2.GL_COMBINE);
-		gl.glTexEnvi(GL2.GL_TEXTURE_ENV, GL2.GL_COMBINE_RGB, GL2.GL_MODULATE);
-		gl.glTexEnvi(GL2.GL_TEXTURE_ENV, GL2.GL_COMBINE_ALPHA, GL2.GL_MODULATE);
-		gl.glActiveTexture(GL2.GL_TEXTURE0);
-		gl.setSwapInterval(0);
-		gl.glClearColor(0.0F, 0.0F, 0.0F, 0.0F);
-		gl.glShadeModel(GL2.GL_SMOOTH);
-		gl.glClearDepth(1.0D);
-		gl.glDepthFunc(GL2.GL_LEQUAL);
+		glActiveTexture(GL2.GL_TEXTURE1);
+		glTexEnvi(GL2.GL_TEXTURE_ENV, GL2.GL_TEXTURE_ENV_MODE, GL2.GL_COMBINE);
+		glTexEnvi(GL2.GL_TEXTURE_ENV, GL2.GL_COMBINE_RGB, GL2.GL_MODULATE);
+		glTexEnvi(GL2.GL_TEXTURE_ENV, GL2.GL_COMBINE_ALPHA, GL2.GL_MODULATE);
+		glActiveTexture(GL2.GL_TEXTURE0);
+		//setSwapInterval(0);
+		glClearColor(0.0F, 0.0F, 0.0F, 0.0F);
+		glShadeModel(GL2.GL_SMOOTH);
+		glClearDepth(1.0D);
+		glDepthFunc(GL2.GL_LEQUAL);
 		enableDepthMask();
-		gl.glMatrixMode(GL2.GL_TEXTURE);
-		gl.glLoadIdentity();
-		gl.glPolygonMode(GL2.GL_FRONT, GL2.GL_FILL);
-		gl.glEnable(GL2.GL_CULL_FACE);
-		gl.glCullFace(GL2.GL_BACK);
-		gl.glEnable(GL2.GL_BLEND);										// Enable the OpenGL Blending functionality
-		gl.glBlendFunc(GL2.GL_SRC_ALPHA, GL2.GL_ONE_MINUS_SRC_ALPHA);	// Set the blend mode to blend our current RGBA with what is already in the buffer
-		gl.glEnable(GL2.GL_ALPHA_TEST);
-		gl.glAlphaFunc(GL2.GL_GREATER, 0.0F);
-		gl.glEnableClientState(GL2.GL_VERTEX_ARRAY);
-		gl.glEnableClientState(GL2.GL_NORMAL_ARRAY);
+		glMatrixMode(GL2.GL_TEXTURE);
+		glLoadIdentity();
+		glPolygonMode(GL2.GL_FRONT, GL2.GL_FILL);
+		glEnable(GL2.GL_CULL_FACE);
+		glCullFace(GL2.GL_BACK);
+		glEnable(GL2.GL_BLEND);										// Enable the OpenGL Blending functionality
+		glBlendFunc(GL2.GL_SRC_ALPHA, GL2.GL_ONE_MINUS_SRC_ALPHA);	// Set the blend mode to blend our current RGBA with what is already in the buffer
+		glEnable(GL2.GL_ALPHA_TEST);
+		glAlphaFunc(GL2.GL_GREATER, 0.0F);
+		glEnableClientState(GL2.GL_VERTEX_ARRAY);
+		glEnableClientState(GL2.GL_NORMAL_ARRAY);
 		normalArrayEnabled = true;
-		gl.glEnableClientState(GL2.GL_COLOR_ARRAY);
-		gl.glEnableClientState(GL2.GL_TEXTURE_COORD_ARRAY);
-		gl.glMatrixMode(GL2.GL_MODELVIEW);
-		gl.glLoadIdentity();
+		glEnableClientState(GL2.GL_COLOR_ARRAY);
+		glEnableClientState(GL2.GL_TEXTURE_COORD_ARRAY);
+		glMatrixMode(GL2.GL_MODELVIEW);
+		glLoadIdentity();
 		FogManager.setup();
 		LightingManager.resetLightingState();
 	}
 
 	@OriginalMember(owner = "client!tf", name = "g", descriptor = "()V")
-	public static void enableDepthMask() { gl.glDepthMask(true); }
+	public static void enableDepthMask() { glDepthMask(true); }
 
 	@OriginalMember(owner = "client!tf", name = "n", descriptor = "()V")
-	public static void clearDepthBuffer() { gl.glClear(GL2.GL_DEPTH_BUFFER_BIT); }
+	public static void clearDepthBuffer() { glClear(GL2.GL_DEPTH_BUFFER_BIT); }
 
 	@OriginalMember(owner = "client!tf", name = "q", descriptor = "()V")
-	public static void disableDepthMask() { gl.glDepthMask(false); }
+	public static void disableDepthMask() { glDepthMask(false); }
 
 	@OriginalMember(owner = "client!tf", name = "r", descriptor = "()F")
 	public static float method4179() { return depthAdjustmentParameter; }
@@ -310,9 +312,9 @@ public final class GlRenderer {
 			return;
 		}
 		if (enabled) {
-			gl.glEnable(GL2.GL_DEPTH_TEST);
+			glEnable(GL2.GL_DEPTH_TEST);
 		} else {
-			gl.glDisable(GL2.GL_DEPTH_TEST);
+			glDisable(GL2.GL_DEPTH_TEST);
 		}
 		depthTestEnabled = enabled;
 	}
@@ -320,45 +322,22 @@ public final class GlRenderer {
 	@OriginalMember(owner = "client!tf", name = "h", descriptor = "()V")
 	public static void draw() {
 		@Pc(2) int[] ints = new int[2];
+		// These 2 ones are special and can't be ported easily. Need to look up documentation
 		gl.glGetIntegerv(GL2.GL_DRAW_BUFFER, ints, 0);
 		gl.glGetIntegerv(GL2.GL_READ_BUFFER, ints, 1);
-		gl.glDrawBuffer(GL2.GL_BACK_LEFT);
-		gl.glReadBuffer(GL2.GL_FRONT_LEFT);
+		glDrawBuffer(GL2.GL_BACK_LEFT);
+		glReadBuffer(GL2.GL_FRONT_LEFT);
 		setTextureId(-1);
-		gl.glPushAttrib(GL2.GL_ENABLE_BIT);
-		gl.glDisable(GL2.GL_FOG);
-		gl.glDisable(GL2.GL_BLEND);
-		gl.glDisable(GL2.GL_DEPTH_TEST);
-		gl.glDisable(GL2.GL_ALPHA_TEST);
-		gl.glRasterPos2i(0, 0);
-		gl.glCopyPixels(0, 0, canvasWidth, canvasHeight, GL2.GL_COLOR);
-		gl.glPopAttrib();
-		gl.glDrawBuffer(ints[0]);
-		gl.glReadBuffer(ints[1]);
-	}
-
-	@OriginalMember(owner = "client!tf", name = "a", descriptor = "(Ljava/awt/Canvas;)V")
-	public static void createAndDestroyContext(@OriginalArg(0) Canvas canvas) {
-		try {
-			if (!canvas.isDisplayable()) {
-				return;
-			}
-			GLProfile profile = GLProfile.getDefault();
-
-			GLCapabilities glCaps = new GLCapabilities(profile);
-			AWTGraphicsConfiguration config = AWTGraphicsConfiguration.create(canvas.getGraphicsConfiguration(), glCaps, glCaps);
-			JAWTWindow jawtWindow = NewtFactoryAWT.getNativeWindow(canvas, config);
-			@Pc(5) GLDrawableFactory glDrawableFactory = GLDrawableFactory.getFactory(profile);
-			@Pc(11) GLDrawable glDrawable = glDrawableFactory.createGLDrawable(jawtWindow);
-
-			glDrawable.setRealized(true);
-			@Pc(18) GLContext glContext = glDrawable.createContext(null);
-			glContext.makeCurrent();
-			glContext.release();
-			glContext.destroy();
-			glDrawable.setRealized(false);
-		} catch (@Pc(30) Throwable ex) {
-		}
+		glPushAttrib(GL2.GL_ENABLE_BIT);
+		glDisable(GL2.GL_FOG);
+		glDisable(GL2.GL_BLEND);
+		glDisable(GL2.GL_DEPTH_TEST);
+		glDisable(GL2.GL_ALPHA_TEST);
+		glRasterPos2i(0, 0);
+		glCopyPixels(0, 0, canvasWidth, canvasHeight, GL2.GL_COLOR);
+		glPopAttrib();
+		glDrawBuffer(ints[0]);
+		glReadBuffer(ints[1]);
 	}
 
 	@OriginalMember(owner = "client!tf", name = "j", descriptor = "()V")
@@ -366,12 +345,12 @@ public final class GlRenderer {
 		if (isOrthoViewConfigured) {
 			return;
 		}
-		gl.glMatrixMode(GL2.GL_PROJECTION);		// Switch to the projection matrix so that we can manipulate how our scene is viewed
-		gl.glLoadIdentity();					// Reset the projection matrix to the identity matrix so that we don't get any artifacts (cleaning up)
-		gl.glOrtho(0, canvasWidth, 0, canvasHeight, -1.0D, 1.0D);
+		glMatrixMode(GL2.GL_PROJECTION);		// Switch to the projection matrix so that we can manipulate how our scene is viewed
+		glLoadIdentity();					// Reset the projection matrix to the identity matrix so that we don't get any artifacts (cleaning up)
+		glOrtho(0, canvasWidth, 0, canvasHeight, -1.0D, 1.0D);
 		setViewportBounds(0, 0, canvasWidth, canvasHeight);
-		gl.glMatrixMode(GL2.GL_MODELVIEW);		// Switch back to the model view matrix, so that we can start drawing shapes correctly
-		gl.glLoadIdentity();					// Reset the projection matrix to the identity matrix so that we don't get any artifacts (cleaning up)
+		glMatrixMode(GL2.GL_MODELVIEW);		// Switch back to the model view matrix, so that we can start drawing shapes correctly
+		glLoadIdentity();					// Reset the projection matrix to the identity matrix so that we don't get any artifacts (cleaning up)
 		isOrthoViewConfigured = true;
 	}
 
@@ -400,7 +379,7 @@ public final class GlRenderer {
 		if (vendor.contains("brian paul") || vendor.contains("mesa")) {
 			result |= 0x1;
 		}
-		@Pc(39) String version = gl.glGetString(GL2.GL_VERSION);
+		@Pc(39) String version = glGetString(GL2.GL_VERSION);
 		@Pc(43) String[] versionParts = version.split("[. ]");
 		if (versionParts.length >= 2) {
 			try {
@@ -423,11 +402,11 @@ public final class GlRenderer {
 			result |= 0x20;
 		}
 		@Pc(100) int[] data = new int[1];
-		gl.glGetIntegerv(GL2.GL_MAX_TEXTURE_UNITS, data, 0);
+		glGetIntegerv(GL2.GL_MAX_TEXTURE_UNITS, data);
 		maxTextureUnits = data[0];
-		gl.glGetIntegerv(GL2.GL_MAX_TEXTURE_COORDS, data, 0);
+		glGetIntegerv(GL2.GL_MAX_TEXTURE_COORDS, data);
 		maxTextureCoords = data[0];
-		gl.glGetIntegerv(GL2.GL_MAX_TEXTURE_IMAGE_UNITS, data, 0);
+		glGetIntegerv(GL2.GL_MAX_TEXTURE_IMAGE_UNITS, data);
 		maxTextureImageUnits = data[0];
 		if (maxTextureUnits < 2 || maxTextureCoords < 2 || maxTextureImageUnits < 2) {
 			result |= 0x10;
@@ -463,7 +442,7 @@ public final class GlRenderer {
 		if (arbVboSupported) {
 			try {
 				@Pc(250) int[] temp = new int[1];
-				gl.glGenBuffers(1, temp, 0);
+				glGenBuffers(temp);
 			} catch (@Pc(257) Throwable ex) {
 				return -4;
 			}
@@ -737,37 +716,12 @@ public final class GlRenderer {
 		GL.createCapabilities();
 	}
 
-	private static void loop() {
-		// This line is critical for LWJGL's interoperation with GLFW's
-		// OpenGL context, or any context that is managed externally.
-		// LWJGL detects the context that is current in the current thread,
-		// creates the GLCapabilities instance and makes the OpenGL
-		// bindings available for use.
-		GL.createCapabilities();
-
-		// Set the clear color
-		glClearColor(1.0f, 0.0f, 0.0f, 0.0f);
-
-		// Run the rendering loop until the user has attempted to close
-		// the window or has pressed the ESCAPE key.
-		while ( !glfwWindowShouldClose(LWJGLwindow) ) {
-			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // clear the framebuffer
-
-			glfwSwapBuffers(LWJGLwindow); // swap the color buffers
-
-			// Poll for window events. The key callback above will only be
-			// invoked during this call.
-			glfwPollEvents();
-		}
-	}
-
 	@OriginalMember(owner = "client!tf", name = "a", descriptor = "(Ljava/awt/Canvas;I)I")
 	public static int init(@OriginalArg(0) Canvas canvas, @OriginalArg(1) int numSamples) {
 		try {
 			if (!canvas.isDisplayable()) {
 				return -1;
 			}
-
 
 			// Create JOGL
 			GLProfile profile = GLProfile.get(GLProfile.GL3bc);
@@ -804,11 +758,8 @@ public final class GlRenderer {
 				}
 				ThreadUtils.sleep(100L);
 			}
-			if (window.getLock().isLocked()) {
-				window.unlockSurface();
-			}
 
-			// Create LWJGL
+			// Create LWJGL (I think we snatch the context in the thread from the above code)...
 			System.out.println("Hello LWJGL " + Version.getVersion() + "!");
 			initLWJGL();
 

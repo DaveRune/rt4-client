@@ -148,7 +148,8 @@ public final class DisplayMode {
 			}
 		}
 		if (arg1 == 0 && mode > 0) {
-			GlRenderer.createAndDestroyContext(GameShell.canvas);
+			// Switch back to SD
+			//GlRenderer.createAndDestroyContext(GameShell.canvas);
 		}
 		if (arg2 && arg1 > 0) {
 			GameShell.canvas.setIgnoreRepaint(true);
