@@ -14,11 +14,6 @@ import java.util.concurrent.TimeUnit
  * Timer/SysTime that goes over the report abuse button
  * @author Woah
  */
-@PluginMeta(
-    author = "Woahscam, Ceikry",
-    description = "Displays the session time played, system time, or no time over the \"Report Abuse\" button.",
-    version = 1.2
-)
 class plugin : Plugin() {
 
     private val COMPONENT_REPORT_ABUSE = 49217565

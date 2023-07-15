@@ -6,11 +6,6 @@ import plugin.api.*
 import java.awt.Color
 import kotlin.math.ceil
 
-@PluginMeta(
-    author = "Ceikry",
-    description = "Draws nice and clean experience drops onto the screen.",
-    version = 1.2
-)
 class plugin : Plugin() {
     private val displayTimeout = 10000L // 10 seconds
     private val drawStart = 175

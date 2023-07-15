@@ -10,11 +10,6 @@ import rt4.Keyboard
 import java.awt.event.KeyAdapter
 import java.awt.event.KeyEvent
 
-@PluginMeta(
-    author = "Ceikry",
-    description = "Provides some QOL for audio, including better settings persistence",
-    version = 1.0
-)
 class plugin : Plugin() {
     var isMute = false
     var lastVolumes: Triple<Int,Int,Int>? = null

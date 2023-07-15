@@ -5,11 +5,6 @@ import plugin.annotations.PluginMeta;
 import plugin.api.*;
 import rt4.*;
 
-@PluginMeta(
-        author = "Ceikry",
-        description = "Draws helpful overhead debug information.",
-        version = 1.3
-)
 public class plugin extends Plugin {
     private boolean isEnabled = false;
 

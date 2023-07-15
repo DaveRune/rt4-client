@@ -8,11 +8,6 @@ import rt4.JagString
 import rt4.Player
 import rt4.client
 
-@PluginMeta (
-    author = "Ceikry",
-    description = "Stores your last used login for automatic reuse, per server",
-    version = 1.1
-)
 class plugin : Plugin() {
     var hasRan = false
     var credentials = HashMap<String, HashMap<String, String>>()

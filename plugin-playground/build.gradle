@@ -98,8 +98,16 @@ class plugin : Plugin() {
 
 task buildPlugins(type: Copy, dependsOn: classes) {
     def pluginsPath = rootProject.project("client").projectDir.absolutePath + File.separator + "plugins"
-    from "build/classes/java/main"
-    into pluginsPath
-    from "build/classes/kotlin/main"
-    into pluginsPath
+    copy {
+        from(layout.projectDirectory.dir("src/main/java"))
+        from (layout.projectDirectory.dir("src/main/kotlin"))
+        include("**/*.properties")
+        into pluginsPath
+    }
+
+    copy {
+        from "build/classes/java/main"
+        from "build/classes/kotlin/main"
+        into pluginsPath
+    }
 }

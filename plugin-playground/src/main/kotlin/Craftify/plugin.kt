@@ -10,11 +10,6 @@ import rt4.Fonts
 import rt4.Player
 import java.awt.Color
 
-@PluginMeta(
-    author = "bushtail",
-    description = "Add nameplates above players heads.",
-    version = 1.0
-)
 class plugin : Plugin() {
     override fun PlayerOverheadDraw(player: Player?, screenX: Int, screenY: Int) {
         if (player == null) return

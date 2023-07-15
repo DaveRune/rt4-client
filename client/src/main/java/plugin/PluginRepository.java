@@ -103,11 +103,16 @@ public class PluginRepository {
 
                 Class<?> clazz = loader.loadClass(file.getName() + ".plugin");
 
-                PluginInfo info;
-                if (infoFile.exists())
-                    info = PluginInfo.loadFromFile(infoFile);
-                else
-                    info = PluginInfo.loadFromClass(clazz);
+                PluginInfo info = null;
+                try {
+                    if (infoFile.exists())
+                        info = PluginInfo.loadFromFile(infoFile);
+                    else
+                        info = PluginInfo.loadFromClass(clazz);
+                } catch (Exception e) {
+                    System.err.println("Unable to load plugin " + file.getName() + " because there were issues parsing its info: ");
+                    e.printStackTrace();
+                }
 
                 if (info == null) {
                     System.err.println("Unable to load plugin " + file.getName() + " because it contains no information about author, version, etc!");
