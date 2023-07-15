@@ -1,12 +1,18 @@
 package rt4;
 
 import com.jogamp.opengl.GL2;
+import org.lwjgl.opengl.GL11;
+import org.lwjgl.opengl.GL15;
+import org.lwjgl.opengl.GL20;
+import org.lwjgl.opengl.GL30;
 import org.openrs2.deob.annotation.OriginalArg;
 import org.openrs2.deob.annotation.OriginalClass;
 import org.openrs2.deob.annotation.OriginalMember;
 import org.openrs2.deob.annotation.Pc;
 
 import java.nio.ByteBuffer;
+
+import static org.lwjgl.opengl.GL20.*;
 
 @OriginalClass("client!fj")
 public final class Light_Class45 {
@@ -184,22 +190,54 @@ public final class Light_Class45 {
 
 	@OriginalMember(owner = "client!fj", name = "c", descriptor = "()V")
 	public final void method1556() {
-		@Pc(1) GL2 gl = GlRenderer.gl;
+
+		/*
+		It is possible that this will cause issues in the future.
+		JOGL => void glDrawElements(int mode, int count, int type, ByteBuffer indices )
+		LWJGL => void glDrawElements(int mode, int count, int type, long indices )
+		 */
+
+
+		int vboId, iboId;
+
 		if (GlRenderer.arbVboSupported) {
 			this.aClass155_1.bindArray();
-			gl.glInterleavedArrays(GL2.GL_C4UB_V3F, 16, 0L);
+			GL20.glEnableClientState(GL2.GL_VERTEX_ARRAY);
+			glInterleavedArrays(GL2.GL_C4UB_V3F, 16, 0L);
 			GlRenderer.normalArrayEnabled = false;
 			this.aClass155_2.bindElementArray();
-			gl.glDrawElements(GL2.GL_TRIANGLES, this.anInt2018, GL2.GL_UNSIGNED_INT, 0L);
+			glDrawElements(GL2.GL_TRIANGLES, this.anInt2018, GL2.GL_UNSIGNED_INT, 0L);
+			glDisableClientState(GL2.GL_VERTEX_ARRAY);
 			return;
 		}
-		if (GlRenderer.arbVboSupported) {
-			gl.glBindBuffer(GL2.GL_ARRAY_BUFFER, 0);
-			gl.glBindBuffer(GL2.GL_ELEMENT_ARRAY_BUFFER, 0);
-		}
-		gl.glInterleavedArrays(GL2.GL_C4UB_V3F, 16, this.aByteBuffer1);
-		GlRenderer.normalArrayEnabled = false;
-		gl.glDrawElements(GL2.GL_TRIANGLES, this.anInt2018, GL2.GL_UNSIGNED_INT, this.aByteBuffer2);
+
+		// create a VBO
+		vboId = GL15.glGenBuffers();
+		GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, vboId);
+		GL15.glBufferData(GL15.GL_ARRAY_BUFFER, this.aByteBuffer1.asFloatBuffer(), GL15.GL_STATIC_DRAW);
+
+		// create an IBO
+		iboId = GL15.glGenBuffers();
+		GL15.glBindBuffer(GL15.GL_ELEMENT_ARRAY_BUFFER, iboId);
+		GL15.glBufferData(GL15.GL_ELEMENT_ARRAY_BUFFER, this.aByteBuffer2.asIntBuffer(), GL15.GL_STATIC_DRAW);
+
+		// Bind the VBO and IBO
+		GL30.glBindVertexArray(vboId);
+		glEnableVertexAttribArray(0); // Enable vertex array
+
+		// Set pointer and draw
+		glVertexAttribPointer(0, 3, GL11.GL_FLOAT, false, 16, 0);
+		GL11.glDrawElements(GL11.GL_TRIANGLES, this.anInt2018, GL11.GL_UNSIGNED_INT, 0);
+
+		// Unbind the VBO and IBO
+		GL30.glBindVertexArray(0);
+		glDisableVertexAttribArray(0); // Disable vertex array
+		GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, 0);
+		GL15.glBindBuffer(GL15.GL_ELEMENT_ARRAY_BUFFER, 0);
+
+		// Delete the VBO and IBO
+		GL15.glDeleteBuffers(vboId);
+		GL15.glDeleteBuffers(iboId);
 	}
 
 	@OriginalMember(owner = "client!fj", name = "a", descriptor = "([I)V")
