@@ -5,6 +5,8 @@ import org.openrs2.deob.annotation.OriginalArg;
 import org.openrs2.deob.annotation.OriginalMember;
 import org.openrs2.deob.annotation.Pc;
 
+import static org.lwjgl.opengl.GL11.*;
+
 public final class FogManager {
 
 	@OriginalMember(owner = "client!ph", name = "b", descriptor = "[[Lclient!li;")
@@ -98,8 +100,8 @@ public final class FogManager {
 	@OriginalMember(owner = "client!mk", name = "a", descriptor = "()V")
 	public static void applyLightPosition() {
 		@Pc(1) GL2 gl = GlRenderer.gl;
-		gl.glLightfv(GL2.GL_LIGHT0, GL2.GL_POSITION, light0Position, 0);
-		gl.glLightfv(GL2.GL_LIGHT1, GL2.GL_POSITION, light1Position, 0);
+		glLightfv(GL2.GL_LIGHT0, GL2.GL_POSITION, light0Position);
+		glLightfv(GL2.GL_LIGHT1, GL2.GL_POSITION, light1Position);
 	}
 
 	@OriginalMember(owner = "client!mk", name = "b", descriptor = "()F")
@@ -121,11 +123,11 @@ public final class FogManager {
 		@Pc(43) float green = (float) (color >> 8 & 0xFF) / 255.0F;
 		@Pc(50) float blue = (float) (color & 0xFF) / 255.0F;
 		@Pc(75) float[] lightModelAmbientParams = new float[]{ambientMod * red, ambientMod * green, ambientMod * blue, 1.0F};
-		gl.glLightModelfv(GL2.GL_LIGHT_MODEL_AMBIENT, lightModelAmbientParams, 0);
+		glLightModelfv(GL2.GL_LIGHT_MODEL_AMBIENT, lightModelAmbientParams);
 		@Pc(105) float[] light0Params = new float[]{l0Diffuse * red, l0Diffuse * green, l0Diffuse * blue, 1.0F};
-		gl.glLightfv(GL2.GL_LIGHT0, GL2.GL_DIFFUSE, light0Params, 0);
+		glLightfv(GL2.GL_LIGHT0, GL2.GL_DIFFUSE, light0Params);
 		@Pc(139) float[] light1Params = new float[]{-l1Diffuse * red, -l1Diffuse * green, -l1Diffuse * blue, 1.0F};
-		gl.glLightfv(GL2.GL_LIGHT1, GL2.GL_DIFFUSE, light1Params, 0);
+		glLightfv(GL2.GL_LIGHT1, GL2.GL_DIFFUSE, light1Params);
 	}
 
 	@OriginalMember(owner = "client!mk", name = "a", descriptor = "(II)V")
@@ -139,17 +141,17 @@ public final class FogManager {
 		fogColor[0] = (float) (color >> 16 & 0xFF) / 255.0F;
 		fogColor[1] = (float) (color >> 8 & 0xFF) / 255.0F;
 		fogColor[2] = (float) (color & 0xFF) / 255.0F;
-		gl.glFogi(GL2.GL_FOG_MODE, GL2.GL_LINEAR);
-		gl.glFogf(GL2.GL_FOG_DENSITY, 0.95F);
-		gl.glHint(GL2.GL_FOG_HINT, GL2.GL_FASTEST);
+		glFogi(GL2.GL_FOG_MODE, GL2.GL_LINEAR);
+		glFogf(GL2.GL_FOG_DENSITY, 0.95F);
+		glHint(GL2.GL_FOG_HINT, GL2.GL_FASTEST);
 		int fogEnd = GlobalConfig.VIEW_DISTANCE;
 		@Pc(65) int fogStart = fogEnd - (int) (GlobalConfig.VIEW_FADE_DISTANCE * 2.0f) - offset;
 		if (fogStart < 50) {
 			fogStart = 50;
 		}
-		gl.glFogf(GL2.GL_FOG_START, (float) fogStart);
-		gl.glFogf(GL2.GL_FOG_END, (float) fogEnd - GlobalConfig.VIEW_FADE_DISTANCE);
-		gl.glFogfv(GL2.GL_FOG_COLOR, fogColor, 0);
+		glFogf(GL2.GL_FOG_START, (float) fogStart);
+		glFogf(GL2.GL_FOG_END, (float) fogEnd - GlobalConfig.VIEW_FADE_DISTANCE);
+		glFogfv(GL2.GL_FOG_COLOR, fogColor);
 	}
 
 	@OriginalMember(owner = "client!mk", name = "a", descriptor = "(FFF)V")
@@ -175,14 +177,14 @@ public final class FogManager {
 	@OriginalMember(owner = "client!mk", name = "e", descriptor = "()V")
 	public static void setup() {
 		@Pc(1) GL2 gl = GlRenderer.gl;
-		gl.glColorMaterial(GL2.GL_FRONT, GL2.GL_AMBIENT_AND_DIFFUSE);
-		gl.glEnable(GL2.GL_COLOR_MATERIAL);
+		glColorMaterial(GL2.GL_FRONT, GL2.GL_AMBIENT_AND_DIFFUSE);
+		glEnable(GL2.GL_COLOR_MATERIAL);
 		@Pc(27) float[] light0Params = new float[]{0.0F, 0.0F, 0.0F, 1.0F};
-		gl.glLightfv(GL2.GL_LIGHT0, GL2.GL_AMBIENT, light0Params, 0);
-		gl.glEnable(GL2.GL_LIGHT0);
+		glLightfv(GL2.GL_LIGHT0, GL2.GL_AMBIENT, light0Params);
+		glEnable(GL2.GL_LIGHT0);
 		@Pc(55) float[] light1Params = new float[]{0.0F, 0.0F, 0.0F, 1.0F};
-		gl.glLightfv(GL2.GL_LIGHT1, GL2.GL_AMBIENT, light1Params, 0);
-		gl.glEnable(GL2.GL_LIGHT1);
+		glLightfv(GL2.GL_LIGHT1, GL2.GL_AMBIENT, light1Params);
+		glEnable(GL2.GL_LIGHT1);
 		lightColor = -1;
 		fogColorRGB = -1;
 		initDefaults();
@@ -194,7 +196,7 @@ public final class FogManager {
 			params = fogColor;
 		}
 		@Pc(5) GL2 gl = GlRenderer.gl;
-		gl.glFogfv(GL2.GL_FOG_COLOR, params, 0);
+		glFogfv(GL2.GL_FOG_COLOR, params);
 	}
 
 	@OriginalMember(owner = "client!mk", name = "f", descriptor = "()V")
