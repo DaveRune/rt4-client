@@ -7,6 +7,8 @@ import org.openrs2.deob.annotation.Pc;
 
 import java.nio.IntBuffer;
 
+import static org.lwjgl.opengl.GL11.*;
+
 public final class GlRaster {
 
 	@OriginalMember(owner = "client!dj", name = "b", descriptor = "I")
@@ -27,12 +29,11 @@ public final class GlRaster {
 		@Pc(5) float xCoordinateStart = (float) x + 0.3F;
 		@Pc(10) float xCoordinateEnd = xCoordinateStart + (float) length;
 		@Pc(18) float yCoordinate = (float) GlRenderer.canvasHeight - (float) y - 0.3F;
-		@Pc(20) GL2 gl = GlRenderer.gl;
-		gl.glBegin(GL2.GL_LINES);
-		gl.glColor3ub((byte) (color >> 16), (byte) (color >> 8), (byte) color);
-		gl.glVertex2f(xCoordinateStart, yCoordinate);
-		gl.glVertex2f(xCoordinateEnd, yCoordinate);
-		gl.glEnd();
+		glBegin(GL2.GL_LINES);
+		glColor3ub((byte) (color >> 16), (byte) (color >> 8), (byte) color);
+		glVertex2f(xCoordinateStart, yCoordinate);
+		glVertex2f(xCoordinateEnd, yCoordinate);
+		glEnd();
 	}
 
 	@OriginalMember(owner = "client!dj", name = "b", descriptor = "(IIII)V")
@@ -41,12 +42,11 @@ public final class GlRaster {
 		@Pc(5) float xCoordinate = (float) x + 0.3F;
 		@Pc(13) float yCoordinateStart = (float) GlRenderer.canvasHeight - (float) y - 0.3F;
 		@Pc(18) float yCoordinateEnd = yCoordinateStart - (float) height;
-		@Pc(20) GL2 gl = GlRenderer.gl;
-		gl.glBegin(GL2.GL_LINES);
-		gl.glColor3ub((byte) (color >> 16), (byte) (color >> 8), (byte) color);
-		gl.glVertex2f(xCoordinate, yCoordinateStart);
-		gl.glVertex2f(xCoordinate, yCoordinateEnd);
-		gl.glEnd();
+		glBegin(GL2.GL_LINES);
+		glColor3ub((byte) (color >> 16), (byte) (color >> 8), (byte) color);
+		glVertex2f(xCoordinate, yCoordinateStart);
+		glVertex2f(xCoordinate, yCoordinateEnd);
+		glEnd();
 	}
 
 	@OriginalMember(owner = "client!dj", name = "c", descriptor = "()V")
@@ -55,23 +55,21 @@ public final class GlRaster {
 		clipTop = 0;
 		clipRight = GlRenderer.canvasWidth;
 		clipBottom = GlRenderer.canvasHeight;
-		@Pc(9) GL2 gl = GlRenderer.gl;
-		gl.glDisable(GL2.GL_SCISSOR_TEST);
+		glDisable(GL2.GL_SCISSOR_TEST);
 		GlFont.method1173();
 	}
 
 	@OriginalMember(owner = "client!dj", name = "a", descriptor = "([IIIII)V")
 	public static void drawPixels(@OriginalArg(0) int[] pixels, @OriginalArg(1) int x, @OriginalArg(2) int y, @OriginalArg(3) int width, @OriginalArg(4) int height) {
 		GlRenderer.setupRenderingWithNoTexture();
-		@Pc(2) GL2 gl = GlRenderer.gl;
-		gl.glRasterPos2i(x, GlRenderer.canvasHeight - y);
-		gl.glPixelZoom((float) GameShell.canvasScale, (float) -GameShell.canvasScale);
-		gl.glDisable(GL2.GL_BLEND);
-		gl.glDisable(GL2.GL_ALPHA_TEST);
-		gl.glDrawPixels(width, height, GL2.GL_BGRA, GlRenderer.bigEndian ? GL2.GL_UNSIGNED_INT_8_8_8_8_REV : GL2.GL_UNSIGNED_BYTE, IntBuffer.wrap(pixels));
-		gl.glPixelZoom(1.0F, 1.0F);
-		gl.glEnable(GL2.GL_ALPHA_TEST);
-		gl.glEnable(GL2.GL_BLEND);
+		glRasterPos2i(x, GlRenderer.canvasHeight - y);
+		glPixelZoom((float) GameShell.canvasScale, (float) -GameShell.canvasScale);
+		glDisable(GL2.GL_BLEND);
+		glDisable(GL2.GL_ALPHA_TEST);
+		glDrawPixels(width, height, GL2.GL_BGRA, GlRenderer.bigEndian ? GL2.GL_UNSIGNED_INT_8_8_8_8_REV : GL2.GL_UNSIGNED_BYTE, IntBuffer.wrap(pixels));
+		glPixelZoom(1.0F, 1.0F);
+		glEnable(GL2.GL_ALPHA_TEST);
+		glEnable(GL2.GL_BLEND);
 	}
 
 	@OriginalMember(owner = "client!dj", name = "a", descriptor = "(IIIII)V")
@@ -81,14 +79,13 @@ public final class GlRaster {
 		@Pc(12) float local12 = local5 + (float) (width - 1);
 		@Pc(20) float local20 = (float) GlRenderer.canvasHeight - (float) y - 0.3F;
 		@Pc(27) float local27 = local20 - (float) (height - 1);
-		@Pc(29) GL2 gl = GlRenderer.gl;
-		gl.glBegin(GL2.GL_LINE_LOOP);
-		gl.glColor3ub((byte) (color >> 16), (byte) (color >> 8), (byte) color);
-		gl.glVertex2f(local5, local20);
-		gl.glVertex2f(local5, local27);
-		gl.glVertex2f(local12, local27);
-		gl.glVertex2f(local12, local20);
-		gl.glEnd();
+		glBegin(GL2.GL_LINE_LOOP);
+		glColor3ub((byte) (color >> 16), (byte) (color >> 8), (byte) color);
+		glVertex2f(local5, local20);
+		glVertex2f(local5, local27);
+		glVertex2f(local12, local27);
+		glVertex2f(local12, local20);
+		glEnd();
 	}
 
 	@OriginalMember(owner = "client!dj", name = "a", descriptor = "(IIIIII)V")
@@ -98,14 +95,13 @@ public final class GlRaster {
 		@Pc(12) float local12 = local5 + (float) (width - 1);
 		@Pc(20) float local20 = (float) GlRenderer.canvasHeight - (float) y - 0.3F;
 		@Pc(27) float local27 = local20 - (float) (height - 1);
-		@Pc(29) GL2 gl = GlRenderer.gl;
-		gl.glBegin(GL2.GL_LINE_LOOP);
-		gl.glColor4ub((byte) (color >> 16), (byte) (color >> 8), (byte) color, alpha > 255 ? -1 : (byte) alpha);
-		gl.glVertex2f(local5, local20);
-		gl.glVertex2f(local5, local27);
-		gl.glVertex2f(local12, local27);
-		gl.glVertex2f(local12, local20);
-		gl.glEnd();
+		glBegin(GL2.GL_LINE_LOOP);
+		glColor4ub((byte) (color >> 16), (byte) (color >> 8), (byte) color, alpha > 255 ? -1 : (byte) alpha);
+		glVertex2f(local5, local20);
+		glVertex2f(local5, local27);
+		glVertex2f(local12, local27);
+		glVertex2f(local12, local20);
+		glEnd();
 	}
 
 	@OriginalMember(owner = "client!dj", name = "b", descriptor = "(IIIIII)V")
@@ -141,21 +137,20 @@ public final class GlRaster {
 		@Pc(115) int local115 = arg1 + local7 - local81;
 		@Pc(121) int local121 = arg1 + local7 + local73;
 		GlRenderer.setupRenderingWithNoTexture();
-		@Pc(124) GL2 gl = GlRenderer.gl;
-		gl.glColor3ub((byte) (arg4 >> 16), (byte) (arg4 >> 8), (byte) arg4);
-		gl.glBegin(GL2.GL_TRIANGLE_FAN);
+		glColor3ub((byte) (arg4 >> 16), (byte) (arg4 >> 8), (byte) arg4);
+		glBegin(GL2.GL_TRIANGLE_FAN);
 		if (local43 <= local37) {
-			gl.glVertex2f((float) local101, (float) (GlRenderer.canvasHeight - local121));
-			gl.glVertex2f((float) local95, (float) (GlRenderer.canvasHeight - local115));
-			gl.glVertex2f((float) local89, (float) (GlRenderer.canvasHeight - local109));
-			gl.glVertex2f((float) local85, (float) (GlRenderer.canvasHeight - local105));
+			glVertex2f((float) local101, (float) (GlRenderer.canvasHeight - local121));
+			glVertex2f((float) local95, (float) (GlRenderer.canvasHeight - local115));
+			glVertex2f((float) local89, (float) (GlRenderer.canvasHeight - local109));
+			glVertex2f((float) local85, (float) (GlRenderer.canvasHeight - local105));
 		} else {
-			gl.glVertex2f((float) local85, (float) (GlRenderer.canvasHeight - local105));
-			gl.glVertex2f((float) local89, (float) (GlRenderer.canvasHeight - local109));
-			gl.glVertex2f((float) local95, (float) (GlRenderer.canvasHeight - local115));
-			gl.glVertex2f((float) local101, (float) (GlRenderer.canvasHeight - local121));
+			glVertex2f((float) local85, (float) (GlRenderer.canvasHeight - local105));
+			glVertex2f((float) local89, (float) (GlRenderer.canvasHeight - local109));
+			glVertex2f((float) local95, (float) (GlRenderer.canvasHeight - local115));
+			glVertex2f((float) local101, (float) (GlRenderer.canvasHeight - local121));
 		}
-		gl.glEnd();
+		glEnd();
 	}
 
 	@OriginalMember(owner = "client!dj", name = "c", descriptor = "(IIIIII)V")
@@ -165,14 +160,13 @@ public final class GlRaster {
 		@Pc(8) float local8 = local3 + (float) width;
 		@Pc(13) float local13 = (float) (GlRenderer.canvasHeight - y);
 		@Pc(18) float local18 = local13 - (float) height;
-		@Pc(20) GL2 gl = GlRenderer.gl;
-		gl.glBegin(GL2.GL_TRIANGLE_FAN);
-		gl.glColor4ub((byte) (color >> 16), (byte) (color >> 8), (byte) color, alpha > 255 ? -1 : (byte) alpha);
-		gl.glVertex2f(local3, local13);
-		gl.glVertex2f(local3, local18);
-		gl.glVertex2f(local8, local18);
-		gl.glVertex2f(local8, local13);
-		gl.glEnd();
+		glBegin(GL2.GL_TRIANGLE_FAN);
+		glColor4ub((byte) (color >> 16), (byte) (color >> 8), (byte) color, alpha > 255 ? -1 : (byte) alpha);
+		glVertex2f(local3, local13);
+		glVertex2f(local3, local18);
+		glVertex2f(local8, local18);
+		glVertex2f(local8, local13);
+		glEnd();
 	}
 
 	@OriginalMember(owner = "client!dj", name = "c", descriptor = "(IIII)V")
@@ -189,19 +183,18 @@ public final class GlRaster {
 		if (clipBottom > arg3) {
 			clipBottom = arg3;
 		}
-		@Pc(21) GL2 gl = GlRenderer.gl;
-		gl.glEnable(GL2.GL_SCISSOR_TEST);
+		glEnable(GL2.GL_SCISSOR_TEST);
 		if (clipLeft <= clipRight && clipTop <= clipBottom) {
-			gl.glScissor((int) (clipLeft * GameShell.canvasScale + GameShell.subpixelX), (int) ((GlRenderer.canvasHeight - clipBottom) * GameShell.canvasScale + GameShell.subpixelY), (int) ((clipRight - clipLeft) * GameShell.canvasScale + GameShell.subpixelX), (int) ((clipBottom - clipTop) * GameShell.canvasScale + GameShell.subpixelY));
+			glScissor((int) (clipLeft * GameShell.canvasScale + GameShell.subpixelX), (int) ((GlRenderer.canvasHeight - clipBottom) * GameShell.canvasScale + GameShell.subpixelY), (int) ((clipRight - clipLeft) * GameShell.canvasScale + GameShell.subpixelX), (int) ((clipBottom - clipTop) * GameShell.canvasScale + GameShell.subpixelY));
 		} else {
-			gl.glScissor(0, 0, 0, 0);
+			glScissor(0, 0, 0, 0);
 		}
 		GlFont.method1173();
 	}
 
 	@OriginalMember(owner = "client!dj", name = "d", descriptor = "()V")
 	public static void clear() {
-		GlRenderer.gl.glClear(GL2.GL_DEPTH_BUFFER_BIT | GL2.GL_COLOR_BUFFER_BIT);
+		glClear(GL2.GL_DEPTH_BUFFER_BIT | GL2.GL_COLOR_BUFFER_BIT);
 	}
 
 	@OriginalMember(owner = "client!dj", name = "b", descriptor = "(IIIII)V")
@@ -211,12 +204,11 @@ public final class GlRaster {
 		@Pc(10) float local10 = (float) arg2 + 0.3F;
 		@Pc(18) float local18 = (float) GlRenderer.canvasHeight - (float) arg1 - 0.3F;
 		@Pc(26) float local26 = (float) GlRenderer.canvasHeight - (float) arg3 - 0.3F;
-		@Pc(28) GL2 gl = GlRenderer.gl;
-		gl.glBegin(GL2.GL_LINE_LOOP);
-		gl.glColor3ub((byte) (arg4 >> 16), (byte) (arg4 >> 8), (byte) arg4);
-		gl.glVertex2f(local5, local18);
-		gl.glVertex2f(local10, local26);
-		gl.glEnd();
+		glBegin(GL2.GL_LINE_LOOP);
+		glColor3ub((byte) (arg4 >> 16), (byte) (arg4 >> 8), (byte) arg4);
+		glVertex2f(local5, local18);
+		glVertex2f(local10, local26);
+		glEnd();
 	}
 
 	@OriginalMember(owner = "client!dj", name = "c", descriptor = "(IIIII)V")
@@ -226,14 +218,13 @@ public final class GlRaster {
 		@Pc(8) float local8 = local3 + (float) arg2;
 		@Pc(13) float local13 = (float) (GlRenderer.canvasHeight - arg1);
 		@Pc(18) float local18 = local13 - (float) arg3;
-		@Pc(20) GL2 gl = GlRenderer.gl;
-		gl.glBegin(GL2.GL_TRIANGLE_FAN);
-		gl.glColor3ub((byte) (arg4 >> 16), (byte) (arg4 >> 8), (byte) arg4);
-		gl.glVertex2f(local3, local13);
-		gl.glVertex2f(local3, local18);
-		gl.glVertex2f(local8, local18);
-		gl.glVertex2f(local8, local13);
-		gl.glEnd();
+		glBegin(GL2.GL_TRIANGLE_FAN);
+		glColor3ub((byte) (arg4 >> 16), (byte) (arg4 >> 8), (byte) arg4);
+		glVertex2f(local3, local13);
+		glVertex2f(local3, local18);
+		glVertex2f(local8, local18);
+		glVertex2f(local8, local13);
+		glEnd();
 	}
 
 	@OriginalMember(owner = "client!dj", name = "d", descriptor = "(IIII)V")
@@ -254,12 +245,11 @@ public final class GlRaster {
 		clipTop = arg1;
 		clipRight = arg2;
 		clipBottom = arg3;
-		@Pc(27) GL2 gl = GlRenderer.gl;
-		gl.glEnable(GL2.GL_SCISSOR_TEST);
+		glEnable(GL2.GL_SCISSOR_TEST);
 		if (clipLeft <= clipRight && clipTop <= clipBottom) {
-			gl.glScissor((int) (clipLeft * GameShell.canvasScale + GameShell.subpixelX), (int) ((GlRenderer.canvasHeight - clipBottom) * GameShell.canvasScale + GameShell.subpixelY), (int) ((clipRight - clipLeft) * GameShell.canvasScale + GameShell.subpixelX), (int) ((clipBottom - clipTop) * GameShell.canvasScale + GameShell.subpixelY));
+			glScissor((int) (clipLeft * GameShell.canvasScale + GameShell.subpixelX), (int) ((GlRenderer.canvasHeight - clipBottom) * GameShell.canvasScale + GameShell.subpixelY), (int) ((clipRight - clipLeft) * GameShell.canvasScale + GameShell.subpixelX), (int) ((clipBottom - clipTop) * GameShell.canvasScale + GameShell.subpixelY));
 		} else {
-			gl.glScissor(0, 0, 0, 0);
+			glScissor(0, 0, 0, 0);
 		}
 		GlFont.method1173();
 	}
