@@ -9,6 +9,10 @@ import org.openrs2.deob.annotation.Pc;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 
+import static org.lwjgl.opengl.GL11.*;
+import static org.lwjgl.opengl.GL13.glClientActiveTexture;
+import static org.lwjgl.opengl.GL15.glBindBuffer;
+
 @OriginalClass("client!hg")
 public final class GlTile extends Node {
 
@@ -308,40 +312,40 @@ public final class GlTile extends Node {
 		@Pc(282) int i = this.aBoolean139 ? 40 : 36;
 		if (this.aClass155_3 == null) {
 			if (GlRenderer.arbVboSupported) {
-				gl.glBindBuffer(GL2.GL_ARRAY_BUFFER, 0);
+				glBindBuffer(GL2.GL_ARRAY_BUFFER, 0);
 			}
 			this.aByteBuffer3.position(0);
-			gl.glVertexPointer(3, GL2.GL_FLOAT, i, this.aByteBuffer3);
+			glVertexPointer(3, GL2.GL_FLOAT, i, this.aByteBuffer3);
 			this.aByteBuffer3.position(12);
-			gl.glColorPointer(4, GL2.GL_UNSIGNED_BYTE, i, this.aByteBuffer3);
+			glColorPointer(4, GL2.GL_UNSIGNED_BYTE, i, this.aByteBuffer3);
 			if (Preferences.highDetailLighting) {
 				this.aByteBuffer3.position(16);
-				gl.glNormalPointer(GL2.GL_FLOAT, i, this.aByteBuffer3);
+				glNormalPointer(GL2.GL_FLOAT, i, this.aByteBuffer3);
 			}
 			this.aByteBuffer3.position(28);
-			gl.glTexCoordPointer(2, GL2.GL_FLOAT, i, this.aByteBuffer3);
+			glTexCoordPointer(2, GL2.GL_FLOAT, i, this.aByteBuffer3);
 			if (this.aBoolean139) {
-				gl.glClientActiveTexture(UnderwaterMaterialRenderer.method4607());
+				glClientActiveTexture(UnderwaterMaterialRenderer.method4607());
 				this.aByteBuffer3.position(36);
-				gl.glTexCoordPointer(1, GL2.GL_FLOAT, i, this.aByteBuffer3);
-				gl.glClientActiveTexture(GL2.GL_TEXTURE0);
+				glTexCoordPointer(1, GL2.GL_FLOAT, i, this.aByteBuffer3);
+				glClientActiveTexture(GL2.GL_TEXTURE0);
 			}
 		} else {
 			this.aClass155_3.bindArray();
-			gl.glVertexPointer(3, GL2.GL_FLOAT, i, 0L);
-			gl.glColorPointer(4, GL2.GL_UNSIGNED_BYTE, i, 12L);
+			glVertexPointer(3, GL2.GL_FLOAT, i, 0L);
+			glColorPointer(4, GL2.GL_UNSIGNED_BYTE, i, 12L);
 			if (Preferences.highDetailLighting) {
-				gl.glNormalPointer(GL2.GL_FLOAT, i, 16L);
+				glNormalPointer(GL2.GL_FLOAT, i, 16L);
 			}
-			gl.glTexCoordPointer(2, GL2.GL_FLOAT, i, 28L);
+			glTexCoordPointer(2, GL2.GL_FLOAT, i, 28L);
 			if (this.aBoolean139) {
-				gl.glClientActiveTexture(UnderwaterMaterialRenderer.method4607());
-				gl.glTexCoordPointer(1, GL2.GL_FLOAT, i, 36L);
-				gl.glClientActiveTexture(GL2.GL_TEXTURE0);
+				glClientActiveTexture(UnderwaterMaterialRenderer.method4607());
+				glTexCoordPointer(1, GL2.GL_FLOAT, i, 36L);
+				glClientActiveTexture(GL2.GL_TEXTURE0);
 			}
 		}
 		if (GlRenderer.arbVboSupported) {
-			gl.glBindBuffer(GL2.GL_ELEMENT_ARRAY_BUFFER, 0);
+			glBindBuffer(GL2.GL_ELEMENT_ARRAY_BUFFER, 0);
 		}
 		if (aClass3_Sub15_3.offset != 0) {
 			if (aByteBuffer5 == null || aByteBuffer5.capacity() < aClass3_Sub15_3.offset) {
@@ -352,7 +356,7 @@ public final class GlTile extends Node {
 			aByteBuffer5.put(aClass3_Sub15_3.data, 0, aClass3_Sub15_3.offset);
 			aByteBuffer5.flip();
 			GlRenderer.configureFixedDepthAdjustment(arg1);
-			gl.glDrawElements(GL2.GL_TRIANGLES, aClass3_Sub15_3.offset / 4, GL2.GL_UNSIGNED_INT, aByteBuffer5);
+			GlRenderer.glDrawElementsWrapper(GL2.GL_TRIANGLES, aClass3_Sub15_3.offset / 4, GL2.GL_UNSIGNED_INT, aByteBuffer5);
 		}
 		if (aClass3_Sub15_2.offset == 0) {
 			return;
@@ -366,7 +370,7 @@ public final class GlTile extends Node {
 		aByteBuffer4.flip();
 		GlRenderer.configureFixedDepthAdjustment(arg1 - 100.0F);
 		GlRenderer.disableDepthMask();
-		gl.glDrawElements(GL2.GL_TRIANGLES, aClass3_Sub15_2.offset / 4, GL2.GL_UNSIGNED_INT, aByteBuffer4);
+		GlRenderer.glDrawElementsWrapper(GL2.GL_TRIANGLES, aClass3_Sub15_2.offset / 4, GL2.GL_UNSIGNED_INT, aByteBuffer4);
 		GlRenderer.enableDepthMask();
 	}
 
