@@ -1,6 +1,8 @@
 package rt4;
 
 import com.jogamp.opengl.GL2;
+import org.lwjgl.opengl.GL11;
+import org.lwjgl.opengl.GL15;
 import org.openrs2.deob.annotation.OriginalArg;
 import org.openrs2.deob.annotation.OriginalMember;
 import org.openrs2.deob.annotation.Pc;
@@ -76,15 +78,13 @@ public final class GlCleaner {
 		}
 	}
 
-	@OriginalMember(owner = "client!fa", name = "c", descriptor = "()V")
 	public static synchronized void process() {
-		@Pc(1) GL2 gl = GlRenderer.gl;
-		@Pc(3) int local3 = 0;
+		int local3 = 0;
 		while (true) {
-			@Pc(8) IntNode local8 = (IntNode) aClass69_48.removeHead();
+			IntNode local8 = (IntNode) aClass69_48.removeHead();
 			if (local8 == null) {
 				if (local3 > 0) {
-					gl.glDeleteBuffers(local3, anIntArray151, 0);
+					GL15.glDeleteBuffers(anIntArray151);
 					local3 = 0;
 				}
 				while (true) {
@@ -94,7 +94,7 @@ public final class GlCleaner {
 							local8 = (IntNode) aClass69_50.removeHead();
 							if (local8 == null) {
 								if (local3 > 0) {
-									gl.glDeleteTextures(local3, anIntArray151, 0);
+									GL11.glDeleteTextures(anIntArray151);
 								}
 								while (true) {
 									local8 = (IntNode) aClass69_51.removeHead();
@@ -105,14 +105,17 @@ public final class GlCleaner {
 										}
 										return;
 									}
-									@Pc(126) int local126 = (int) local8.key;
-									gl.glDeleteLists(local126, 1);
+									int local126 = (int) local8.key;
+									/*
+									this might not work with all hardware or drivers. display lists are deprecated.
+									 */
+									GL11.glDeleteLists(local126, 1);
 								}
 							}
 							anIntArray151[local3++] = (int) local8.key;
 							onCardTexture -= local8.value;
 							if (local3 == 1000) {
-								gl.glDeleteTextures(local3, anIntArray151, 0);
+								GL11.glDeleteTextures(anIntArray151);
 								local3 = 0;
 							}
 						}
@@ -120,7 +123,7 @@ public final class GlCleaner {
 					anIntArray151[local3++] = (int) local8.key;
 					onCard2d -= local8.value;
 					if (local3 == 1000) {
-						gl.glDeleteTextures(local3, anIntArray151, 0);
+						GL11.glDeleteTextures(anIntArray151);
 						local3 = 0;
 					}
 				}
@@ -128,7 +131,7 @@ public final class GlCleaner {
 			anIntArray151[local3++] = (int) local8.key;
 			onCardGeometry -= local8.value;
 			if (local3 == 1000) {
-				gl.glDeleteBuffers(local3, anIntArray151, 0);
+				GL15.glDeleteBuffers(anIntArray151);
 				local3 = 0;
 			}
 		}
