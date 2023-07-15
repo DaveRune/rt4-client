@@ -69,7 +69,7 @@ task initializeNewKotlinPlugin {
         new File(rootProject.project("plugin-playground").projectDir.absolutePath + File.separator + "src/main/kotlin/MyPlugin/plugin.properties").text = """
 AUTHOR='Me'
 DESCRIPTION='Make sure to rename both the MyPlugin folder and the package statement in plugin.java!
-VERSION=-1.1
+VERSION=1.0
 """
         new File(rootProject.project("plugin-playground").projectDir.absolutePath + File.separator + "src/main/kotlin/MyPlugin/plugin.kt").text = """
 package MyPlugin
