@@ -8,6 +8,9 @@ import org.openrs2.deob.annotation.Pc;
 
 import java.nio.ByteBuffer;
 
+import static org.lwjgl.opengl.GL11.*;
+import static org.lwjgl.opengl.GL13.glActiveTexture;
+
 @OriginalClass("client!vm")
 public final class SpecularMaterialRenderer implements MaterialRenderer {
 
@@ -25,24 +28,24 @@ public final class SpecularMaterialRenderer implements MaterialRenderer {
 		if (GlRenderer.arbTextureCubeMapSupported && GlRenderer.maxTextureUnits >= 2) {
 			this.method4536();
 			@Pc(19) GL2 gl = GlRenderer.gl;
-			gl.glBindTexture(GL2.GL_TEXTURE_CUBE_MAP, this.anIntArray519[0]);
-			gl.glTexParameteri(GL2.GL_TEXTURE_CUBE_MAP, GL2.GL_TEXTURE_MIN_FILTER, GL2.GL_LINEAR);
-			gl.glTexParameteri(GL2.GL_TEXTURE_CUBE_MAP, GL2.GL_TEXTURE_MAG_FILTER, GL2.GL_LINEAR);
-			gl.glTexParameteri(GL2.GL_TEXTURE_CUBE_MAP, GL2.GL_TEXTURE_WRAP_R, GL2.GL_CLAMP_TO_EDGE);
-			gl.glTexParameteri(GL2.GL_TEXTURE_CUBE_MAP, GL2.GL_TEXTURE_WRAP_S, GL2.GL_CLAMP_TO_EDGE);
-			gl.glTexParameteri(GL2.GL_TEXTURE_CUBE_MAP, GL2.GL_TEXTURE_WRAP_T, GL2.GL_CLAMP_TO_EDGE);
-			gl.glBindTexture(GL2.GL_TEXTURE_CUBE_MAP, this.anIntArray519[1]);
-			gl.glTexParameteri(GL2.GL_TEXTURE_CUBE_MAP, GL2.GL_TEXTURE_MIN_FILTER, GL2.GL_LINEAR);
-			gl.glTexParameteri(GL2.GL_TEXTURE_CUBE_MAP, GL2.GL_TEXTURE_MAG_FILTER, GL2.GL_LINEAR);
-			gl.glTexParameteri(GL2.GL_TEXTURE_CUBE_MAP, GL2.GL_TEXTURE_WRAP_R, GL2.GL_CLAMP_TO_EDGE);
-			gl.glTexParameteri(GL2.GL_TEXTURE_CUBE_MAP, GL2.GL_TEXTURE_WRAP_S, GL2.GL_CLAMP_TO_EDGE);
-			gl.glTexParameteri(GL2.GL_TEXTURE_CUBE_MAP, GL2.GL_TEXTURE_WRAP_T, GL2.GL_CLAMP_TO_EDGE);
-			gl.glBindTexture(GL2.GL_TEXTURE_CUBE_MAP, this.anIntArray519[2]);
-			gl.glTexParameteri(GL2.GL_TEXTURE_CUBE_MAP, GL2.GL_TEXTURE_MIN_FILTER, GL2.GL_LINEAR);
-			gl.glTexParameteri(GL2.GL_TEXTURE_CUBE_MAP, GL2.GL_TEXTURE_MAG_FILTER, GL2.GL_LINEAR);
-			gl.glTexParameteri(GL2.GL_TEXTURE_CUBE_MAP, GL2.GL_TEXTURE_WRAP_R, GL2.GL_CLAMP_TO_EDGE);
-			gl.glTexParameteri(GL2.GL_TEXTURE_CUBE_MAP, GL2.GL_TEXTURE_WRAP_S, GL2.GL_CLAMP_TO_EDGE);
-			gl.glTexParameteri(GL2.GL_TEXTURE_CUBE_MAP, GL2.GL_TEXTURE_WRAP_T, GL2.GL_CLAMP_TO_EDGE);
+			glBindTexture(GL2.GL_TEXTURE_CUBE_MAP, this.anIntArray519[0]);
+			glTexParameteri(GL2.GL_TEXTURE_CUBE_MAP, GL2.GL_TEXTURE_MIN_FILTER, GL2.GL_LINEAR);
+			glTexParameteri(GL2.GL_TEXTURE_CUBE_MAP, GL2.GL_TEXTURE_MAG_FILTER, GL2.GL_LINEAR);
+			glTexParameteri(GL2.GL_TEXTURE_CUBE_MAP, GL2.GL_TEXTURE_WRAP_R, GL2.GL_CLAMP_TO_EDGE);
+			glTexParameteri(GL2.GL_TEXTURE_CUBE_MAP, GL2.GL_TEXTURE_WRAP_S, GL2.GL_CLAMP_TO_EDGE);
+			glTexParameteri(GL2.GL_TEXTURE_CUBE_MAP, GL2.GL_TEXTURE_WRAP_T, GL2.GL_CLAMP_TO_EDGE);
+			glBindTexture(GL2.GL_TEXTURE_CUBE_MAP, this.anIntArray519[1]);
+			glTexParameteri(GL2.GL_TEXTURE_CUBE_MAP, GL2.GL_TEXTURE_MIN_FILTER, GL2.GL_LINEAR);
+			glTexParameteri(GL2.GL_TEXTURE_CUBE_MAP, GL2.GL_TEXTURE_MAG_FILTER, GL2.GL_LINEAR);
+			glTexParameteri(GL2.GL_TEXTURE_CUBE_MAP, GL2.GL_TEXTURE_WRAP_R, GL2.GL_CLAMP_TO_EDGE);
+			glTexParameteri(GL2.GL_TEXTURE_CUBE_MAP, GL2.GL_TEXTURE_WRAP_S, GL2.GL_CLAMP_TO_EDGE);
+			glTexParameteri(GL2.GL_TEXTURE_CUBE_MAP, GL2.GL_TEXTURE_WRAP_T, GL2.GL_CLAMP_TO_EDGE);
+			glBindTexture(GL2.GL_TEXTURE_CUBE_MAP, this.anIntArray519[2]);
+			glTexParameteri(GL2.GL_TEXTURE_CUBE_MAP, GL2.GL_TEXTURE_MIN_FILTER, GL2.GL_LINEAR);
+			glTexParameteri(GL2.GL_TEXTURE_CUBE_MAP, GL2.GL_TEXTURE_MAG_FILTER, GL2.GL_LINEAR);
+			glTexParameteri(GL2.GL_TEXTURE_CUBE_MAP, GL2.GL_TEXTURE_WRAP_R, GL2.GL_CLAMP_TO_EDGE);
+			glTexParameteri(GL2.GL_TEXTURE_CUBE_MAP, GL2.GL_TEXTURE_WRAP_S, GL2.GL_CLAMP_TO_EDGE);
+			glTexParameteri(GL2.GL_TEXTURE_CUBE_MAP, GL2.GL_TEXTURE_WRAP_T, GL2.GL_CLAMP_TO_EDGE);
 			this.aBoolean301 = GlRenderer.maxTextureUnits < 3;
 		}
 		this.method4535();
@@ -51,78 +54,78 @@ public final class SpecularMaterialRenderer implements MaterialRenderer {
 	@OriginalMember(owner = "client!vm", name = "d", descriptor = "()V")
 	private void method4535() {
 		@Pc(1) GL2 gl = GlRenderer.gl;
-		this.anInt5777 = gl.glGenLists(2);
-		gl.glNewList(this.anInt5777, GL2.GL_COMPILE);
+		this.anInt5777 = glGenLists(2);
+		glNewList(this.anInt5777, GL2.GL_COMPILE);
 		if (this.anIntArray519 == null) {
-			gl.glTexEnvi(GL2.GL_TEXTURE_ENV, GL2.GL_SRC0_ALPHA, GL2.GL_PRIMARY_COLOR);
+			glTexEnvi(GL2.GL_TEXTURE_ENV, GL2.GL_SRC0_ALPHA, GL2.GL_PRIMARY_COLOR);
 		} else {
-			gl.glActiveTexture(GL2.GL_TEXTURE1);
-			gl.glTexGeni(GL2.GL_S, GL2.GL_TEXTURE_GEN_MODE, GL2.GL_NORMAL_MAP);
-			gl.glTexGeni(GL2.GL_T, GL2.GL_TEXTURE_GEN_MODE, GL2.GL_NORMAL_MAP);
-			gl.glTexGeni(GL2.GL_R, GL2.GL_TEXTURE_GEN_MODE, GL2.GL_NORMAL_MAP);
-			gl.glEnable(GL2.GL_TEXTURE_GEN_S);
-			gl.glEnable(GL2.GL_TEXTURE_GEN_T);
-			gl.glEnable(GL2.GL_TEXTURE_GEN_R);
-			gl.glEnable(GL2.GL_TEXTURE_CUBE_MAP);
-			gl.glMatrixMode(GL2.GL_TEXTURE);
-			gl.glLoadIdentity();
-			gl.glRotatef(22.5F, 1.0F, 0.0F, 0.0F);
-			gl.glMatrixMode(GL2.GL_MODELVIEW);
+			glActiveTexture(GL2.GL_TEXTURE1);
+			glTexGeni(GL2.GL_S, GL2.GL_TEXTURE_GEN_MODE, GL2.GL_NORMAL_MAP);
+			glTexGeni(GL2.GL_T, GL2.GL_TEXTURE_GEN_MODE, GL2.GL_NORMAL_MAP);
+			glTexGeni(GL2.GL_R, GL2.GL_TEXTURE_GEN_MODE, GL2.GL_NORMAL_MAP);
+			glEnable(GL2.GL_TEXTURE_GEN_S);
+			glEnable(GL2.GL_TEXTURE_GEN_T);
+			glEnable(GL2.GL_TEXTURE_GEN_R);
+			glEnable(GL2.GL_TEXTURE_CUBE_MAP);
+			glMatrixMode(GL2.GL_TEXTURE);
+			glLoadIdentity();
+			glRotatef(22.5F, 1.0F, 0.0F, 0.0F);
+			glMatrixMode(GL2.GL_MODELVIEW);
 			if (this.aBoolean301) {
-				gl.glTexEnvi(GL2.GL_TEXTURE_ENV, GL2.GL_COMBINE_RGB, GL2.GL_ADD);
-				gl.glTexEnvi(GL2.GL_TEXTURE_ENV, GL2.GL_OPERAND0_RGB, GL2.GL_SRC_ALPHA);
-				gl.glTexEnvi(GL2.GL_TEXTURE_ENV, GL2.GL_COMBINE_ALPHA, GL2.GL_REPLACE);
-				gl.glTexEnvi(GL2.GL_TEXTURE_ENV, GL2.GL_SRC0_ALPHA, GL2.GL_PRIMARY_COLOR);
+				glTexEnvi(GL2.GL_TEXTURE_ENV, GL2.GL_COMBINE_RGB, GL2.GL_ADD);
+				glTexEnvi(GL2.GL_TEXTURE_ENV, GL2.GL_OPERAND0_RGB, GL2.GL_SRC_ALPHA);
+				glTexEnvi(GL2.GL_TEXTURE_ENV, GL2.GL_COMBINE_ALPHA, GL2.GL_REPLACE);
+				glTexEnvi(GL2.GL_TEXTURE_ENV, GL2.GL_SRC0_ALPHA, GL2.GL_PRIMARY_COLOR);
 			} else {
-				gl.glTexEnvi(GL2.GL_TEXTURE_ENV, GL2.GL_COMBINE_RGB, GL2.GL_REPLACE);
-				gl.glTexEnvi(GL2.GL_TEXTURE_ENV, GL2.GL_SRC0_RGB, GL2.GL_PREVIOUS);
-				gl.glTexEnvi(GL2.GL_TEXTURE_ENV, GL2.GL_COMBINE_ALPHA, GL2.GL_MODULATE);
-				gl.glActiveTexture(GL2.GL_TEXTURE2);
-				gl.glTexEnvi(GL2.GL_TEXTURE_ENV, GL2.GL_TEXTURE_ENV_MODE, GL2.GL_COMBINE);
-				gl.glTexEnvi(GL2.GL_TEXTURE_ENV, GL2.GL_COMBINE_RGB, GL2.GL_ADD);
-				gl.glTexEnvi(GL2.GL_TEXTURE_ENV, GL2.GL_SRC0_RGB, GL2.GL_PREVIOUS);
-				gl.glTexEnvi(GL2.GL_TEXTURE_ENV, GL2.GL_SRC1_RGB, GL2.GL_PREVIOUS);
-				gl.glTexEnvi(GL2.GL_TEXTURE_ENV, GL2.GL_OPERAND1_RGB, GL2.GL_SRC_ALPHA);
-				gl.glTexEnvi(GL2.GL_TEXTURE_ENV, GL2.GL_COMBINE_ALPHA, GL2.GL_REPLACE);
-				gl.glTexEnvi(GL2.GL_TEXTURE_ENV, GL2.GL_SRC0_ALPHA, GL2.GL_PRIMARY_COLOR);
-				gl.glBindTexture(GL2.GL_TEXTURE_2D, GlRenderer.anInt5328);
-				gl.glEnable(GL2.GL_TEXTURE_2D);
+				glTexEnvi(GL2.GL_TEXTURE_ENV, GL2.GL_COMBINE_RGB, GL2.GL_REPLACE);
+				glTexEnvi(GL2.GL_TEXTURE_ENV, GL2.GL_SRC0_RGB, GL2.GL_PREVIOUS);
+				glTexEnvi(GL2.GL_TEXTURE_ENV, GL2.GL_COMBINE_ALPHA, GL2.GL_MODULATE);
+				glActiveTexture(GL2.GL_TEXTURE2);
+				glTexEnvi(GL2.GL_TEXTURE_ENV, GL2.GL_TEXTURE_ENV_MODE, GL2.GL_COMBINE);
+				glTexEnvi(GL2.GL_TEXTURE_ENV, GL2.GL_COMBINE_RGB, GL2.GL_ADD);
+				glTexEnvi(GL2.GL_TEXTURE_ENV, GL2.GL_SRC0_RGB, GL2.GL_PREVIOUS);
+				glTexEnvi(GL2.GL_TEXTURE_ENV, GL2.GL_SRC1_RGB, GL2.GL_PREVIOUS);
+				glTexEnvi(GL2.GL_TEXTURE_ENV, GL2.GL_OPERAND1_RGB, GL2.GL_SRC_ALPHA);
+				glTexEnvi(GL2.GL_TEXTURE_ENV, GL2.GL_COMBINE_ALPHA, GL2.GL_REPLACE);
+				glTexEnvi(GL2.GL_TEXTURE_ENV, GL2.GL_SRC0_ALPHA, GL2.GL_PRIMARY_COLOR);
+				glBindTexture(GL2.GL_TEXTURE_2D, GlRenderer.anInt5328);
+				glEnable(GL2.GL_TEXTURE_2D);
 			}
-			gl.glActiveTexture(GL2.GL_TEXTURE0);
+			glActiveTexture(GL2.GL_TEXTURE0);
 		}
-		gl.glEndList();
-		gl.glNewList(this.anInt5777 + 1, GL2.GL_COMPILE);
+		glEndList();
+		glNewList(this.anInt5777 + 1, GL2.GL_COMPILE);
 		if (this.anIntArray519 == null) {
-			gl.glTexEnvi(GL2.GL_TEXTURE_ENV, GL2.GL_SRC0_ALPHA, GL2.GL_TEXTURE);
+			glTexEnvi(GL2.GL_TEXTURE_ENV, GL2.GL_SRC0_ALPHA, GL2.GL_TEXTURE);
 		} else {
-			gl.glActiveTexture(GL2.GL_TEXTURE1);
-			gl.glDisable(GL2.GL_TEXTURE_GEN_S);
-			gl.glDisable(GL2.GL_TEXTURE_GEN_T);
-			gl.glDisable(GL2.GL_TEXTURE_GEN_R);
-			gl.glDisable(GL2.GL_TEXTURE_CUBE_MAP);
-			gl.glMatrixMode(GL2.GL_TEXTURE);
-			gl.glLoadIdentity();
-			gl.glMatrixMode(GL2.GL_MODELVIEW);
+			glActiveTexture(GL2.GL_TEXTURE1);
+			glDisable(GL2.GL_TEXTURE_GEN_S);
+			glDisable(GL2.GL_TEXTURE_GEN_T);
+			glDisable(GL2.GL_TEXTURE_GEN_R);
+			glDisable(GL2.GL_TEXTURE_CUBE_MAP);
+			glMatrixMode(GL2.GL_TEXTURE);
+			glLoadIdentity();
+			glMatrixMode(GL2.GL_MODELVIEW);
 			if (this.aBoolean301) {
-				gl.glTexEnvi(GL2.GL_TEXTURE_ENV, GL2.GL_COMBINE_RGB, GL2.GL_MODULATE);
-				gl.glTexEnvi(GL2.GL_TEXTURE_ENV, GL2.GL_OPERAND0_RGB, GL2.GL_SRC_COLOR);
-				gl.glTexEnvi(GL2.GL_TEXTURE_ENV, GL2.GL_COMBINE_ALPHA, GL2.GL_MODULATE);
-				gl.glTexEnvi(GL2.GL_TEXTURE_ENV, GL2.GL_SRC0_ALPHA, GL2.GL_TEXTURE);
+				glTexEnvi(GL2.GL_TEXTURE_ENV, GL2.GL_COMBINE_RGB, GL2.GL_MODULATE);
+				glTexEnvi(GL2.GL_TEXTURE_ENV, GL2.GL_OPERAND0_RGB, GL2.GL_SRC_COLOR);
+				glTexEnvi(GL2.GL_TEXTURE_ENV, GL2.GL_COMBINE_ALPHA, GL2.GL_MODULATE);
+				glTexEnvi(GL2.GL_TEXTURE_ENV, GL2.GL_SRC0_ALPHA, GL2.GL_TEXTURE);
 			} else {
-				gl.glTexEnvi(GL2.GL_TEXTURE_ENV, GL2.GL_COMBINE_RGB, GL2.GL_MODULATE);
-				gl.glTexEnvi(GL2.GL_TEXTURE_ENV, GL2.GL_SRC0_RGB, GL2.GL_TEXTURE);
-				gl.glActiveTexture(GL2.GL_TEXTURE2);
-				gl.glTexEnvi(GL2.GL_TEXTURE_ENV, GL2.GL_TEXTURE_ENV_MODE, GL2.GL_MODULATE);
-				gl.glTexEnvi(GL2.GL_TEXTURE_ENV, GL2.GL_COMBINE_RGB, GL2.GL_MODULATE);
-				gl.glTexEnvi(GL2.GL_TEXTURE_ENV, GL2.GL_SRC0_RGB, GL2.GL_TEXTURE);
-				gl.glTexEnvi(GL2.GL_TEXTURE_ENV, GL2.GL_OPERAND1_RGB, GL2.GL_SRC_COLOR);
-				gl.glTexEnvi(GL2.GL_TEXTURE_ENV, GL2.GL_COMBINE_ALPHA, GL2.GL_MODULATE);
-				gl.glTexEnvi(GL2.GL_TEXTURE_ENV, GL2.GL_SRC0_ALPHA, GL2.GL_TEXTURE);
-				gl.glDisable(GL2.GL_TEXTURE_2D);
+				glTexEnvi(GL2.GL_TEXTURE_ENV, GL2.GL_COMBINE_RGB, GL2.GL_MODULATE);
+				glTexEnvi(GL2.GL_TEXTURE_ENV, GL2.GL_SRC0_RGB, GL2.GL_TEXTURE);
+				glActiveTexture(GL2.GL_TEXTURE2);
+				glTexEnvi(GL2.GL_TEXTURE_ENV, GL2.GL_TEXTURE_ENV_MODE, GL2.GL_MODULATE);
+				glTexEnvi(GL2.GL_TEXTURE_ENV, GL2.GL_COMBINE_RGB, GL2.GL_MODULATE);
+				glTexEnvi(GL2.GL_TEXTURE_ENV, GL2.GL_SRC0_RGB, GL2.GL_TEXTURE);
+				glTexEnvi(GL2.GL_TEXTURE_ENV, GL2.GL_OPERAND1_RGB, GL2.GL_SRC_COLOR);
+				glTexEnvi(GL2.GL_TEXTURE_ENV, GL2.GL_COMBINE_ALPHA, GL2.GL_MODULATE);
+				glTexEnvi(GL2.GL_TEXTURE_ENV, GL2.GL_SRC0_ALPHA, GL2.GL_TEXTURE);
+				glDisable(GL2.GL_TEXTURE_2D);
 			}
-			gl.glActiveTexture(GL2.GL_TEXTURE0);
+			glActiveTexture(GL2.GL_TEXTURE0);
 		}
-		gl.glEndList();
+		glEndList();
 	}
 
 	@OriginalMember(owner = "client!vm", name = "a", descriptor = "()V")
@@ -130,9 +133,9 @@ public final class SpecularMaterialRenderer implements MaterialRenderer {
 	public final void unbind() {
 		@Pc(1) GL2 gl = GlRenderer.gl;
 		if (Preferences.highDetailLighting) {
-			gl.glCallList(this.anInt5777 + 1);
+			glCallList(this.anInt5777 + 1);
 		} else {
-			gl.glTexEnvi(GL2.GL_TEXTURE_ENV, GL2.GL_SRC0_ALPHA, GL2.GL_TEXTURE);
+			glTexEnvi(GL2.GL_TEXTURE_ENV, GL2.GL_SRC0_ALPHA, GL2.GL_TEXTURE);
 		}
 	}
 
@@ -148,9 +151,9 @@ public final class SpecularMaterialRenderer implements MaterialRenderer {
 		@Pc(1) GL2 gl = GlRenderer.gl;
 		GlRenderer.setTextureCombineAlphaMode(1);
 		if (Preferences.highDetailLighting) {
-			gl.glCallList(this.anInt5777);
+			glCallList(this.anInt5777);
 		} else {
-			gl.glTexEnvi(GL2.GL_TEXTURE_ENV, GL2.GL_SRC0_ALPHA, GL2.GL_PRIMARY_COLOR);
+			glTexEnvi(GL2.GL_TEXTURE_ENV, GL2.GL_SRC0_ALPHA, GL2.GL_PRIMARY_COLOR);
 		}
 	}
 
@@ -159,18 +162,19 @@ public final class SpecularMaterialRenderer implements MaterialRenderer {
 	public final void setArgument(@OriginalArg(0) int arg0) {
 		@Pc(1) GL2 gl = GlRenderer.gl;
 		if (Preferences.highDetailLighting && this.anIntArray519 != null) {
-			gl.glActiveTexture(GL2.GL_TEXTURE1);
-			gl.glBindTexture(GL2.GL_TEXTURE_CUBE_MAP, this.anIntArray519[arg0 - 1]);
-			gl.glActiveTexture(GL2.GL_TEXTURE0);
+			glActiveTexture(GL2.GL_TEXTURE1);
+			glBindTexture(GL2.GL_TEXTURE_CUBE_MAP, this.anIntArray519[arg0 - 1]);
+			glActiveTexture(GL2.GL_TEXTURE0);
 		}
 	}
 
 	@OriginalMember(owner = "client!vm", name = "e", descriptor = "()V")
 	private void method4536() {
-		@Pc(1) GL2 gl = GlRenderer.gl;
 		if (this.anIntArray519 == null) {
 			this.anIntArray519 = new int[3];
-			gl.glGenTextures(3, this.anIntArray519, 0);
+			for (int i = 0; i < 3; i++) {
+				this.anIntArray519[i] = glGenTextures();
+			}
 		}
 		@Pc(19) byte[] local19 = new byte[4096];
 		@Pc(22) byte[] local22 = new byte[4096];
@@ -225,12 +229,12 @@ public final class SpecularMaterialRenderer implements MaterialRenderer {
 					local32++;
 				}
 			}
-			gl.glBindTexture(GL2.GL_TEXTURE_CUBE_MAP, this.anIntArray519[0]);
-			gl.glTexImage2D(local27 + GL2.GL_TEXTURE_CUBE_MAP_POSITIVE_X, 0, GL2.GL_ALPHA, 64, 64, 0, GL2.GL_ALPHA, GL2.GL_UNSIGNED_BYTE, ByteBuffer.wrap(local22));
-			gl.glBindTexture(GL2.GL_TEXTURE_CUBE_MAP, this.anIntArray519[1]);
-			gl.glTexImage2D(local27 + GL2.GL_TEXTURE_CUBE_MAP_POSITIVE_X, 0, GL2.GL_ALPHA, 64, 64, 0, GL2.GL_ALPHA, GL2.GL_UNSIGNED_BYTE, ByteBuffer.wrap(local25));
-			gl.glBindTexture(GL2.GL_TEXTURE_CUBE_MAP, this.anIntArray519[2]);
-			gl.glTexImage2D(local27 + GL2.GL_TEXTURE_CUBE_MAP_POSITIVE_X, 0, GL2.GL_ALPHA, 64, 64, 0, GL2.GL_ALPHA, GL2.GL_UNSIGNED_BYTE, ByteBuffer.wrap(local19));
+			glBindTexture(GL2.GL_TEXTURE_CUBE_MAP, this.anIntArray519[0]);
+			glTexImage2D(local27 + GL2.GL_TEXTURE_CUBE_MAP_POSITIVE_X, 0, GL2.GL_ALPHA, 64, 64, 0, GL2.GL_ALPHA, GL2.GL_UNSIGNED_BYTE, ByteBuffer.wrap(local22));
+			glBindTexture(GL2.GL_TEXTURE_CUBE_MAP, this.anIntArray519[1]);
+			glTexImage2D(local27 + GL2.GL_TEXTURE_CUBE_MAP_POSITIVE_X, 0, GL2.GL_ALPHA, 64, 64, 0, GL2.GL_ALPHA, GL2.GL_UNSIGNED_BYTE, ByteBuffer.wrap(local25));
+			glBindTexture(GL2.GL_TEXTURE_CUBE_MAP, this.anIntArray519[2]);
+			glTexImage2D(local27 + GL2.GL_TEXTURE_CUBE_MAP_POSITIVE_X, 0, GL2.GL_ALPHA, 64, 64, 0, GL2.GL_ALPHA, GL2.GL_UNSIGNED_BYTE, ByteBuffer.wrap(local19));
 			GlCleaner.onCardTexture += 12288;
 		}
 	}
