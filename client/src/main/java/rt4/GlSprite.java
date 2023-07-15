@@ -460,7 +460,7 @@ public class GlSprite extends Sprite {
 			}
 			local22 += local32;
 		}
-		@Pc(91) ByteBuffer buffer;
+
 		if (textureId == -1) {
 			textureId = glGenTextures();
 			contextId = GlCleaner.contextId;
@@ -469,7 +469,7 @@ public class GlSprite extends Sprite {
 		GlRenderer.setTextureId(this.textureId);
 
 		ByteBuffer tempBuffer = ByteBuffer.wrap(bytes);
-		buffer = BufferUtils.createByteBuffer(tempBuffer.capacity());
+		ByteBuffer buffer = BufferUtils.createByteBuffer(tempBuffer.capacity());
 		buffer.put(tempBuffer);
 		buffer.flip();
 

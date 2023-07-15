@@ -152,6 +152,11 @@ public final class GlRenderer {
 
 	private static JAWTWindow window;
 
+	public static void glDrawElementsWrapper(int mode, int count, int type, java.nio.Buffer buffer) {
+		long pointer = MemoryUtil.memAddress(buffer);
+		glDrawElements(mode, count, type, pointer);
+	}
+
 	@OriginalMember(owner = "client!tf", name = "a", descriptor = "(Ljava/lang/String;)Lclient!na;")
 	private static JagString convertStringToJagString(@OriginalArg(0) String s) {
 		@Pc(3) byte[] bytes;
