@@ -1,12 +1,15 @@
 package rt4;
 
 import com.jogamp.opengl.GL2;
+import org.lwjgl.opengl.GL20;
 import org.openrs2.deob.annotation.OriginalArg;
 import org.openrs2.deob.annotation.OriginalClass;
 import org.openrs2.deob.annotation.OriginalMember;
 import org.openrs2.deob.annotation.Pc;
 
 import java.nio.ByteBuffer;
+
+import static org.lwjgl.opengl.GL15.*;
 
 @OriginalClass("client!vi")
 public final class GlVertexBufferObject {
@@ -29,28 +32,23 @@ public final class GlVertexBufferObject {
 	}
 
 	@OriginalMember(owner = "client!vi", name = "<init>", descriptor = "(Z)V")
-	public GlVertexBufferObject(@OriginalArg(0) boolean stream) {
+	public GlVertexBufferObject(boolean stream) {
 		this.id = -1;
 		this.size = 0;
-		@Pc(9) GL2 gl = GlRenderer.gl;
-		@Pc(12) int[] temp = new int[1];
-		gl.glGenBuffers(1, temp, 0);
+		this.id = glGenBuffers();
 		this.stream = stream;
-		this.id = temp[0];
 		this.contextId = GlCleaner.contextId;
 	}
 
-	@OriginalMember(owner = "client!vi", name = "a", descriptor = "(Ljava/nio/ByteBuffer;)V")
-	public final void updateArrayBuffer(@OriginalArg(0) ByteBuffer buffer) {
+
+	public final void updateArrayBuffer(ByteBuffer buffer) {
 		if (buffer.limit() <= this.size) {
-			@Pc(6) GL2 gl = GlRenderer.gl;
-			gl.glBindBuffer(GL2.GL_ARRAY_BUFFER, this.id);
-			gl.glBufferSubData(GL2.GL_ARRAY_BUFFER, 0, buffer.limit(), buffer);
+			glBindBuffer(GL_ARRAY_BUFFER, this.id);
+			glBufferSubData(GL_ARRAY_BUFFER, 0, buffer);
 		} else {
 			this.setArrayBuffer(buffer);
 		}
 	}
-
 	@OriginalMember(owner = "client!vi", name = "finalize", descriptor = "()V")
 	@Override
 	public final void finalize() throws Throwable {
@@ -64,30 +62,24 @@ public final class GlVertexBufferObject {
 
 	@OriginalMember(owner = "client!vi", name = "a", descriptor = "()V")
 	public final void bindArray() {
-		@Pc(1) GL2 gl = GlRenderer.gl;
-		gl.glBindBuffer(GL2.GL_ARRAY_BUFFER, this.id);
+		glBindBuffer(GL2.GL_ARRAY_BUFFER, this.id);
 	}
 
-	@OriginalMember(owner = "client!vi", name = "b", descriptor = "(Ljava/nio/ByteBuffer;)V")
-	public final void setElementArrayBuffer(@OriginalArg(0) ByteBuffer buffer) {
-		@Pc(1) GL2 gl = GlRenderer.gl;
-		gl.glBindBuffer(GL2.GL_ELEMENT_ARRAY_BUFFER, this.id);
-		gl.glBufferData(GL2.GL_ELEMENT_ARRAY_BUFFER, buffer.limit(), buffer, this.stream ? GL2.GL_STREAM_DRAW : GL2.GL_STATIC_DRAW);
+	public final void setElementArrayBuffer(ByteBuffer buffer) {
+		glBindBuffer(GL20.GL_ELEMENT_ARRAY_BUFFER, this.id);
+		glBufferData(GL20.GL_ELEMENT_ARRAY_BUFFER, buffer, this.stream ? GL20.GL_STREAM_DRAW : GL20.GL_STATIC_DRAW);
 		GlCleaner.onCardGeometry += buffer.limit() - this.size;
 		this.size = buffer.limit();
 	}
 
 	@OriginalMember(owner = "client!vi", name = "b", descriptor = "()V")
 	public final void bindElementArray() {
-		@Pc(1) GL2 gl = GlRenderer.gl;
-		gl.glBindBuffer(GL2.GL_ELEMENT_ARRAY_BUFFER, this.id);
+		glBindBuffer(GL2.GL_ELEMENT_ARRAY_BUFFER, this.id);
 	}
 
-	@OriginalMember(owner = "client!vi", name = "c", descriptor = "(Ljava/nio/ByteBuffer;)V")
-	public final void setArrayBuffer(@OriginalArg(0) ByteBuffer buffer) {
-		@Pc(1) GL2 gl = GlRenderer.gl;
-		gl.glBindBuffer(GL2.GL_ARRAY_BUFFER, this.id);
-		gl.glBufferData(GL2.GL_ARRAY_BUFFER, buffer.limit(), buffer, this.stream ? GL2.GL_STREAM_DRAW : GL2.GL_STATIC_DRAW);
+	public final void setArrayBuffer(ByteBuffer buffer) {
+		glBindBuffer(GL20.GL_ARRAY_BUFFER, this.id);
+		glBufferData(GL20.GL_ARRAY_BUFFER, buffer, this.stream ? GL20.GL_STREAM_DRAW : GL20.GL_STATIC_DRAW);
 		GlCleaner.onCardGeometry += buffer.limit() - this.size;
 		this.size = buffer.limit();
 	}
