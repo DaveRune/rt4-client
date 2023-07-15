@@ -8,6 +8,9 @@ import org.openrs2.deob.annotation.Pc;
 
 import java.nio.ByteBuffer;
 
+import static org.lwjgl.opengl.GL11.*;
+import static org.lwjgl.opengl.GL15.glBindBuffer;
+
 @OriginalClass("client!td")
 public final class GlModel extends Model {
 
@@ -1108,14 +1111,13 @@ public final class GlModel extends Model {
 				}
 			}
 		}
-		@Pc(744) GL2 gl = GlRenderer.gl;
-		gl.glPushMatrix();
-		gl.glTranslatef((float) arg5, (float) arg6, (float) arg7);
-		gl.glRotatef((float) arg0 * 0.17578125F, 0.0F, 1.0F, 0.0F);
+		glPushMatrix();
+		glTranslatef((float) arg5, (float) arg6, (float) arg7);
+		glRotatef((float) arg0 * 0.17578125F, 0.0F, 1.0F, 0.0F);
 		this.method4121();
-		gl.glRotatef((float) -arg0 * 0.17578125F, 0.0F, 1.0F, 0.0F);
-		gl.glTranslatef((float) -arg5, (float) -arg6, (float) -arg7);
-		gl.glPopMatrix();
+		glRotatef((float) -arg0 * 0.17578125F, 0.0F, 1.0F, 0.0F);
+		glTranslatef((float) -arg5, (float) -arg6, (float) -arg7);
+		glPopMatrix();
 	}
 
 	@OriginalMember(owner = "client!td", name = "m", descriptor = "()V")
@@ -1366,20 +1368,19 @@ public final class GlModel extends Model {
 		if (this.anInt5296 == 0) {
 			return;
 		}
-		@Pc(5) GL2 gl = GlRenderer.gl;
-		gl.glPushMatrix();
+		glPushMatrix();
 		if (arg2 != 0) {
-			gl.glRotatef((float) arg2 * 0.17578125F, 1.0F, 0.0F, 0.0F);
+			glRotatef((float) arg2 * 0.17578125F, 1.0F, 0.0F, 0.0F);
 		}
-		gl.glTranslatef((float) arg3, (float) arg4, (float) arg5);
+		glTranslatef((float) arg3, (float) arg4, (float) arg5);
 		if (arg0 != 0) {
-			gl.glRotatef((float) arg0 * 0.17578125F, 0.0F, 1.0F, 0.0F);
+			glRotatef((float) arg0 * 0.17578125F, 0.0F, 1.0F, 0.0F);
 		}
 		if (arg1 != 0) {
-			gl.glRotatef((float) -arg1 * 0.17578125F, 0.0F, 0.0F, 1.0F);
+			glRotatef((float) -arg1 * 0.17578125F, 0.0F, 0.0F, 1.0F);
 		}
 		this.method4121();
-		gl.glPopMatrix();
+		glPopMatrix();
 	}
 
 	@OriginalMember(owner = "client!td", name = "a", descriptor = "(Lclient!gb;IJIIIIFF)S")
@@ -3272,7 +3273,6 @@ public final class GlModel extends Model {
 
 	@OriginalMember(owner = "client!td", name = "w", descriptor = "()V")
 	private void method4121() {
-		@Pc(1) GL2 gl = GlRenderer.gl;
 		if (this.triangleCount == 0) {
 			return;
 		}
@@ -3316,55 +3316,55 @@ public final class GlModel extends Model {
 		if (this.vertexBuffer.vbo != null) {
 			this.vertexBuffer.vbo.bindArray();
 			local172 = this.vertexBuffer.vbo;
-			gl.glVertexPointer(3, GL2.GL_FLOAT, this.vertexBuffer.stride, this.vertexBuffer.pointer);
+			glVertexPointer(3, GL2.GL_FLOAT, this.vertexBuffer.stride, this.vertexBuffer.pointer);
 		}
 		if (this.colorBuffer.vbo != null) {
 			if (local172 != this.colorBuffer.vbo) {
 				this.colorBuffer.vbo.bindArray();
 				local172 = this.colorBuffer.vbo;
 			}
-			gl.glColorPointer(4, GL2.GL_UNSIGNED_BYTE, this.colorBuffer.stride, this.colorBuffer.pointer);
+			glColorPointer(4, GL2.GL_UNSIGNED_BYTE, this.colorBuffer.stride, this.colorBuffer.pointer);
 		}
 		if (Preferences.highDetailLighting && this.normalsBuffer.vbo != null) {
 			if (local172 != this.normalsBuffer.vbo) {
 				this.normalsBuffer.vbo.bindArray();
 				local172 = this.normalsBuffer.vbo;
 			}
-			gl.glNormalPointer(GL2.GL_FLOAT, this.normalsBuffer.stride, this.normalsBuffer.pointer);
+			glNormalPointer(GL2.GL_FLOAT, this.normalsBuffer.stride, this.normalsBuffer.pointer);
 		}
 		if (this.texCoordBuffer.vbo != null) {
 			if (local172 != this.texCoordBuffer.vbo) {
 				this.texCoordBuffer.vbo.bindArray();
 				local172 = this.texCoordBuffer.vbo;
 			}
-			gl.glTexCoordPointer(2, GL2.GL_FLOAT, this.texCoordBuffer.stride, this.texCoordBuffer.pointer);
+			glTexCoordPointer(2, GL2.GL_FLOAT, this.texCoordBuffer.stride, this.texCoordBuffer.pointer);
 		}
 		if (this.indexBuffer.vbo != null) {
 			this.indexBuffer.vbo.bindElementArray();
 		}
 		if (this.vertexBuffer.vbo == null || this.colorBuffer.vbo == null || Preferences.highDetailLighting && this.normalsBuffer.vbo == null || this.texCoordBuffer.vbo == null) {
 			if (GlRenderer.arbVboSupported) {
-				gl.glBindBuffer(GL2.GL_ARRAY_BUFFER, 0);
+				glBindBuffer(GL2.GL_ARRAY_BUFFER, 0);
 			}
 			if (this.vertexBuffer.vbo == null) {
 				this.vertexBuffer.buffer.position(this.vertexBuffer.pointer);
-				gl.glVertexPointer(3, GL2.GL_FLOAT, this.vertexBuffer.stride, this.vertexBuffer.buffer);
+				glVertexPointer(3, GL2.GL_FLOAT, this.vertexBuffer.stride, this.vertexBuffer.buffer);
 			}
 			if (this.colorBuffer.vbo == null) {
 				this.colorBuffer.buffer.position(this.colorBuffer.pointer);
-				gl.glColorPointer(4, GL2.GL_UNSIGNED_BYTE, this.colorBuffer.stride, this.colorBuffer.buffer);
+				glColorPointer(4, GL2.GL_UNSIGNED_BYTE, this.colorBuffer.stride, this.colorBuffer.buffer);
 			}
 			if (Preferences.highDetailLighting && this.normalsBuffer.vbo == null) {
 				this.normalsBuffer.buffer.position(this.normalsBuffer.pointer);
-				gl.glNormalPointer(GL2.GL_FLOAT, this.normalsBuffer.stride, this.normalsBuffer.buffer);
+				glNormalPointer(GL2.GL_FLOAT, this.normalsBuffer.stride, this.normalsBuffer.buffer);
 			}
 			if (this.texCoordBuffer.vbo == null) {
 				this.texCoordBuffer.buffer.position(this.texCoordBuffer.pointer);
-				gl.glTexCoordPointer(2, GL2.GL_FLOAT, this.texCoordBuffer.stride, this.texCoordBuffer.buffer);
+				glTexCoordPointer(2, GL2.GL_FLOAT, this.texCoordBuffer.stride, this.texCoordBuffer.buffer);
 			}
 		}
 		if (this.indexBuffer.vbo == null && GlRenderer.arbVboSupported) {
-			gl.glBindBuffer(GL2.GL_ELEMENT_ARRAY_BUFFER, 0);
+			glBindBuffer(GL2.GL_ELEMENT_ARRAY_BUFFER, 0);
 		}
 		@Pc(417) int local417 = this.anIntArray463.length - 1;
 		for (@Pc(419) int local419 = 0; local419 < local417; local419++) {
@@ -3379,9 +3379,9 @@ public final class GlModel extends Model {
 			}
 			if (this.indexBuffer.vbo == null) {
 				this.indexBuffer.buffer.position(local427 * 12);
-				gl.glDrawElements(GL2.GL_TRIANGLES, (local434 - local427) * 3, GL2.GL_UNSIGNED_INT, this.indexBuffer.buffer);
+				GlRenderer.glDrawElementsWrapper(GL2.GL_TRIANGLES, (local434 - local427) * 3, GL2.GL_UNSIGNED_INT, this.indexBuffer.buffer);
 			} else {
-				gl.glDrawElements(GL2.GL_TRIANGLES, (local434 - local427) * 3, GL2.GL_UNSIGNED_INT, local427 * 12L);
+				glDrawElements(GL2.GL_TRIANGLES, (local434 - local427) * 3, GL2.GL_UNSIGNED_INT, local427 * 12L);
 			}
 		}
 	}
