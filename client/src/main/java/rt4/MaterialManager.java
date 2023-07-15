@@ -1,6 +1,8 @@
 package rt4;
 
 import com.jogamp.opengl.GL2;
+import org.lwjgl.opengl.GL11;
+import org.lwjgl.opengl.GL12;
 import org.openrs2.deob.annotation.OriginalArg;
 import org.openrs2.deob.annotation.OriginalMember;
 import org.openrs2.deob.annotation.Pc;
@@ -88,35 +90,26 @@ public class MaterialManager {
 		method2808();
 	}
 
-	@OriginalMember(owner = "client!lm", name = "b", descriptor = "()V")
 	public static void method2808() {
-		@Pc(4) GL2 gl;
-		@Pc(11) int[] local11;
 		if (texture3D != -1) {
-			gl = GlRenderer.gl;
-			local11 = new int[]{texture3D};
-			gl.glDeleteTextures(1, local11, 0);
+			GL11.glDeleteTextures(texture3D);
 			texture3D = -1;
-			GlCleaner.onCardTexture -= textureBuffer.limit() * 2;
 		}
 		if (anIntArray341 != null) {
-			gl = GlRenderer.gl;
-			gl.glDeleteTextures(64, anIntArray341, 0);
+			for (int textureId : anIntArray341) {
+				GL11.glDeleteTextures(textureId);
+			}
 			anIntArray341 = null;
-			GlCleaner.onCardTexture -= textureBuffer.limit() * 2;
 		}
 		if (waterfallTextureId != -1) {
-			gl = GlRenderer.gl;
-			local11 = new int[]{waterfallTextureId};
-			gl.glDeleteTextures(1, local11, 0);
+			GL11.glDeleteTextures(waterfallTextureId);
 			waterfallTextureId = -1;
-			GlCleaner.onCardTexture -= aByteBuffer6.limit() * 2;
 		}
 		if (waterfallTextures != null) {
-			gl = GlRenderer.gl;
-			gl.glDeleteTextures(64, waterfallTextures, 0);
+			for (int textureId : waterfallTextures) {
+				GL11.glDeleteTextures(textureId);
+			}
 			waterfallTextures = null;
-			GlCleaner.onCardTexture -= aByteBuffer6.limit() * 2;
 		}
 	}
 
@@ -170,58 +163,46 @@ public class MaterialManager {
 		}
 	}
 
-	@OriginalMember(owner = "client!lm", name = "e", descriptor = "()V")
 	private static void method2811() {
-		@Pc(1) GL2 gl = GlRenderer.gl;
 		if (allows3DTextureMapping) {
-			@Pc(6) int[] local6 = new int[1];
-			gl.glGenTextures(1, local6, 0);
-			gl.glBindTexture(GL2.GL_TEXTURE_3D, local6[0]);
+			texture3D = GL11.glGenTextures();
+			GL11.glBindTexture(GL12.GL_TEXTURE_3D, texture3D);
 			textureBuffer.position(0);
-			gl.glTexImage3D(GL2.GL_TEXTURE_3D, 0, GL2.GL_LUMINANCE_ALPHA, 64, 64, 64, 0, GL2.GL_LUMINANCE_ALPHA, GL2.GL_UNSIGNED_BYTE, textureBuffer);
-			gl.glTexParameteri(GL2.GL_TEXTURE_3D, GL2.GL_TEXTURE_MIN_FILTER, GL2.GL_LINEAR);
-			gl.glTexParameteri(GL2.GL_TEXTURE_3D, GL2.GL_TEXTURE_MAG_FILTER, GL2.GL_LINEAR);
-			texture3D = local6[0];
-			GlCleaner.onCardTexture += textureBuffer.limit() * 2;
+			GL12.glTexImage3D(GL12.GL_TEXTURE_3D, 0, GL11.GL_LUMINANCE_ALPHA, 64, 64, 64, 0, GL11.GL_LUMINANCE_ALPHA, GL11.GL_UNSIGNED_BYTE, textureBuffer);
+			GL11.glTexParameteri(GL12.GL_TEXTURE_3D, GL11.GL_TEXTURE_MIN_FILTER, GL11.GL_LINEAR);
+			GL11.glTexParameteri(GL12.GL_TEXTURE_3D, GL11.GL_TEXTURE_MAG_FILTER, GL11.GL_LINEAR);
 		} else {
 			anIntArray341 = new int[64];
-			gl.glGenTextures(64, anIntArray341, 0);
-			for (@Pc(65) int local65 = 0; local65 < 64; local65++) {
-				GlRenderer.setTextureId(anIntArray341[local65]);
+			for (int local65 = 0; local65 < 64; local65++) {
+				anIntArray341[local65] = GL11.glGenTextures();
+				GL11.glBindTexture(GL11.GL_TEXTURE_2D, anIntArray341[local65]);
 				textureBuffer.position(local65 * 64 * 64 * 2);
-				gl.glTexImage2D(GL2.GL_TEXTURE_2D, 0, GL2.GL_LUMINANCE_ALPHA, 64, 64, 0, GL2.GL_LUMINANCE_ALPHA, GL2.GL_UNSIGNED_BYTE, textureBuffer);
-				gl.glTexParameteri(GL2.GL_TEXTURE_2D, GL2.GL_TEXTURE_MIN_FILTER, GL2.GL_LINEAR);
-				gl.glTexParameteri(GL2.GL_TEXTURE_2D, GL2.GL_TEXTURE_MAG_FILTER, GL2.GL_LINEAR);
+				GL11.glTexImage2D(GL11.GL_TEXTURE_2D, 0, GL11.GL_LUMINANCE_ALPHA, 64, 64, 0, GL11.GL_LUMINANCE_ALPHA, GL11.GL_UNSIGNED_BYTE, textureBuffer);
+				GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MIN_FILTER, GL11.GL_LINEAR);
+				GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MAG_FILTER, GL11.GL_LINEAR);
 			}
-			GlCleaner.onCardTexture += textureBuffer.limit() * 2;
 		}
 	}
 
-	@OriginalMember(owner = "client!lm", name = "f", descriptor = "()V")
 	private static void method2812() {
-		@Pc(1) GL2 gl = GlRenderer.gl;
 		if (allows3DTextureMapping) {
-			@Pc(6) int[] local6 = new int[1];
-			gl.glGenTextures(1, local6, 0);
-			gl.glBindTexture(GL2.GL_TEXTURE_3D, local6[0]);
+			waterfallTextureId = GL11.glGenTextures();
+			GL11.glBindTexture(GL12.GL_TEXTURE_3D, waterfallTextureId);
 			aByteBuffer6.position(0);
-			gl.glTexImage3D(GL2.GL_TEXTURE_3D, 0, GL2.GL_LUMINANCE_ALPHA, 64, 64, 64, 0, GL2.GL_LUMINANCE_ALPHA, GL2.GL_UNSIGNED_BYTE, aByteBuffer6);
-			gl.glTexParameteri(GL2.GL_TEXTURE_3D, GL2.GL_TEXTURE_MIN_FILTER, GL2.GL_LINEAR);
-			gl.glTexParameteri(GL2.GL_TEXTURE_3D, GL2.GL_TEXTURE_MAG_FILTER, GL2.GL_LINEAR);
-			waterfallTextureId = local6[0];
-			GlCleaner.onCardTexture += aByteBuffer6.limit() * 2;
-			return;
+			GL12.glTexImage3D(GL12.GL_TEXTURE_3D, 0, GL11.GL_LUMINANCE_ALPHA, 64, 64, 64, 0, GL11.GL_LUMINANCE_ALPHA, GL11.GL_UNSIGNED_BYTE, aByteBuffer6);
+			GL11.glTexParameteri(GL12.GL_TEXTURE_3D, GL11.GL_TEXTURE_MIN_FILTER, GL11.GL_LINEAR);
+			GL11.glTexParameteri(GL12.GL_TEXTURE_3D, GL11.GL_TEXTURE_MAG_FILTER, GL11.GL_LINEAR);
+		} else {
+			waterfallTextures = new int[64];
+			for (int local65 = 0; local65 < 64; local65++) {
+				waterfallTextures[local65] = GL11.glGenTextures();
+				GL11.glBindTexture(GL11.GL_TEXTURE_2D, waterfallTextures[local65]);
+				aByteBuffer6.position(local65 * 64 * 64 * 2);
+				GL11.glTexImage2D(GL11.GL_TEXTURE_2D, 0, GL11.GL_LUMINANCE_ALPHA, 64, 64, 0, GL11.GL_LUMINANCE_ALPHA, GL11.GL_UNSIGNED_BYTE, aByteBuffer6);
+				GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MIN_FILTER, GL11.GL_LINEAR);
+				GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MAG_FILTER, GL11.GL_LINEAR);
+			}
 		}
-		waterfallTextures = new int[64];
-		gl.glGenTextures(64, waterfallTextures, 0);
-		for (@Pc(65) int local65 = 0; local65 < 64; local65++) {
-			GlRenderer.setTextureId(waterfallTextures[local65]);
-			aByteBuffer6.position(local65 * 64 * 64 * 2);
-			gl.glTexImage2D(GL2.GL_TEXTURE_2D, 0, GL2.GL_LUMINANCE_ALPHA, 64, 64, 0, GL2.GL_LUMINANCE_ALPHA, GL2.GL_UNSIGNED_BYTE, aByteBuffer6);
-			gl.glTexParameteri(GL2.GL_TEXTURE_2D, GL2.GL_TEXTURE_MIN_FILTER, GL2.GL_LINEAR);
-			gl.glTexParameteri(GL2.GL_TEXTURE_2D, GL2.GL_TEXTURE_MAG_FILTER, GL2.GL_LINEAR);
-		}
-		GlCleaner.onCardTexture += aByteBuffer6.limit() * 2;
 	}
 
 	@OriginalMember(owner = "client!lh", name = "b", descriptor = "(II)V")

@@ -1,11 +1,19 @@
 package rt4;
 
 import com.jogamp.opengl.GL2;
+import org.lwjgl.BufferUtils;
+import org.lwjgl.opengl.GL;
+import org.lwjgl.opengl.GL11;
+import org.lwjgl.opengl.GL14;
+import org.lwjgl.opengl.GLCapabilities;
 import org.openrs2.deob.annotation.OriginalClass;
 import org.openrs2.deob.annotation.OriginalMember;
 import org.openrs2.deob.annotation.Pc;
 
 import java.nio.FloatBuffer;
+
+import static org.lwjgl.opengl.GL14.glPointParameterf;
+import static org.lwjgl.opengl.GL14.glPointParameterfv;
 
 @OriginalClass("client!ga")
 public final class ParticleSystem extends ParticleNode {
@@ -15,24 +23,30 @@ public final class ParticleSystem extends ParticleNode {
 		new Buffer(131056);
 	}
 
-	@OriginalMember(owner = "client!ga", name = "a", descriptor = "()V")
 	public static void load() {
-		@Pc(1) GL2 gl = GlRenderer.gl;
-		if (gl.isExtensionAvailable("GL_ARB_point_parameters")) {
-			@Pc(20) float[] coefficients = new float[]{1.0F, 0.0F, 5.0E-4F};
-			gl.glPointParameterfv(GL2.GL_POINT_DISTANCE_ATTENUATION, coefficients, 0);
-			@Pc(28) FloatBuffer buffer = FloatBuffer.allocate(1);
-			gl.glGetFloatv(GL2.GL_POINT_SIZE_MAX, buffer);
-			@Pc(36) float pointSizeMax = buffer.get(0);
+		GLCapabilities caps = GL.getCapabilities();
+
+		if (caps.GL_ARB_point_parameters) {
+			float[] coefficients = new float[]{1.0F, 0.0F, 5.0E-4F};
+			glPointParameterfv(GL14.GL_POINT_DISTANCE_ATTENUATION, coefficients);
+
+			FloatBuffer buffer = BufferUtils.createFloatBuffer(1);
+			GL11.glGetFloatv(GL2.GL_POINT_SIZE_MAX, buffer);
+			float pointSizeMax = buffer.get(0);
 			if (pointSizeMax > 1024.0F) {
 				pointSizeMax = 1024.0F;
 			}
-			gl.glPointParameterf(GL2.GL_POINT_SIZE_MIN, 1.0F);
-			gl.glPointParameterf(GL2.GL_POINT_SIZE_MAX, pointSizeMax);
+
+			glPointParameterf(GL14.GL_POINT_SIZE_MIN, 1.0F);
+			glPointParameterf(GL14.GL_POINT_SIZE_MAX, pointSizeMax);
 		}
-		if (gl.isExtensionAvailable("GL_ARB_point_sprite")) {
+
+		// For the extension GL_ARB_point_sprite, you can add implementation here if it's available.
+		if (caps.GL_ARB_point_sprite) {
+			// Implementation here
 		}
 	}
+
 
 	@OriginalMember(owner = "client!ga", name = "b", descriptor = "()V")
 	public static void quit() {

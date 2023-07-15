@@ -2,6 +2,7 @@ package rt4;
 
 import com.jogamp.opengl.GL2;
 import com.jogamp.opengl.GL2GL3;
+import org.lwjgl.opengl.GL11;
 import org.openrs2.deob.annotation.OriginalArg;
 import org.openrs2.deob.annotation.OriginalClass;
 import org.openrs2.deob.annotation.OriginalMember;
@@ -10,6 +11,7 @@ import org.openrs2.deob.annotation.Pc;
 import java.nio.ByteBuffer;
 
 import static org.lwjgl.opengl.GL11.*;
+import static org.lwjgl.opengl.GL12.GL_CLAMP_TO_EDGE;
 import static org.lwjgl.opengl.GL13.glActiveTexture;
 
 @OriginalClass("client!pd")
@@ -63,16 +65,14 @@ public final class WaterMaterialRenderer implements MaterialRenderer {
 
 	@OriginalMember(owner = "client!pd", name = "d", descriptor = "()V")
 	private void method3435() {
-		@Pc(2) byte[] local2 = new byte[]{0, -1};
-		@Pc(12) GL2 gl = GlRenderer.gl;
-		@Pc(15) int[] local15 = new int[1];
-		gl.glGenTextures(1, local15, 0);
-		gl.glBindTexture(GL2.GL_TEXTURE_1D, local15[0]);
-		gl.glTexImage1D(GL2.GL_TEXTURE_1D, 0, GL2.GL_ALPHA, 2, 0, GL2.GL_ALPHA, GL2.GL_UNSIGNED_BYTE, ByteBuffer.wrap(local2));
-		gl.glTexParameteri(GL2.GL_TEXTURE_1D, GL2.GL_TEXTURE_MIN_FILTER, GL2.GL_LINEAR);
-		gl.glTexParameteri(GL2.GL_TEXTURE_1D, GL2.GL_TEXTURE_MAG_FILTER, GL2.GL_LINEAR);
-		gl.glTexParameteri(GL2.GL_TEXTURE_1D, GL2.GL_TEXTURE_WRAP_S, GL2.GL_CLAMP_TO_EDGE);
-		this.anInt4441 = local15[0];
+		byte[] local2 = new byte[]{0, -1};
+		int textureId = glGenTextures();
+		glBindTexture(GL_TEXTURE_1D, textureId);
+		glTexImage1D(GL_TEXTURE_1D, 0, GL11.GL_ALPHA, 2, 0, GL11.GL_ALPHA, GL11.GL_UNSIGNED_BYTE, ByteBuffer.wrap(local2));
+		glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+		this.anInt4441 = textureId;
 	}
 
 	@OriginalMember(owner = "client!pd", name = "f", descriptor = "()V")
