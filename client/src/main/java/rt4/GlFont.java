@@ -1,12 +1,18 @@
 package rt4;
 
 import com.jogamp.opengl.GL2;
+import org.lwjgl.opengl.GL11;
 import org.openrs2.deob.annotation.OriginalArg;
 import org.openrs2.deob.annotation.OriginalClass;
 import org.openrs2.deob.annotation.OriginalMember;
 import org.openrs2.deob.annotation.Pc;
 
 import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
+
+import static org.lwjgl.opengl.GL11.*;
+import static org.lwjgl.opengl.GL13.glActiveTexture;
+import static org.lwjgl.opengl.GL13.glMultiTexCoord2f;
 
 @OriginalClass("client!mb")
 public final class GlFont extends Font {
@@ -73,50 +79,50 @@ public final class GlFont extends Font {
 			GlRenderer.setupRgbAlphaMode0Rendering();
 			gl = GlRenderer.gl;
 			GlRenderer.setTextureId(this.textureId);
-			gl.glColor3ub((byte) (color >> 16), (byte) (color >> 8), (byte) color);
-			gl.glTranslatef((float) x, (float) (GlRenderer.canvasHeight - y), 0.0F);
-			gl.glCallList(this.listIds[glyph]);
-			gl.glLoadIdentity();
+			glColor3ub((byte) (color >> 16), (byte) (color >> 8), (byte) color);
+			glTranslatef((float) x, (float) (GlRenderer.canvasHeight - y), 0.0F);
+			glCallList(this.listIds[glyph]);
+			glLoadIdentity();
 			return;
 		}
 		GlRenderer.setupRgbAlphaMode0Rendering();
 		gl = GlRenderer.gl;
-		gl.glColor3ub((byte) (color >> 16), (byte) (color >> 8), (byte) color);
-		gl.glTranslatef((float) x, (float) (GlRenderer.canvasHeight - y), 0.0F);
+		glColor3ub((byte) (color >> 16), (byte) (color >> 8), (byte) color);
+		glTranslatef((float) x, (float) (GlRenderer.canvasHeight - y), 0.0F);
 		@Pc(32) float s0 = (float) (glyph % 16) / 16.0F;
 		@Pc(39) float t0 = (float) (glyph / 16) / 16.0F;
 		@Pc(51) float s1 = s0 + (float) this.spriteInnerWidths[glyph] / (float) this.powerOfTwoSize;
 		@Pc(63) float t1 = t0 + (float) this.spriteInnerHeights[glyph] / (float) this.powerOfTwoSize;
 		GlRenderer.setTextureId(this.textureId);
 		@Pc(68) GlSprite mask = masked;
-		gl.glActiveTexture(GL2.GL_TEXTURE1);
-		gl.glEnable(GL2.GL_TEXTURE_2D);
-		gl.glBindTexture(GL2.GL_TEXTURE_2D, mask.textureId);
-		gl.glTexEnvi(GL2.GL_TEXTURE_ENV, GL2.GL_COMBINE_RGB, GL2.GL_REPLACE);
-		gl.glTexEnvi(GL2.GL_TEXTURE_ENV, GL2.GL_SRC0_RGB, GL2.GL_PREVIOUS);
+		glActiveTexture(GL2.GL_TEXTURE1);
+		glEnable(GL2.GL_TEXTURE_2D);
+		glBindTexture(GL2.GL_TEXTURE_2D, mask.textureId);
+		glTexEnvi(GL2.GL_TEXTURE_ENV, GL2.GL_COMBINE_RGB, GL2.GL_REPLACE);
+		glTexEnvi(GL2.GL_TEXTURE_ENV, GL2.GL_SRC0_RGB, GL2.GL_PREVIOUS);
 		@Pc(98) float maskX0 = (float) (x - GlRaster.clipLeft) / (float) mask.powerOfTwoWidth;
 		@Pc(107) float maskY0 = (float) (y - GlRaster.clipTop) / (float) mask.powerOfTwoHeight;
 		@Pc(118) float maskX1 = (float) (x + width - GlRaster.clipLeft) / (float) mask.powerOfTwoWidth;
 		@Pc(129) float maskY1 = (float) (y + height - GlRaster.clipTop) / (float) mask.powerOfTwoHeight;
-		gl.glBegin(GL2.GL_TRIANGLE_FAN);
-		gl.glMultiTexCoord2f(GL2.GL_TEXTURE1, maskX1, maskY0);
-		gl.glTexCoord2f(s1, t0);
-		gl.glVertex2f((float) this.spriteInnerWidths[glyph], 0.0F);
-		gl.glMultiTexCoord2f(GL2.GL_TEXTURE1, maskX0, maskY0);
-		gl.glTexCoord2f(s0, t0);
-		gl.glVertex2f(0.0F, 0.0F);
-		gl.glMultiTexCoord2f(GL2.GL_TEXTURE1, maskX0, maskY1);
-		gl.glTexCoord2f(s0, t1);
-		gl.glVertex2f(0.0F, (float) -this.spriteInnerHeights[glyph]);
-		gl.glMultiTexCoord2f(GL2.GL_TEXTURE1, maskX1, maskY1);
-		gl.glTexCoord2f(s1, t1);
-		gl.glVertex2f((float) this.spriteInnerWidths[glyph], (float) -this.spriteInnerHeights[glyph]);
-		gl.glEnd();
-		gl.glTexEnvi(GL2.GL_TEXTURE_ENV, GL2.GL_COMBINE_RGB, GL2.GL_MODULATE);
-		gl.glTexEnvi(GL2.GL_TEXTURE_ENV, GL2.GL_SRC0_RGB, GL2.GL_TEXTURE);
-		gl.glDisable(GL2.GL_TEXTURE_2D);
-		gl.glActiveTexture(GL2.GL_TEXTURE0);
-		gl.glLoadIdentity();
+		glBegin(GL2.GL_TRIANGLE_FAN);
+		glMultiTexCoord2f(GL2.GL_TEXTURE1, maskX1, maskY0);
+		glTexCoord2f(s1, t0);
+		glVertex2f((float) this.spriteInnerWidths[glyph], 0.0F);
+		glMultiTexCoord2f(GL2.GL_TEXTURE1, maskX0, maskY0);
+		glTexCoord2f(s0, t0);
+		glVertex2f(0.0F, 0.0F);
+		glMultiTexCoord2f(GL2.GL_TEXTURE1, maskX0, maskY1);
+		glTexCoord2f(s0, t1);
+		glVertex2f(0.0F, (float) -this.spriteInnerHeights[glyph]);
+		glMultiTexCoord2f(GL2.GL_TEXTURE1, maskX1, maskY1);
+		glTexCoord2f(s1, t1);
+		glVertex2f((float) this.spriteInnerWidths[glyph], (float) -this.spriteInnerHeights[glyph]);
+		glEnd();
+		glTexEnvi(GL2.GL_TEXTURE_ENV, GL2.GL_COMBINE_RGB, GL2.GL_MODULATE);
+		glTexEnvi(GL2.GL_TEXTURE_ENV, GL2.GL_SRC0_RGB, GL2.GL_TEXTURE);
+		glDisable(GL2.GL_TEXTURE_2D);
+		glActiveTexture(GL2.GL_TEXTURE0);
+		glLoadIdentity();
 	}
 
 	@OriginalMember(owner = "client!mb", name = "a", descriptor = "(IIIIIIIZ)V")
@@ -125,10 +131,10 @@ public final class GlFont extends Font {
 		GlRenderer.setupRgbAlphaMode0Rendering();
 		@Pc(2) GL2 gl = GlRenderer.gl;
 		GlRenderer.setTextureId(this.textureId);
-		gl.glColor4ub((byte) (color >> 16), (byte) (color >> 8), (byte) color, alpha > 255 ? -1 : (byte) alpha);
-		gl.glTranslatef((float) x, (float) (GlRenderer.canvasHeight - y), 0.0F);
-		gl.glCallList(this.listIds[glyph]);
-		gl.glLoadIdentity();
+		glColor4ub((byte) (color >> 16), (byte) (color >> 8), (byte) color, alpha > 255 ? -1 : (byte) alpha);
+		glTranslatef((float) x, (float) (GlRenderer.canvasHeight - y), 0.0F);
+		glCallList(this.listIds[glyph]);
+		glLoadIdentity();
 	}
 
 	@OriginalMember(owner = "client!mb", name = "b", descriptor = "()V")
@@ -143,30 +149,29 @@ public final class GlFont extends Font {
 			@Pc(28) float t0 = (float) (i / 16) / 16.0F;
 			@Pc(40) float s1 = s0 + (float) this.spriteInnerWidths[i] / (float) this.powerOfTwoSize;
 			@Pc(52) float t1 = t0 + (float) this.spriteInnerHeights[i] / (float) this.powerOfTwoSize;
-			this.listIds[i] = gl.glGenLists(1);
-			gl.glNewList(this.listIds[i], GL2.GL_COMPILE);
-			gl.glBegin(GL2.GL_TRIANGLE_FAN);
-			gl.glTexCoord2f(s1, t0);
-			gl.glVertex2f((float) this.spriteInnerWidths[i], 0.0F);
-			gl.glTexCoord2f(s0, t0);
-			gl.glVertex2f(0.0F, 0.0F);
-			gl.glTexCoord2f(s0, t1);
-			gl.glVertex2f(0.0F, (float) -this.spriteInnerHeights[i]);
-			gl.glTexCoord2f(s1, t1);
-			gl.glVertex2f((float) this.spriteInnerWidths[i], (float) -this.spriteInnerHeights[i]);
-			gl.glEnd();
-			gl.glEndList();
+			this.listIds[i] = glGenLists(1);
+			glNewList(this.listIds[i], GL2.GL_COMPILE);
+			glBegin(GL2.GL_TRIANGLE_FAN);
+			glTexCoord2f(s1, t0);
+			glVertex2f((float) this.spriteInnerWidths[i], 0.0F);
+			glTexCoord2f(s0, t0);
+			glVertex2f(0.0F, 0.0F);
+			glTexCoord2f(s0, t1);
+			glVertex2f(0.0F, (float) -this.spriteInnerHeights[i]);
+			glTexCoord2f(s1, t1);
+			glVertex2f((float) this.spriteInnerWidths[i], (float) -this.spriteInnerHeights[i]);
+			glEnd();
+			glEndList();
 		}
 		this.contextId = GlCleaner.contextId;
 	}
 
-	@OriginalMember(owner = "client!mb", name = "a", descriptor = "([[B)V")
-	private void createTexture(@OriginalArg(0) byte[][] pixels) {
+	private void createTexture(byte[][] pixels) {
 		if (this.textureId != -1) {
 			return;
 		}
 		this.powerOfTwoSize = 0;
-		for (@Pc(9) int i = 0; i < 256; i++) {
+		for (int i = 0; i < 256; i++) {
 			if (this.spriteInnerHeights[i] > this.powerOfTwoSize) {
 				this.powerOfTwoSize = this.spriteInnerHeights[i];
 			}
@@ -177,40 +182,38 @@ public final class GlFont extends Font {
 		this.powerOfTwoSize *= 16;
 		this.powerOfTwoSize = IntUtils.clp2(this.powerOfTwoSize);
 		int glyphSize = this.powerOfTwoSize / 16;
-		@Pc(66) byte[] dest = new byte[this.powerOfTwoSize * this.powerOfTwoSize * 2];
-		for (@Pc(68) int i = 0; i < 256; i++) {
-			@Pc(77) int s = i % 16 * glyphSize;
-			@Pc(83) int t = i / 16 * glyphSize;
-			@Pc(92) int destIndex = (t * this.powerOfTwoSize + s) * 2;
-			@Pc(94) int srcIndex = 0;
-			@Pc(99) int height = this.spriteInnerHeights[i];
-			@Pc(104) int width = this.spriteInnerWidths[i];
-			@Pc(108) byte[] src = pixels[i];
-			for (@Pc(110) int y = 0; y < height; y++) {
-				for (@Pc(115) int x = 0; x < width; x++) {
-					if (src[srcIndex++] == 0) {
-						destIndex += 2;
+		byte[] dest = new byte[this.powerOfTwoSize * this.powerOfTwoSize * 2];
+		for (int i = 0; i < 256; i++) {
+			int s = i % 16 * glyphSize;
+			int t = i / 16 * glyphSize;
+			int width = this.spriteInnerWidths[i];
+			int height = this.spriteInnerHeights[i];
+			byte[] src = pixels[i];
+
+			for (int y = 0; y < height; y++) {
+				for (int x = 0; x < width; x++) {
+					int destIndex = ((t + y) * this.powerOfTwoSize + (s + x)) * 2;
+					if (src[y * width + x] == 0) {
+						dest[destIndex] = 0;
+						dest[destIndex + 1] = 0;
 					} else {
-						dest[destIndex++] = -1;
-						dest[destIndex++] = -1;
+						dest[destIndex] = -1;
+						dest[destIndex + 1] = -1;
 					}
 				}
-				destIndex += (this.powerOfTwoSize - width) * 2;
 			}
 		}
-		@Pc(153) ByteBuffer buffer = ByteBuffer.wrap(dest);
-		@Pc(155) GL2 gl = GlRenderer.gl;
+		ByteBuffer buffer = ByteBuffer.allocateDirect(dest.length).order(ByteOrder.nativeOrder());
+		buffer.put(dest).flip();
 		if (this.textureId == -1) {
-			@Pc(162) int[] temp = new int[1];
-			gl.glGenTextures(1, temp, 0);
-			this.textureId = temp[0];
+			this.textureId = GL11.glGenTextures();
 			this.contextId = GlCleaner.contextId;
 		}
-		GlRenderer.setTextureId(this.textureId);
-		gl.glTexImage2D(GL2.GL_TEXTURE_2D, 0, GL2.GL_LUMINANCE_ALPHA, this.powerOfTwoSize, this.powerOfTwoSize, 0, GL2.GL_LUMINANCE_ALPHA, GL2.GL_UNSIGNED_BYTE, buffer);
+		GL11.glBindTexture(GL11.GL_TEXTURE_2D, this.textureId);
+		GL11.glTexImage2D(GL11.GL_TEXTURE_2D, 0, GL11.GL_LUMINANCE_ALPHA, this.powerOfTwoSize, this.powerOfTwoSize, 0, GL11.GL_LUMINANCE_ALPHA, GL11.GL_UNSIGNED_BYTE, buffer);
 		GlCleaner.onCard2d += buffer.limit() - this.size;
 		this.size = buffer.limit();
-		gl.glTexParameteri(GL2.GL_TEXTURE_2D, GL2.GL_TEXTURE_MIN_FILTER, GL2.GL_NEAREST);
-		gl.glTexParameteri(GL2.GL_TEXTURE_2D, GL2.GL_TEXTURE_MAG_FILTER, GL2.GL_NEAREST);
+		GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MIN_FILTER, GL11.GL_NEAREST);
+		GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MAG_FILTER, GL11.GL_NEAREST);
 	}
 }
