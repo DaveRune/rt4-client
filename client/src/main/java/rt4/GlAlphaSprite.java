@@ -8,6 +8,9 @@ import org.openrs2.deob.annotation.Pc;
 
 import java.nio.ByteBuffer;
 
+import static org.lwjgl.opengl.GL11.glGenTextures;
+import static org.lwjgl.opengl.GL11.glTexImage2D;
+
 @OriginalClass("client!el")
 public final class GlAlphaSprite extends GlSprite {
 
@@ -21,18 +24,17 @@ public final class GlAlphaSprite extends GlSprite {
 		super(arg0);
 	}
 
-	@OriginalMember(owner = "client!el", name = "a", descriptor = "([I)V")
 	@Override
-	protected final void method1430(@OriginalArg(0) int[] arg0) {
+	protected final void method1430(int[] arg0) {
 		this.powerOfTwoWidth = IntUtils.clp2(this.width);
 		this.powerOfTwoHeight = IntUtils.clp2(this.height);
-		@Pc(20) byte[] local20 = new byte[this.powerOfTwoWidth * this.powerOfTwoHeight * 4];
-		@Pc(22) int local22 = 0;
-		@Pc(24) int local24 = 0;
-		@Pc(32) int local32 = (this.powerOfTwoWidth - this.width) * 4;
-		for (@Pc(34) int local34 = 0; local34 < this.height; local34++) {
-			for (@Pc(40) int local40 = 0; local40 < this.width; local40++) {
-				@Pc(49) int local49 = arg0[local24++];
+		byte[] local20 = new byte[this.powerOfTwoWidth * this.powerOfTwoHeight * 4];
+		int local22 = 0;
+		int local24 = 0;
+		int local32 = (this.powerOfTwoWidth - this.width) * 4;
+		for (int local34 = 0; local34 < this.height; local34++) {
+			for (int local40 = 0; local40 < this.width; local40++) {
+				int local49 = arg0[local24++];
 				if (local49 == 0) {
 					local22 += 4;
 				} else {
@@ -44,15 +46,12 @@ public final class GlAlphaSprite extends GlSprite {
 			}
 			local22 += local32;
 		}
-		@Pc(94) ByteBuffer local94 = ByteBuffer.wrap(local20);
-		@Pc(96) GL2 gl = GlRenderer.gl;
+		ByteBuffer local94 = ByteBuffer.wrap(local20);
 		if (this.textureId == -1) {
-			@Pc(103) int[] local103 = new int[1];
-			gl.glGenTextures(1, local103, 0);
-			this.textureId = local103[0];
+			this.textureId = glGenTextures();
 		}
 		GlRenderer.setTextureId(this.textureId);
-		gl.glTexImage2D(GL2.GL_TEXTURE_2D, 0, GL2.GL_RGBA, this.powerOfTwoWidth, this.powerOfTwoHeight, 0, GL2.GL_RGBA, GL2.GL_UNSIGNED_BYTE, local94);
+		glTexImage2D(GL2.GL_TEXTURE_2D, 0, GL2.GL_RGBA, this.powerOfTwoWidth, this.powerOfTwoHeight, 0, GL2.GL_RGBA, GL2.GL_UNSIGNED_BYTE, local94);
 		GlCleaner.onCard2d += local94.limit() - this.anInt1869;
 		this.anInt1869 = local94.limit();
 	}
