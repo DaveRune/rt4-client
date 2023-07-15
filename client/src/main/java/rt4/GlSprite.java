@@ -23,7 +23,7 @@ public class GlSprite extends Sprite {
 	public int powerOfTwoHeight;
 
 	@OriginalMember(owner = "client!cf", name = "db", descriptor = "I")
-	private int anInt1875;
+	private int contextId;
 
 	@OriginalMember(owner = "client!cf", name = "L", descriptor = "I")
 	protected int anInt1869 = 0;
@@ -329,12 +329,12 @@ public class GlSprite extends Sprite {
 	@Override
 	public final void finalize() throws Throwable {
 		if (this.textureId != -1) {
-			GlCleaner.deleteTexture2d(this.textureId, this.anInt1869, this.anInt1875);
+			GlCleaner.deleteTexture2d(this.textureId, this.anInt1869, this.contextId);
 			this.textureId = -1;
 			this.anInt1869 = 0;
 		}
 		if (this.anInt1871 != -1) {
-			GlCleaner.deleteList(this.anInt1871, this.anInt1875);
+			GlCleaner.deleteList(this.anInt1871, this.contextId);
 			this.anInt1871 = -1;
 		}
 		super.finalize();
@@ -438,12 +438,11 @@ public class GlSprite extends Sprite {
 		glEnd();
 	}
 
-	// Probably this?
 	@OriginalMember(owner = "client!cf", name = "a", descriptor = "([I)V")
 	protected void method1430(@OriginalArg(0) int[] arg0) {
 		this.powerOfTwoWidth = IntUtils.clp2(this.width);
 		this.powerOfTwoHeight = IntUtils.clp2(this.height);
-		@Pc(20) byte[] local20 = new byte[this.powerOfTwoWidth * this.powerOfTwoHeight * 4];
+		@Pc(20) byte[] bytes = new byte[this.powerOfTwoWidth * this.powerOfTwoHeight * 4];
 		@Pc(22) int local22 = 0;
 		@Pc(24) int local24 = 0;
 		@Pc(32) int local32 = (this.powerOfTwoWidth - this.width) * 4;
@@ -453,30 +452,30 @@ public class GlSprite extends Sprite {
 				if (local49 == 0) {
 					local22 += 4;
 				} else {
-					local20[local22++] = (byte) (local49 >> 16);
-					local20[local22++] = (byte) (local49 >> 8);
-					local20[local22++] = (byte) local49;
-					local20[local22++] = -1;
+					bytes[local22++] = (byte) (local49 >> 16);
+					bytes[local22++] = (byte) (local49 >> 8);
+					bytes[local22++] = (byte) local49;
+					bytes[local22++] = -1;
 				}
 			}
 			local22 += local32;
 		}
-		@Pc(91) ByteBuffer local91;
+		@Pc(91) ByteBuffer buffer;
 		if (textureId == -1) {
 			textureId = glGenTextures();
-			anInt1875 = GlCleaner.contextId;
+			contextId = GlCleaner.contextId;
 		}
 
 		GlRenderer.setTextureId(this.textureId);
 
-		@Pc(91) ByteBuffer tempBuffer = ByteBuffer.wrap(local20);
-		local91 = BufferUtils.createByteBuffer(tempBuffer.capacity());
-		local91.put(tempBuffer);
-		local91.flip();
+		ByteBuffer tempBuffer = ByteBuffer.wrap(bytes);
+		buffer = BufferUtils.createByteBuffer(tempBuffer.capacity());
+		buffer.put(tempBuffer);
+		buffer.flip();
 
-		glTexImage2D(GL2.GL_TEXTURE_2D, 0, GL2.GL_RGBA, this.powerOfTwoWidth, this.powerOfTwoHeight, 0, GL2.GL_RGBA, GL2.GL_UNSIGNED_BYTE, local91);
-		GlCleaner.onCard2d += local91.limit() - this.anInt1869;
-		this.anInt1869 = local91.limit();
+		glTexImage2D(GL2.GL_TEXTURE_2D, 0, GL2.GL_RGBA, this.powerOfTwoWidth, this.powerOfTwoHeight, 0, GL2.GL_RGBA, GL2.GL_UNSIGNED_BYTE, buffer);
+		GlCleaner.onCard2d += buffer.limit() - this.anInt1869;
+		this.anInt1869 = buffer.limit();
 	}
 
 	@OriginalMember(owner = "client!cf", name = "a", descriptor = "(III)V")
@@ -500,7 +499,7 @@ public class GlSprite extends Sprite {
 		@Pc(15) float local15 = (float) this.height / (float) this.powerOfTwoHeight;
 		if (this.anInt1871 == -1) {
 			this.anInt1871 = glGenLists(1);
-			this.anInt1875 = GlCleaner.contextId;
+			this.contextId = GlCleaner.contextId;
 		}
 		glNewList(this.anInt1871, GL2.GL_COMPILE);
 		glBegin(GL2.GL_TRIANGLE_FAN);
