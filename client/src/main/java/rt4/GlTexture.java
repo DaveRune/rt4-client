@@ -198,7 +198,7 @@ public final class GlTexture extends SecondaryNode {
 				pixels.flip(); // Don't forget to flip the buffer to reset its position
 				if (this.anInt5489 == 2) {
 					int num_mipmaps = 4;
-					glTexStorage2D(GL2.GL_TEXTURE_2D, num_mipmaps, GL2.GL_RGBA8, size, size); // This line is kinda cool you can comment it out and get a textureless world.
+					///glTexStorage2D(GL2.GL_TEXTURE_2D, num_mipmaps, GL2.GL_RGBA8, size, size); // This line is kinda cool you can comment it out and get a textureless world.
 					glTexParameteri(GL2.GL_TEXTURE_2D, GL2.GL_TEXTURE_WRAP_S, GL2.GL_REPEAT);
 					glTexParameteri(GL2.GL_TEXTURE_2D, GL2.GL_TEXTURE_WRAP_T, GL2.GL_REPEAT);
 					glTexParameteri(GL2.GL_TEXTURE_2D, GL2.GL_TEXTURE_MAG_FILTER, GL2.GL_LINEAR);

@@ -583,8 +583,10 @@ public final class GlRenderer {
 	}
 
 	private static void initLWJGL() {
+		System.out.println("Initializing LWJGL...");  // Add this at the beginning of initLWJGL()
 		// Setup an error callback. The default implementation
 		// will print the error message in System.err.
+
 		GLFWErrorCallback.createPrint(System.err).set();
 
 		// Initialize GLFW. Most GLFW functions will not work before doing this.
@@ -640,28 +642,72 @@ public final class GlRenderer {
 
 	@OriginalMember(owner = "client!tf", name = "a", descriptor = "(Ljava/awt/Canvas;I)I")
 	public static int init(@OriginalArg(0) Canvas canvas, @OriginalArg(1) int numSamples) {
+		System.out.println("Initializing...");  // Add this at the beginning of init()
 		try {
+
 			if (!canvas.isDisplayable()) {
 				return -1;
 			}
 
+			int swapBuffersAttempts = 0;
+
+			/*
+			// Create JOGL
+			GLProfile profile = GLProfile.get(GLProfile.GL4bc);
+			@Pc(8) GLCapabilities capabilities = new GLCapabilities(profile);
+			if (numSamples > 0) {
+				capabilities.setSampleBuffers(true);
+				capabilities.setNumSamples(numSamples * 4);
+			}
+			@Pc(18) GLDrawableFactory factory = GLDrawableFactory.getFactory(profile);
+			AWTGraphicsConfiguration config = AWTGraphicsConfiguration.create(canvas.getGraphicsConfiguration(), capabilities, capabilities);
+			window = NewtFactoryAWT.getNativeWindow(canvas, config);
+			if (!window.getLock().isLocked()) {
+				window.lockSurface();
+			}
+			try {
+				drawable = factory.createGLDrawable(window);
+				drawable.setRealized(true);
+			} finally {
+				window.unlockSurface();
+			}
+			@Pc(36) int result;
+
+			while (true) {
+				context = drawable.createContext(null);
+				try {
+					result = context.makeCurrent();
+					if (result != 0) {
+						break;
+					}
+				} catch (@Pc(41) Exception local41) {
+				}
+				if (swapBuffersAttempts++ > 5) {
+					return -2;
+				}
+			}
+			 */
+
+
 			// Create LWJGL (I think we snatch the context in the thread from the above code)...
 			System.out.println("Hello LWJGL " + Version.getVersion() + "!");
-			initLWJGL();
+
+			if(LWJGLwindow == NULL){
+				initLWJGL();
+			}
+
+			// JOGL for debugging
+			//gl = GLContext.getCurrentGL().getGL2();
+
 			glLineWidth((float) GameShell.canvasScale);
 
 			enabled = true;
 			canvasWidth = canvas.getSize().width;
 			canvasHeight = canvas.getSize().height;
-
-
-			if (LWJGLwindow == 0) {
-				quit();
-			}
 			genTextures();
 			resetOpenGLState();
 			glClear(GL2.GL_COLOR_BUFFER_BIT);
-			int swapBuffersAttempts = 0;
+
 			while (true) {
 				try {
 					// Main draw loop
@@ -672,7 +718,6 @@ public final class GlRenderer {
 						quit();
 						return -3;
 					}
-					ThreadUtils.sleep(100L);
 				}
 			}
 			glClear(GL2.GL_COLOR_BUFFER_BIT);
