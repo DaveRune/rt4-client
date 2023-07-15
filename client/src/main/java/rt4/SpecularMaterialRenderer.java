@@ -27,7 +27,7 @@ public final class SpecularMaterialRenderer implements MaterialRenderer {
 	public SpecularMaterialRenderer() {
 		if (GlRenderer.arbTextureCubeMapSupported && GlRenderer.maxTextureUnits >= 2) {
 			this.method4536();
-			@Pc(19) GL2 gl = GlRenderer.gl;
+			
 			glBindTexture(GL2.GL_TEXTURE_CUBE_MAP, this.anIntArray519[0]);
 			glTexParameteri(GL2.GL_TEXTURE_CUBE_MAP, GL2.GL_TEXTURE_MIN_FILTER, GL2.GL_LINEAR);
 			glTexParameteri(GL2.GL_TEXTURE_CUBE_MAP, GL2.GL_TEXTURE_MAG_FILTER, GL2.GL_LINEAR);
@@ -53,7 +53,7 @@ public final class SpecularMaterialRenderer implements MaterialRenderer {
 
 	@OriginalMember(owner = "client!vm", name = "d", descriptor = "()V")
 	private void method4535() {
-		@Pc(1) GL2 gl = GlRenderer.gl;
+		
 		this.anInt5777 = glGenLists(2);
 		glNewList(this.anInt5777, GL2.GL_COMPILE);
 		if (this.anIntArray519 == null) {
@@ -131,7 +131,7 @@ public final class SpecularMaterialRenderer implements MaterialRenderer {
 	@OriginalMember(owner = "client!vm", name = "a", descriptor = "()V")
 	@Override
 	public final void unbind() {
-		@Pc(1) GL2 gl = GlRenderer.gl;
+		
 		if (Preferences.highDetailLighting) {
 			glCallList(this.anInt5777 + 1);
 		} else {
@@ -148,7 +148,7 @@ public final class SpecularMaterialRenderer implements MaterialRenderer {
 	@OriginalMember(owner = "client!vm", name = "b", descriptor = "()V")
 	@Override
 	public final void bind() {
-		@Pc(1) GL2 gl = GlRenderer.gl;
+		
 		GlRenderer.setTextureCombineAlphaMode(1);
 		if (Preferences.highDetailLighting) {
 			glCallList(this.anInt5777);
@@ -160,7 +160,7 @@ public final class SpecularMaterialRenderer implements MaterialRenderer {
 	@OriginalMember(owner = "client!vm", name = "a", descriptor = "(I)V")
 	@Override
 	public final void setArgument(@OriginalArg(0) int arg0) {
-		@Pc(1) GL2 gl = GlRenderer.gl;
+		
 		if (Preferences.highDetailLighting && this.anIntArray519 != null) {
 			glActiveTexture(GL2.GL_TEXTURE1);
 			glBindTexture(GL2.GL_TEXTURE_CUBE_MAP, this.anIntArray519[arg0 - 1]);

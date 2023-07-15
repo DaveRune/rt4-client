@@ -99,7 +99,6 @@ public final class FogManager {
 
 	@OriginalMember(owner = "client!mk", name = "a", descriptor = "()V")
 	public static void applyLightPosition() {
-		@Pc(1) GL2 gl = GlRenderer.gl;
 		glLightfv(GL2.GL_LIGHT0, GL2.GL_POSITION, light0Position);
 		glLightfv(GL2.GL_LIGHT1, GL2.GL_POSITION, light1Position);
 	}
@@ -118,7 +117,6 @@ public final class FogManager {
 		lightModelAmbient = ambientMod;
 		light0Diffuse = l0Diffuse;
 		light1Diffuse = l1Diffuse;
-		@Pc(25) GL2 gl = GlRenderer.gl;
 		@Pc(34) float red = (float) (color >> 16 & 0xFF) / 255.0F;
 		@Pc(43) float green = (float) (color >> 8 & 0xFF) / 255.0F;
 		@Pc(50) float blue = (float) (color & 0xFF) / 255.0F;
@@ -137,7 +135,6 @@ public final class FogManager {
 		}
 		fogColorRGB = color;
 		fogOffset = offset;
-		@Pc(12) GL2 gl = GlRenderer.gl;
 		fogColor[0] = (float) (color >> 16 & 0xFF) / 255.0F;
 		fogColor[1] = (float) (color >> 8 & 0xFF) / 255.0F;
 		fogColor[2] = (float) (color & 0xFF) / 255.0F;
@@ -176,7 +173,6 @@ public final class FogManager {
 
 	@OriginalMember(owner = "client!mk", name = "e", descriptor = "()V")
 	public static void setup() {
-		@Pc(1) GL2 gl = GlRenderer.gl;
 		glColorMaterial(GL2.GL_FRONT, GL2.GL_AMBIENT_AND_DIFFUSE);
 		glEnable(GL2.GL_COLOR_MATERIAL);
 		@Pc(27) float[] light0Params = new float[]{0.0F, 0.0F, 0.0F, 1.0F};
@@ -195,7 +191,6 @@ public final class FogManager {
 		if (params == null) {
 			params = fogColor;
 		}
-		@Pc(5) GL2 gl = GlRenderer.gl;
 		glFogfv(GL2.GL_FOG_COLOR, params);
 	}
 

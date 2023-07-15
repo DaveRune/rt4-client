@@ -298,7 +298,7 @@ public class LightingManager {
 		if (enabledLights[i]) {
 			enabledLights[i] = false;
 			@Pc(14) int light = i + GL_LIGHT4;
-			@Pc(16) GL2 gl = GlRenderer.gl;
+			
 			glDisable(light);
 		}
 	}
@@ -354,7 +354,7 @@ public class LightingManager {
 
 	@OriginalMember(owner = "client!jf", name = "e", descriptor = "()V")
 	public static void resetLightingState() {
-		@Pc(1) GL2 gl = GlRenderer.gl;
+		
 		@Pc(3) int lightIndex;
 		for (lightIndex = 0; lightIndex < 4; lightIndex++) {
 			@Pc(10) int glLightIndex = lightIndex + GL_LIGHT0; // Constant from OpenGL for lighting
@@ -373,7 +373,7 @@ public class LightingManager {
 		if (!Preferences.highDetailLighting) {
 			return;
 		}
-		@Pc(4) GL2 gl = GlRenderer.gl;
+		
 
 		// Configure materials, textures, and lighting settings
 		MaterialManager.setMaterial(0, 0);
@@ -445,7 +445,7 @@ public class LightingManager {
 	@OriginalMember(owner = "client!jf", name = "a", descriptor = "(ILclient!gi;III)V")
 	private static void enableLight(@OriginalArg(0) int lightIndex, @OriginalArg(1) Light light, @OriginalArg(2) int cameraX, @OriginalArg(3) int cameraY, @OriginalArg(4) int cameraZ) {
 		@Pc(5) int glLight = lightIndex + GL_LIGHT4;
-		@Pc(7) GL2 gl = GlRenderer.gl;
+		
 		if (!enabledLights[lightIndex]) {
 			glEnable(glLight);
 			enabledLights[lightIndex] = true;

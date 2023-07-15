@@ -77,8 +77,7 @@ public final class WaterMaterialRenderer implements MaterialRenderer {
 
 	@OriginalMember(owner = "client!pd", name = "f", descriptor = "()V")
 	private void method3437() {
-		@Pc(1) GL2 gl = GlRenderer.gl;
-		this.anInt4440 = gl.glGenLists(2);
+		this.anInt4440 = glGenLists(2);
 		glNewList(this.anInt4440, GL2.GL_COMPILE);
 		glTexEnvi(GL2.GL_TEXTURE_ENV, GL2.GL_OPERAND0_RGB, GL2.GL_SRC_COLOR);
 		glTexEnvi(GL2.GL_TEXTURE_ENV, GL2.GL_SRC1_RGB, GL2.GL_CONSTANT);
@@ -147,7 +146,7 @@ public final class WaterMaterialRenderer implements MaterialRenderer {
 	@OriginalMember(owner = "client!pd", name = "a", descriptor = "(I)V")
 	@Override
 	public final void setArgument(@OriginalArg(0) int arg0) {
-		@Pc(1) GL2 gl = GlRenderer.gl;
+		
 		glActiveTexture(GL2.GL_TEXTURE1);
 		glTexEnvfv(GL2.GL_TEXTURE_ENV, GL2.GL_TEXTURE_ENV_COLOR, aFloatArray2);
 		glActiveTexture(GL2.GL_TEXTURE0);
@@ -176,7 +175,7 @@ public final class WaterMaterialRenderer implements MaterialRenderer {
 	@OriginalMember(owner = "client!pd", name = "b", descriptor = "()V")
 	@Override
 	public final void bind() {
-		@Pc(1) GL2 gl = GlRenderer.gl;
+		
 		GlRenderer.setTextureCombineRgbMode(2);
 		GlRenderer.setTextureCombineAlphaMode(2);
 		GlRenderer.resetTextureMatrix();

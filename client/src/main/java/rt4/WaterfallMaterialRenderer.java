@@ -32,7 +32,7 @@ public final class WaterfallMaterialRenderer implements MaterialRenderer {
 	@OriginalMember(owner = "client!ob", name = "a", descriptor = "(I)V")
 	@Override
 	public final void setArgument(@OriginalArg(0) int arg0) {
-		@Pc(7) GL2 gl = GlRenderer.gl;
+		
 		@Pc(18) float local18 = (float) ((arg0 >> 3 & 0x3) + 1) * 0.01F;
 		@Pc(27) float local27 = -0.01F * (float) ((arg0 & 0x3) + 1);
 		@Pc(36) float local36 = (arg0 & 0x40) == 0 ? 4.8828125E-4F : 9.765625E-4F;
@@ -79,20 +79,19 @@ public final class WaterfallMaterialRenderer implements MaterialRenderer {
 	@OriginalMember(owner = "client!ob", name = "a", descriptor = "()V")
 	@Override
 	public final void unbind() {
-		@Pc(1) GL2 gl = GlRenderer.gl;
+		
 		glCallList(this.anInt4236 + 1);
 	}
 
 	@OriginalMember(owner = "client!ob", name = "b", descriptor = "()V")
 	@Override
 	public final void bind() {
-		@Pc(5) GL2 gl = GlRenderer.gl;
+		
 		glCallList(this.anInt4236);
 	}
 
 	@OriginalMember(owner = "client!ob", name = "b", descriptor = "(I)V")
 	private void method3307() {
-		@Pc(3) GL2 gl = GlRenderer.gl;
 		this.anInt4236 = glGenLists(2);
 		glNewList(this.anInt4236, GL2.GL_COMPILE);
 		glActiveTexture(GL2.GL_TEXTURE1);

@@ -302,7 +302,7 @@ public final class GlTile extends Node {
 		if (aClass3_Sub15_3.offset == 0 && aClass3_Sub15_2.offset == 0) {
 			return;
 		}
-		@Pc(257) GL2 gl = GlRenderer.gl;
+		
 		if (this.texture == -1 || arg2) {
 			GlRenderer.setTextureId(-1);
 			MaterialManager.setMaterial(0, 0);

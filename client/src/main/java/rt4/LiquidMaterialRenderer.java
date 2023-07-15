@@ -88,7 +88,6 @@ public final class LiquidMaterialRenderer implements MaterialRenderer {
 	@Override
 	public final void unbind() {
 		if (this.anInt4831 >= 0) {
-			@Pc(5) GL2 gl = GlRenderer.gl;
 			glCallList(this.anInt4831 + 1);
 		}
 	}
@@ -105,7 +104,6 @@ public final class LiquidMaterialRenderer implements MaterialRenderer {
 		if (this.anInt4831 < 0) {
 			return;
 		}
-		@Pc(5) GL2 gl = GlRenderer.gl;
 		glCallList(this.anInt4831);
 		glActiveTexture(GL2.GL_TEXTURE1);
 		glMatrixMode(GL2.GL_TEXTURE);
@@ -137,7 +135,6 @@ public final class LiquidMaterialRenderer implements MaterialRenderer {
 
 	@OriginalMember(owner = "client!rd", name = "e", descriptor = "()V")
 	private void method3719() {
-		@Pc(1) GL2 gl = GlRenderer.gl;
 		this.anInt4831 = glGenLists(2);
 		glNewList(this.anInt4831, GL2.GL_COMPILE);
 		glActiveTexture(GL2.GL_TEXTURE1);
@@ -172,7 +169,6 @@ public final class LiquidMaterialRenderer implements MaterialRenderer {
 		if (this.anInt4831 < 0) {
 			return;
 		}
-		@Pc(4) GL2 gl = GlRenderer.gl;
 		@Pc(7) int[] local7 = new int[1];
 		glBindProgramARB(GL2.GL_VERTEX_PROGRAM_ARB, this.anInt4830);
 		// WaterShader Needs to be rewritten
@@ -189,7 +185,6 @@ public final class LiquidMaterialRenderer implements MaterialRenderer {
 		if (this.anInt4831 < 0) {
 			return;
 		}
-		@Pc(5) GL2 gl = GlRenderer.gl;
 		glActiveTexture(GL2.GL_TEXTURE1);
 		if ((arg0 & 0x80) == 0) {
 			glEnable(MaterialManager.allows3DTextureMapping ? GL2.GL_TEXTURE_3D : GL2.GL_TEXTURE_2D);

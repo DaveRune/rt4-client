@@ -70,7 +70,6 @@ public final class GlIndexedSprite extends IndexedSprite {
 			local22 += (this.anInt4287 - this.width) * 4;
 		}
 		@Pc(93) ByteBuffer local93 = ByteBuffer.wrap(local20);
-		@Pc(95) GL2 gl = GlRenderer.gl;
 		if (this.anInt4281 == -1) {
 			int[] local102 = new int[1];
 			GL11.glGenTextures(local102);
@@ -101,7 +100,6 @@ public final class GlIndexedSprite extends IndexedSprite {
 	private void method3338() {
 		if (this.anInt4283 != 1) {
 			this.anInt4283 = 1;
-			@Pc(9) GL2 gl = GlRenderer.gl;
 			glTexParameteri(GL2.GL_TEXTURE_2D, GL2.GL_TEXTURE_MIN_FILTER, GL2.GL_NEAREST);
 			glTexParameteri(GL2.GL_TEXTURE_2D, GL2.GL_TEXTURE_MAG_FILTER, GL2.GL_NEAREST);
 		}
@@ -113,7 +111,6 @@ public final class GlIndexedSprite extends IndexedSprite {
 		GlRenderer.setupRgbAlphaMode1Rendering();
 		@Pc(5) int local5 = arg0 + this.xOffset;
 		@Pc(10) int local10 = arg1 + this.yOffset;
-		@Pc(12) GL2 gl = GlRenderer.gl;
 		GlRenderer.setTextureId(this.anInt4281);
 		this.method3338();
 		glTranslatef((float) local5, (float) (GlRenderer.canvasHeight - local10), 0.0F);
@@ -140,7 +137,6 @@ public final class GlIndexedSprite extends IndexedSprite {
 	private void method3339() {
 		@Pc(7) float local7 = (float) this.width / (float) this.anInt4287;
 		@Pc(15) float local15 = (float) this.height / (float) this.anInt4286;
-		@Pc(17) GL2 gl = GlRenderer.gl;
 		if (this.anInt4282 == -1) {
 			this.anInt4282 = glGenLists(1);
 			this.anInt4285 = GlCleaner.contextId;

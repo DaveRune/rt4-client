@@ -185,7 +185,7 @@ public final class GlTexture extends SecondaryNode {
 		if (!this.aClass88_1.method2729(arg1, arg0)) {
 			return false;
 		}
-		@Pc(22) GL2 gl = GlRenderer.gl;
+		
 		@Pc(28) int size = arg2 ? 64 : 128;
 		@Pc(31) int local31 = MaterialManager.getFlags();
 		if ((local31 & 0x1) == 0) {

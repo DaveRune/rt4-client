@@ -159,7 +159,7 @@ public final class Shadow {
 			}
 			local19 += local5 - 128;
 		}
-		@Pc(145) GL2 gl = GlRenderer.gl;
+		
 		@Pc(148) ByteBuffer local148 = ByteBuffer.wrap(pixels);
 		local148.limit(16384);
 		GlRenderer.setTextureId(this.anInt5901);
@@ -169,7 +169,7 @@ public final class Shadow {
 
 	@OriginalMember(owner = "client!wm", name = "b", descriptor = "()V")
 	public final void method4679() {
-		@Pc(1) GL2 gl = GlRenderer.gl;
+		
 		GlRenderer.setTextureId(this.anInt5901);
 		if (this.aClass155_7 == null) {
 			if (GlRenderer.arbVboSupported) {

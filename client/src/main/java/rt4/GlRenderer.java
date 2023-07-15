@@ -22,6 +22,7 @@ import static org.lwjgl.opengl.GL13.glActiveTexture;
 import static org.lwjgl.opengl.GL15.glGenBuffers;
 import static org.lwjgl.system.MemoryStack.*;
 import static org.lwjgl.system.MemoryUtil.*;
+import static rt4.GameShell.canvas;
 
 import java.awt.*;
 import java.nio.ByteOrder;
@@ -596,7 +597,7 @@ public final class GlRenderer {
 		glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE); // the window will be resizable
 
 		// Create the window
-		LWJGLwindow = glfwCreateWindow(300, 300, "Hello World!", NULL, NULL);
+		LWJGLwindow = glfwCreateWindow(canvas.getWidth(), canvas.getHeight(), "LWJGL Window", 0, 0);
 		if ( LWJGLwindow == NULL )
 			throw new RuntimeException("Failed to create the GLFW window");
 
@@ -634,6 +635,7 @@ public final class GlRenderer {
 		glfwShowWindow(LWJGLwindow);
 
 		GL.createCapabilities();
+		GLFW.glfwMakeContextCurrent(LWJGLwindow);
 	}
 
 	@OriginalMember(owner = "client!tf", name = "a", descriptor = "(Ljava/awt/Canvas;I)I")

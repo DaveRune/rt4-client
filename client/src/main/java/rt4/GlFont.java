@@ -129,7 +129,7 @@ public final class GlFont extends Font {
 	@Override
 	protected final void renderGlyphTransparent(@OriginalArg(0) int glyph, @OriginalArg(1) int x, @OriginalArg(2) int y, @OriginalArg(3) int width, @OriginalArg(4) int height, @OriginalArg(5) int color, @OriginalArg(6) int alpha) {
 		GlRenderer.setupRgbAlphaMode0Rendering();
-		@Pc(2) GL2 gl = GlRenderer.gl;
+		
 		GlRenderer.setTextureId(this.textureId);
 		glColor4ub((byte) (color >> 16), (byte) (color >> 8), (byte) color, alpha > 255 ? -1 : (byte) alpha);
 		glTranslatef((float) x, (float) (GlRenderer.canvasHeight - y), 0.0F);
@@ -143,7 +143,7 @@ public final class GlFont extends Font {
 			return;
 		}
 		this.listIds = new int[256];
-		@Pc(9) GL2 gl = GlRenderer.gl;
+		
 		for (@Pc(11) int i = 0; i < 256; i++) {
 			@Pc(21) float s0 = (float) (i % 16) / 16.0F;
 			@Pc(28) float t0 = (float) (i / 16) / 16.0F;

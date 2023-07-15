@@ -5,6 +5,8 @@ import org.openrs2.deob.annotation.OriginalArg;
 import org.openrs2.deob.annotation.OriginalMember;
 import org.openrs2.deob.annotation.Pc;
 
+import static org.lwjgl.opengl.GL11.*;
+
 public class SceneGraph {
 
 	@OriginalMember(owner = "client!bb", name = "g", descriptor = "[[[B")
@@ -3041,9 +3043,8 @@ public class SceneGraph {
 		}
 		@Pc(240) boolean local240 = tileHeights == underwaterTileHeights;
 		if (GlRenderer.enabled) {
-			@Pc(244) GL2 gl = GlRenderer.gl;
-			gl.glPushMatrix();
-			gl.glTranslatef((float) -arg0, (float) -arg1, (float) -arg2);
+			glPushMatrix();
+			glTranslatef((float) -arg0, (float) -arg1, (float) -arg2);
 			if (local240) {
 				UnderwaterMaterialRenderer.applyFogFade();
 				MaterialManager.setMaterial(-1, 3);
@@ -3084,7 +3085,7 @@ public class SceneGraph {
 					local32++;
 				}
 			}
-			gl.glPopMatrix();
+			glPopMatrix();
 		}
 		@Pc(434) int local434;
 		@Pc(438) int local438;
