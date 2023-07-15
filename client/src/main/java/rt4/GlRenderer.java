@@ -645,47 +645,9 @@ public final class GlRenderer {
 				return -1;
 			}
 
-			// Create JOGL
-			GLProfile profile = GLProfile.get(GLProfile.GL3bc);
-			@Pc(8) GLCapabilities capabilities = new GLCapabilities(profile);
-			if (numSamples > 0) {
-				capabilities.setSampleBuffers(true);
-				capabilities.setNumSamples(numSamples * 4);
-			}
-			@Pc(18) GLDrawableFactory factory = GLDrawableFactory.getFactory(profile);
-			AWTGraphicsConfiguration config = AWTGraphicsConfiguration.create(canvas.getGraphicsConfiguration(), capabilities, capabilities);
-			window = NewtFactoryAWT.getNativeWindow(canvas, config);
-			if (!window.getLock().isLocked()) {
-				window.lockSurface();
-			}
-			try {
-				drawable = factory.createGLDrawable(window);
-				drawable.setRealized(true);
-			} finally {
-				window.unlockSurface();
-			}
-			@Pc(29) int swapBuffersAttempts = 0;
-			@Pc(36) int result;
-
-			while (true) {
-				context = drawable.createContext(null);
-				try {
-					result = context.makeCurrent();
-					if (result != 0) {
-						break;
-					}
-				} catch (@Pc(41) Exception local41) {
-				}
-				if (swapBuffersAttempts++ > 5) {
-					return -2;
-				}
-			}
-
 			// Create LWJGL (I think we snatch the context in the thread from the above code)...
 			System.out.println("Hello LWJGL " + Version.getVersion() + "!");
 			initLWJGL();
-
-			gl = GLContext.getCurrentGL().getGL2();
 			glLineWidth((float) GameShell.canvasScale);
 
 			enabled = true;
@@ -699,11 +661,11 @@ public final class GlRenderer {
 			genTextures();
 			resetOpenGLState();
 			glClear(GL2.GL_COLOR_BUFFER_BIT);
-			swapBuffersAttempts = 0;
+			int swapBuffersAttempts = 0;
 			while (true) {
 				try {
 					// Main draw loop
-					drawable.swapBuffers();
+					swapBuffers();
 					break;
 				} catch (@Pc(86) Exception ex) {
 					if (swapBuffersAttempts++ > 5) {
