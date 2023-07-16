@@ -78,7 +78,7 @@ public final class DisplayMode {
 	@OriginalMember(owner = "client!pm", name = "a", descriptor = "(ZIZIZII)V")
 	public static void setWindowMode(@OriginalArg(0) boolean arg0, @OriginalArg(1) int arg1, @OriginalArg(2) boolean arg2, @OriginalArg(3) int mode, @OriginalArg(5) int arg4, @OriginalArg(6) int arg5) {
 		if (arg2) {
-			GlRenderer.quit();
+			//GlRenderer.quit();
 		}
 		if (GameShell.fullScreenFrame != null && (arg1 != 3 || arg4 != Preferences.fullScreenWidth || arg5 != Preferences.fullScreenHeight)) {
 			exitFullScreen(GameShell.fullScreenFrame, GameShell.signLink);

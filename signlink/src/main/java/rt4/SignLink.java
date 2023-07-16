@@ -410,9 +410,7 @@ public final class SignLink implements Runnable {
 					}
 					request.result = ((Class) args[0]).getDeclaredField((String) args[1]);
 				} else if (type == 10) {
-					GLProfile.initSingleton();
 				} else if (type == 11) {
-					GLProfile.shutdown();
 				} else if (type == 12) {
 					String cacheSubDir = (String) request.objectArg;
 					@Pc(558) FileOnDisk preferences = openPreferencesInternal(cacheSubDir);

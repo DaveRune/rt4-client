@@ -216,6 +216,7 @@ public final class client extends GameShell {
 
 	@OriginalMember(owner = "client!client", name = "main", descriptor = "([Ljava/lang/String;)V")
 	public static void main(@OriginalArg(0) String[] arg0) {
+		System.out.println("Hello from rt4 client mainclass");
 		try {
 			GlobalJsonConfig.load(GlobalConfig.EXTENDED_CONFIG_PATH);
 		} catch (Exception ex) {

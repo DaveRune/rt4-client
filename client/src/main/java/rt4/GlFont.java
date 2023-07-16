@@ -77,7 +77,6 @@ public final class GlFont extends Font {
 		@Pc(4) GL2 gl;
 		if (masked == null) {
 			GlRenderer.setupRgbAlphaMode0Rendering();
-			gl = GlRenderer.gl;
 			GlRenderer.setTextureId(this.textureId);
 			glColor3ub((byte) (color >> 16), (byte) (color >> 8), (byte) color);
 			glTranslatef((float) x, (float) (GlRenderer.canvasHeight - y), 0.0F);
@@ -86,7 +85,6 @@ public final class GlFont extends Font {
 			return;
 		}
 		GlRenderer.setupRgbAlphaMode0Rendering();
-		gl = GlRenderer.gl;
 		glColor3ub((byte) (color >> 16), (byte) (color >> 8), (byte) color);
 		glTranslatef((float) x, (float) (GlRenderer.canvasHeight - y), 0.0F);
 		@Pc(32) float s0 = (float) (glyph % 16) / 16.0F;
