@@ -1,6 +1,7 @@
 package rt4;
 
 import com.jogamp.opengl.GL2;
+import org.lwjgl.BufferUtils;
 import org.openrs2.deob.annotation.OriginalArg;
 import org.openrs2.deob.annotation.OriginalClass;
 import org.openrs2.deob.annotation.OriginalMember;
@@ -46,11 +47,20 @@ public final class GlAlphaSprite extends GlSprite {
 			}
 			local22 += local32;
 		}
-		ByteBuffer local94 = ByteBuffer.wrap(local20);
+
+		/*
+		Magic code to convert not working JOGL buffers into working buffers.
+		 */
+		ByteBuffer tempBuffer = ByteBuffer.wrap(local20);
+		ByteBuffer local94 = BufferUtils.createByteBuffer(tempBuffer.capacity());
+		local94.put(tempBuffer);
+		local94.flip();
+
 		if (this.textureId == -1) {
 			this.textureId = glGenTextures();
 		}
 		GlRenderer.setTextureId(this.textureId);
+
 		glTexImage2D(GL2.GL_TEXTURE_2D, 0, GL2.GL_RGBA, this.powerOfTwoWidth, this.powerOfTwoHeight, 0, GL2.GL_RGBA, GL2.GL_UNSIGNED_BYTE, local94);
 		GlCleaner.onCard2d += local94.limit() - this.anInt1869;
 		this.anInt1869 = local94.limit();

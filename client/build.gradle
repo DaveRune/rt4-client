@@ -38,12 +38,12 @@ dependencies {
     implementation 'lib:jogl-all-natives-linux-i586'
     implementation 'lib:jogl-all-natives-macosx-universal'
     implementation 'lib:jogl-all-natives-android-aarch64'
-    implementation 'lib:lwjgl-glfw-classes'
-    //implementation 'lib:lwjgl'
-    //implementation 'lib:lwjgl-glfw'
-    //implementation 'lib:lwjgl-jemalloc'
-    //implementation 'lib:lwjgl-opengl'
-    //implementation 'lib:lwjgl-openal'
+    //implementation 'lib:lwjgl-glfw-classes'
+    implementation 'lib:lwjgl'
+    implementation 'lib:lwjgl-glfw'
+    implementation 'lib:lwjgl-jemalloc'
+    implementation 'lib:lwjgl-opengl'
+    implementation 'lib:lwjgl-openal'
 
     runtime 'org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.4.10'
 }

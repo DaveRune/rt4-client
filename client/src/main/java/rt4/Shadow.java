@@ -1,6 +1,7 @@
 package rt4;
 
 import com.jogamp.opengl.GL2;
+import org.lwjgl.BufferUtils;
 import org.openrs2.deob.annotation.OriginalArg;
 import org.openrs2.deob.annotation.OriginalClass;
 import org.openrs2.deob.annotation.OriginalMember;
@@ -159,11 +160,18 @@ public final class Shadow {
 			}
 			local19 += local5 - 128;
 		}
-		
-		@Pc(148) ByteBuffer local148 = ByteBuffer.wrap(pixels);
-		local148.limit(16384);
+
+		// LWJGL
+		ByteBuffer originalBuffer = ByteBuffer.wrap(pixels);
+		ByteBuffer preLimitedBuffer = originalBuffer.duplicate(); // Create a duplicate before limiting
+		preLimitedBuffer.limit(16384); // Set the limit on the duplicate, not the original
+
+		ByteBuffer buffer = BufferUtils.createByteBuffer(preLimitedBuffer.remaining()); // Create a new buffer with the remaining capacity of the pre-limited buffer
+		buffer.put(preLimitedBuffer); // Copy from the pre-limited buffer, not the original
+		buffer.flip(); // Prepare the buffer for reading
+
 		GlRenderer.setTextureId(this.anInt5901);
-		glTexImage2D(GL2.GL_TEXTURE_2D, 0, GL2.GL_ALPHA, 128, 128, 0, GL2.GL_ALPHA, GL2.GL_UNSIGNED_BYTE, local148);
+		glTexImage2D(GL2.GL_TEXTURE_2D, 0, GL2.GL_ALPHA, 128, 128, 0, GL2.GL_ALPHA, GL2.GL_UNSIGNED_BYTE, buffer);
 		return true;
 	}
 
