@@ -7,7 +7,7 @@ import org.openrs2.deob.annotation.Pc;
 public class LoadingBar {
 	@OriginalMember(owner = "client!oj", name = "a", descriptor = "(BZLclient!rk;)V")
 	public static void render(@OriginalArg(1) boolean arg0, @OriginalArg(2) Font arg1) {
-		System.out.println("Loading: " + client.mainLoadPercentage + " : " + client.mainLoadPrimaryText + " : " + client.mainLoadSecondaryText);
+		System.out.println("Loading: " + client.mainLoadState + " : " + client.mainLoadPrimaryText + " : " + client.mainLoadSecondaryText);
 		@Pc(9) int local9;
 		if (GlRenderer.enabled || arg0) {
 			local9 = GameShell.canvasHeight;

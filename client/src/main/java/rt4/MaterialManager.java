@@ -144,6 +144,7 @@ public class MaterialManager {
 
 	@OriginalMember(owner = "client!lm", name = "a", descriptor = "()V")
 	public static void method2807() {
+		System.out.print("?? method2807 ??");
 		@Pc(11) byte[] local11;
 		if (textureBuffer == null) {
 			@Pc(5) MaterialManager_Class106_Sub1_Sub1 local5 = new MaterialManager_Class106_Sub1_Sub1();

@@ -1562,15 +1562,7 @@ public final class client extends GameShell {
 			clean = true;
 		} else if (mainLoadState == 150) {
 			MaterialManager.method2807();
-			if (Preferences.safeMode) {
-				Preferences.windowMode = 0;
-				Preferences.antiAliasingMode = 0;
-				Preferences.favoriteWorlds = 0;
-				Preferences.buildArea = 0;
-			}
-			Preferences.safeMode = true;
-			Preferences.write(GameShell.signLink);
-			DisplayMode.setWindowMode(false, Preferences.favoriteWorlds, -1, -1);
+			DisplayMode.setWindowMode(true, 2, Preferences.fullScreenWidth, Preferences.fullScreenHeight);
 			mainLoadPercentage = 100;
 			mainLoadState = 160;
 			mainLoadSecondaryText = LocalizedText.MAINLOAD150B;

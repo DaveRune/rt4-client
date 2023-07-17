@@ -8,6 +8,7 @@ import jogamp.newt.awt.NewtFactoryAWT;
 import org.lwjgl.opengl.GL;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL20;
+import org.lwjgl.system.MemoryUtil;
 import org.openrs2.deob.annotation.OriginalArg;
 import org.openrs2.deob.annotation.OriginalMember;
 import org.openrs2.deob.annotation.Pc;
@@ -26,6 +27,9 @@ import static org.lwjgl.system.MemoryUtil.*;
 import static rt4.GameShell.canvas;
 
 import java.awt.*;
+import java.awt.event.InputEvent;
+import java.awt.event.KeyEvent;
+import java.awt.event.MouseEvent;
 import java.nio.ByteOrder;
 import java.nio.IntBuffer;
 import java.nio.charset.StandardCharsets;
@@ -550,6 +554,36 @@ public final class GlRenderer {
 		textureId = id;
 	}
 
+	private static int convertToAWTKeyCode(int glfwKeyCode) {
+		switch (glfwKeyCode) {
+			case GLFW.GLFW_KEY_ENTER:
+				return KeyEvent.VK_ENTER;
+			case GLFW.GLFW_KEY_0:
+				return KeyEvent.VK_0;
+			case GLFW.GLFW_KEY_1:
+				return KeyEvent.VK_1;
+			case GLFW.GLFW_KEY_2:
+				return KeyEvent.VK_2;
+			case GLFW.GLFW_KEY_3:
+				return KeyEvent.VK_3;
+			case GLFW.GLFW_KEY_4:
+				return KeyEvent.VK_4;
+			case GLFW.GLFW_KEY_5:
+				return KeyEvent.VK_5;
+			case GLFW.GLFW_KEY_6:
+				return KeyEvent.VK_6;
+			case GLFW.GLFW_KEY_7:
+				return KeyEvent.VK_7;
+			case GLFW.GLFW_KEY_8:
+				return KeyEvent.VK_8;
+			case GLFW.GLFW_KEY_9:
+				return KeyEvent.VK_9;
+			// Add more cases here for other keys
+			default:
+				return KeyEvent.VK_UNDEFINED;
+		}
+	}
+
 	private static void initLWJGL() {
 		System.out.println("Initializing LWJGL...");  // Add this at the beginning of initLWJGL()
 		// Setup an error callback. The default implementation
@@ -567,15 +601,93 @@ public final class GlRenderer {
 		glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE); // the window will be resizable
 
 		// Create the window
-		LWJGLwindow = glfwCreateWindow(canvas.getWidth(), canvas.getHeight(), "LWJGL Window", 0, 0);
+		LWJGLwindow = glfwCreateWindow(canvasWidth, canvasHeight, "LWJGL Window", 0, 0);
 		if ( LWJGLwindow == NULL )
 			throw new RuntimeException("Failed to create the GLFW window");
 
-		// Setup a key callback. It will be called every time a key is pressed, repeated or released.
 		glfwSetKeyCallback(LWJGLwindow, (window, key, scancode, action, mods) -> {
-			if ( key == GLFW_KEY_ESCAPE && action == GLFW_RELEASE )
-				glfwSetWindowShouldClose(window, true); // We will detect this in the rendering loop
+			int id = (action == GLFW.GLFW_PRESS) ? KeyEvent.KEY_PRESSED : KeyEvent.KEY_RELEASED;
+			long when = System.currentTimeMillis();
+			int modifiers = 0;  // You might also want to map GLFW's mods parameter to AWT modifiers
+			int keyCode;
+			char keyChar;
+			boolean shiftPressed = (mods & GLFW.GLFW_MOD_SHIFT) != 0;
+
+			// map GLFW keys to AWT keys
+			switch (key) {
+				case GLFW.GLFW_KEY_ENTER:
+					keyCode = KeyEvent.VK_ENTER;
+					keyChar = '\n';
+					break;
+				case GLFW.GLFW_KEY_BACKSPACE:
+					keyCode = KeyEvent.VK_BACK_SPACE;
+					keyChar = '\b';
+					break;
+				case GLFW.GLFW_KEY_TAB:
+					keyCode = KeyEvent.VK_TAB;
+					keyChar = '\t';
+					break;
+				// Add more cases here as needed
+				default:
+					keyCode = key;
+					if (key >= GLFW.GLFW_KEY_A && key <= GLFW.GLFW_KEY_Z) {
+						keyChar = (char) (key + (shiftPressed ? 0 : 32));  // Convert to lowercase if Shift is not pressed
+					} else if (key >= GLFW.GLFW_KEY_0 && key <= GLFW.GLFW_KEY_9) {
+						keyChar = (char) (key - GLFW.GLFW_KEY_0 + '0');  // Convert GLFW number key code to corresponding character
+					} else {
+						keyChar = KeyEvent.CHAR_UNDEFINED;
+					}
+					break;
+			}
+
+			KeyEvent event = new KeyEvent(canvas, id, when, modifiers, keyCode, keyChar, KeyEvent.KEY_LOCATION_STANDARD);
+
+			if (key == GLFW.GLFW_KEY_ENTER || key == GLFW.GLFW_KEY_BACKSPACE || key == GLFW.GLFW_KEY_TAB) {
+				if (id == KeyEvent.KEY_PRESSED)
+					Keyboard.instance.keyPressed(event);
+			} else {
+				if (id == KeyEvent.KEY_PRESSED)
+					Keyboard.instance.keyTyped(event);
+				else
+					Keyboard.instance.keyReleased(event);
+			}
 		});
+
+		glfwSetCursorPosCallback(LWJGLwindow, (window, xpos, ypos) -> {
+			int id = MouseEvent.MOUSE_MOVED;
+			int modifiers = 0; // This will be set depending on the button pressed
+			Point point = new Point((int)xpos, (int)ypos);
+			int clickCount = 0;
+			boolean popupTrigger = false;
+			MouseEvent event = new MouseEvent(canvas, id, System.currentTimeMillis(), modifiers, point.x, point.y, clickCount, popupTrigger);
+			Mouse.instance.mouseMoved(event);
+		});
+
+		glfwSetMouseButtonCallback(LWJGLwindow, (window, button, action, mods) -> {
+			int id = (action == GLFW.GLFW_PRESS) ? MouseEvent.MOUSE_PRESSED : MouseEvent.MOUSE_RELEASED;
+			int modifiers;  // Initialize modifiers
+			double[] xpos = new double[1];
+			double[] ypos = new double[1];
+			glfwGetCursorPos(window, xpos, ypos); // get current mouse position
+			Point point = new Point((int)xpos[0], (int)ypos[0]);
+			int clickCount = (action == GLFW.GLFW_PRESS) ? 1 : 0; // update as per your requirements
+			boolean popupTrigger = (button == GLFW.GLFW_MOUSE_BUTTON_RIGHT); // Trigger popup on right click
+
+			// Check for right mouse button press
+			if (button == GLFW.GLFW_MOUSE_BUTTON_RIGHT) {
+				modifiers = InputEvent.BUTTON3_DOWN_MASK;
+			} else {
+				modifiers = 0; // You might want to map GLFW's mods parameter to AWT modifiers
+			}
+
+			MouseEvent event = new MouseEvent(canvas, id, System.currentTimeMillis(), modifiers, point.x, point.y, clickCount, popupTrigger, button);
+			if (id == MouseEvent.MOUSE_PRESSED)
+				Mouse.instance.mousePressed(event);
+			else
+				Mouse.instance.mouseReleased(event);
+		});
+
+
 
 		// Get the thread stack and push a new frame
 		try ( MemoryStack stack = stackPush() ) {
@@ -612,10 +724,6 @@ public final class GlRenderer {
 	public static int init(@OriginalArg(0) Canvas canvas, @OriginalArg(1) int numSamples) {
 		System.out.println("Initializing...");  // Add this at the beginning of init()
 		try {
-
-			if (!canvas.isDisplayable()) {
-				return -1;
-			}
 
 			int swapBuffersAttempts = 0;
 
@@ -660,21 +768,23 @@ public final class GlRenderer {
 			// Create LWJGL (I think we snatch the context in the thread from the above code)...
 			System.out.println("Hello LWJGL " + Version.getVersion() + "!");
 
-			if(LWJGLwindow == NULL){
-				initLWJGL();
-			}
-
 			// JOGL for debugging
 			//gl = GLContext.getCurrentGL().getGL2();
 
+			canvasWidth = 1280;
+			canvasHeight = 720;
+
+			if(LWJGLwindow == NULL){
+				initLWJGL();
+			}
+			enabled = true;
 			glLineWidth((float) GameShell.canvasScale);
 
-			enabled = true;
-			canvasWidth = canvas.getSize().width;
-			canvasHeight = canvas.getSize().height;
 			genTextures();
 			resetOpenGLState();
 			glClear(GL20.GL_COLOR_BUFFER_BIT);
+			setCanvasSize(1280,720);
+			setViewportBounds(0,0,canvasWidth,canvasHeight);
 
 			while (true) {
 				try {
@@ -698,8 +808,8 @@ public final class GlRenderer {
 
 	@OriginalMember(owner = "client!tf", name = "a", descriptor = "(II)V")
 	public static void setCanvasSize(@OriginalArg(0) int width, @OriginalArg(1) int height) {
-		canvasWidth = width;
-		canvasHeight = height;
+		GameShell.canvasWidth = width;
+		GameShell.canvasHeight = height;
 		isOrthoViewConfigured = false;
 	}
 

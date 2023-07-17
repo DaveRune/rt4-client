@@ -16,7 +16,7 @@ public final class DisplayMode {
 	@OriginalMember(owner = "client!rc", name = "M", descriptor = "Z")
 	public static boolean aBoolean73 = false;
 	@OriginalMember(owner = "client!jk", name = "y", descriptor = "Z")
-	public static boolean aBoolean156 = false;
+	public static boolean resizable = false;
 	@OriginalMember(owner = "client!hi", name = "f", descriptor = "J")
 	public static long aLong89 = 0L;
 
@@ -49,26 +49,27 @@ public final class DisplayMode {
 	}
 
 	@OriginalMember(owner = "client!th", name = "a", descriptor = "(ZIIII)V")
-	public static void setWindowMode(@OriginalArg(0) boolean arg0, @OriginalArg(1) int arg1, @OriginalArg(3) int arg2, @OriginalArg(4) int arg3) {
+	public static void setWindowMode(@OriginalArg(0) boolean replaceCanvas, @OriginalArg(1) int newMode, @OriginalArg(3) int fullscreenW, @OriginalArg(4) int fullscreenH) {
+		System.out.println("Hello from setWindowMode!");
 		aLong89 = 0L;
-		@Pc(4) int mode = getWindowMode();
-		if (arg1 == 3 || mode == 3) {
-			arg0 = true;
+		@Pc(4) int currentMode = getWindowMode();
+		if (newMode == 3 || currentMode == 3) {
+			replaceCanvas = true;
 		}
-		@Pc(44) boolean useHd = mode > 0 != arg1 > 0;
-		if (arg0 && arg1 > 0) {
+		@Pc(44) boolean useHd = currentMode > 0 != newMode > 0;
+		if (replaceCanvas && newMode > 0) {
 			useHd = true;
 		}
-		setWindowMode(arg0, arg1, useHd, mode, arg2, arg3);
+		setWindowMode(replaceCanvas, newMode, useHd, currentMode, fullscreenW, fullscreenH);
 	}
 
 	@OriginalMember(owner = "client!le", name = "a", descriptor = "(I)I")
 	public static int getWindowMode() {
 		if (GameShell.fullScreenFrame != null) {
 			return 3;
-		} else if (GlRenderer.enabled && aBoolean156) {
+		} else if (GlRenderer.enabled && resizable) {
 			return 2;
-		} else if (GlRenderer.enabled && !aBoolean156) {
+		} else if (GlRenderer.enabled && !resizable) {
 			return 1;
 		} else {
 			return 0;
@@ -76,24 +77,25 @@ public final class DisplayMode {
 	}
 
 	@OriginalMember(owner = "client!pm", name = "a", descriptor = "(ZIZIZII)V")
-	public static void setWindowMode(@OriginalArg(0) boolean arg0, @OriginalArg(1) int arg1, @OriginalArg(2) boolean arg2, @OriginalArg(3) int mode, @OriginalArg(5) int arg4, @OriginalArg(6) int arg5) {
-		if (arg2) {
-			//GlRenderer.quit();
+	public static void setWindowMode(@OriginalArg(0) boolean replaceCanvas, @OriginalArg(1) int newMode, @OriginalArg(2) boolean useHD, @OriginalArg(3) int currentMode, @OriginalArg(5) int fullscreenW, @OriginalArg(6) int fullscreenH) {
+		System.out.println("Hello from setWindowMode! (the other one!)");
+		if (useHD) {
+			GlRenderer.quit();
 		}
-		if (GameShell.fullScreenFrame != null && (arg1 != 3 || arg4 != Preferences.fullScreenWidth || arg5 != Preferences.fullScreenHeight)) {
+		if (GameShell.fullScreenFrame != null && (newMode != 3 || fullscreenW != Preferences.fullScreenWidth || fullscreenH != Preferences.fullScreenHeight)) {
 			exitFullScreen(GameShell.fullScreenFrame, GameShell.signLink);
 			GameShell.fullScreenFrame = null;
 		}
-		if (arg1 == 3 && GameShell.fullScreenFrame == null) {
-			GameShell.fullScreenFrame = method3176(0, arg5, arg4, GameShell.signLink);
+		if (newMode == 3 && GameShell.fullScreenFrame == null) {
+			GameShell.fullScreenFrame = method3176(0, fullscreenH, fullscreenW, GameShell.signLink);
 			if (GameShell.fullScreenFrame != null) {
-				Preferences.fullScreenHeight = arg5;
-				Preferences.fullScreenWidth = arg4;
+				Preferences.fullScreenHeight = fullscreenH;
+				Preferences.fullScreenWidth = fullscreenW;
 				Preferences.write(GameShell.signLink);
 			}
 		}
-		if (arg1 == 3 && GameShell.fullScreenFrame == null) {
-			setWindowMode(true, Preferences.favoriteWorlds, true, mode, -1, -1);
+		if (newMode == 3 && GameShell.fullScreenFrame == null) {
+			setWindowMode(true, Preferences.favoriteWorlds, true, currentMode, -1, -1);
 			return;
 		}
 		@Pc(85) Container local85;
@@ -112,7 +114,7 @@ public final class DisplayMode {
 			GameShell.frameWidth -= local109.right + local109.left;
 			GameShell.frameHeight -= local109.bottom + local109.top;
 		}
-		if (arg1 >= 2) {
+		if (newMode >= 2) {
 			GameShell.canvasWidth = GameShell.frameWidth;
 			GameShell.canvasHeight = GameShell.frameHeight;
 			GameShell.leftMargin = 0;
@@ -123,18 +125,22 @@ public final class DisplayMode {
 			GameShell.canvasWidth = 765;
 			GameShell.canvasHeight = 503;
 		}
-		if (arg0) {
+		System.out.println("... 128");
+		if (replaceCanvas) {
 			Keyboard.stop(GameShell.canvas);
 			Mouse.stop(GameShell.canvas);
 			if (client.mouseWheel != null) {
 				client.mouseWheel.stop(GameShell.canvas);
 			}
+			/* Causes the client to hang on Android...
 			client.instance.addCanvas();
+			*/
 			Keyboard.start(GameShell.canvas);
 			Mouse.start(GameShell.canvas);
 			if (client.mouseWheel != null) {
 				client.mouseWheel.start(GameShell.canvas);
 			}
+
 		} else {
 			if (GlRenderer.enabled) {
 				GlRenderer.setCanvasSize(GameShell.canvasWidth, GameShell.canvasHeight);
@@ -147,12 +153,14 @@ public final class DisplayMode {
 				GameShell.canvas.setLocation(GameShell.leftMargin, GameShell.topMargin);
 			}
 		}
-		if (arg1 == 0 && mode > 0) {
+		if (newMode == 0 && currentMode > 0) {
 			// Switch back to SD
 			//GlRenderer.createAndDestroyContext(GameShell.canvas);
 		}
-		if (arg2 && arg1 > 0) {
+		if (useHD && newMode > 0) {
 			GameShell.canvas.setIgnoreRepaint(true);
+			GlRenderer.init(null, 0);
+			/*
 			if (!aBoolean73) {
 				SceneGraph.clear();
 				SoftwareRaster.frameBuffer = null;
@@ -169,11 +177,12 @@ public final class DisplayMode {
 				} catch (@Pc(277) Exception local277) {
 				}
 				GameShell.method2704();
-				if (mode == 0) {
+				if (currentMode == 0) {
 					SoftwareRaster.frameBuffer = FrameBuffer.create(503, 765, GameShell.canvas);
 				} else {
 					SoftwareRaster.frameBuffer = null;
 				}
+				/*
 				@Pc(300) PrivilegedRequest local300 = GameShell.signLink.loadGlNatives(client.instance.getClass());
 				while (local300.status == 0) {
 					ThreadUtils.sleep(100L);
@@ -181,16 +190,14 @@ public final class DisplayMode {
 				if (local300.status == 1) {
 					aBoolean73 = true;
 				}
-			}
-			if (aBoolean73) {
-				GlRenderer.init(GameShell.canvas, Preferences.antiAliasingMode * 2);
-			}
+
+			 */
 		}
-		if (!GlRenderer.enabled && arg1 > 0) {
-			setWindowMode(true, 0, true, mode, -1, -1);
+		if (!GlRenderer.enabled && newMode > 0) {
+			setWindowMode(true, 0, true, currentMode, -1, -1);
 			return;
 		}
-		if (arg1 > 0 && mode == 0) {
+		if (newMode > 0 && currentMode == 0) {
 			GameShell.thread.setPriority(5);
 			SoftwareRaster.frameBuffer = null;
 			SoftwareModel.method4580();
@@ -199,7 +206,7 @@ public final class DisplayMode {
 				Rasteriser.setBrightness(0.7F);
 			}
 			LoginManager.method4637();
-		} else if (arg1 == 0 && mode > 0) {
+		} else if (newMode == 0 && currentMode > 0) {
 			GameShell.thread.setPriority(1);
 			SoftwareRaster.frameBuffer = FrameBuffer.create(503, 765, GameShell.canvas);
 			SoftwareModel.method4583();
@@ -223,10 +230,10 @@ public final class DisplayMode {
 			LoginManager.method4637();
 		}
 		SceneGraph.aBoolean130 = !SceneGraph.allLevelsAreVisible();
-		if (arg2) {
+		if (useHD) {
 			client.method2721();
 		}
-		aBoolean156 = arg1 >= 2;
+		resizable = newMode >= 2;
 		if (InterfaceList.topLevelInterface != -1) {
 			InterfaceList.method3712(true);
 		}

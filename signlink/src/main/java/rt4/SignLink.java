@@ -17,7 +17,6 @@ import java.net.InetAddress;
 import java.net.Socket;
 import java.net.URL;
 import java.nio.file.Files;
-import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.util.Hashtable;
 
@@ -55,7 +54,7 @@ public final class SignLink implements Runnable {
 	public static final int anInt5928 = 1;
 
 	@OriginalMember(owner = "signlink!ll", name = "w", descriptor = "Ljava/util/Hashtable;")
-	private static final Hashtable fileCache = new Hashtable(16);
+	private static final Hashtable<String, File> fileCache = new Hashtable<String, File>(16);
 
 	@OriginalMember(owner = "signlink!ll", name = "q", descriptor = "J")
 	private static volatile long breakConnectionsUntil = 0L;
@@ -122,14 +121,14 @@ public final class SignLink implements Runnable {
 
 	@OriginalMember(owner = "signlink!ll", name = "a", descriptor = "(Ljava/lang/String;IZLjava/lang/String;)Ljava/io/File;")
 	public static File getFile(@OriginalArg(0) String cacheSubDir, @OriginalArg(1) int storeId, @OriginalArg(3) String name) {
-		@Pc(4) File cachedFile = (File) fileCache.get(name);
+		@Pc(4) File cachedFile = fileCache.get(name);
 		if (cachedFile != null) {
 			return cachedFile;
 		}
 		@Pc(53) String[] cacheLocations = new String[]{homeDir, "c:/rscache/", "/rscache/", "c:/windows/", "c:/winnt/", "c:/", "/tmp/", ""};
-		@Pc(78) String[] cacheDirs = new String[]{"cache", ".runite_rs", ".530file_store_" + storeId, ".jagex_cache_" + storeId, ".file_store_" + storeId};
+		@Pc(78) String[] cacheDirs = new String[]{".runite_rs", "cache", ".530file_store_" + storeId, ".jagex_cache_" + storeId, ".file_store_" + storeId};
 		for (@Pc(80) int attempt = 0; attempt < 2; attempt++) {
-			for (@Pc(87) int i = 0; i < cacheDirs.length; i++) {
+			for (@Pc(87) int i = 0; i < 2; i++) {
 				for (@Pc(93) int j = 0; j < cacheLocations.length; j++) {
 					@Pc(128) String path = cacheLocations[j] + cacheDirs[i] + "/" + (cacheSubDir == null ? "" : cacheSubDir + "/") + name;
 					@Pc(130) RandomAccessFile randomAccessFile = null;
@@ -198,7 +197,7 @@ public final class SignLink implements Runnable {
 		String homeDirOverride = System.getProperty("clientHomeOverride");
 		if (homeDirOverride != null) {
 			homeDir = homeDirOverride;
- 		} else {
+		} else {
 			try {
 				if (homeDir == null)
 					homeDir = System.getProperty("user.home") + File.separatorChar;
@@ -219,7 +218,6 @@ public final class SignLink implements Runnable {
 			} catch (@Pc(86) Exception ex) {
 			}
 		}
-
 		try {
 			this.eventQueue = Toolkit.getDefaultToolkit().getSystemEventQueue();
 		} catch (@Pc(97) Throwable ex) {
@@ -410,7 +408,9 @@ public final class SignLink implements Runnable {
 					}
 					request.result = ((Class) args[0]).getDeclaredField((String) args[1]);
 				} else if (type == 10) {
+					GLProfile.initSingleton();
 				} else if (type == 11) {
+					GLProfile.shutdown();
 				} else if (type == 12) {
 					String cacheSubDir = (String) request.objectArg;
 					@Pc(558) FileOnDisk preferences = openPreferencesInternal(cacheSubDir);
