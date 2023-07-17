@@ -12,6 +12,9 @@ import org.lwjgl.system.MemoryUtil;
 import org.openrs2.deob.annotation.OriginalArg;
 import org.openrs2.deob.annotation.OriginalMember;
 import org.openrs2.deob.annotation.Pc;
+import java.util.Map;
+import java.util.HashMap;
+import java.util.function.Function;
 
 import org.lwjgl.*;
 import org.lwjgl.glfw.*;
@@ -586,9 +589,9 @@ public final class GlRenderer {
 
 	private static void initLWJGL() {
 		System.out.println("Initializing LWJGL...");  // Add this at the beginning of initLWJGL()
+
 		// Setup an error callback. The default implementation
 		// will print the error message in System.err.
-
 		GLFWErrorCallback.createPrint(System.out).set();
 
 		// Initialize GLFW. Most GLFW functions will not work before doing this.
@@ -605,51 +608,94 @@ public final class GlRenderer {
 		if ( LWJGLwindow == NULL )
 			throw new RuntimeException("Failed to create the GLFW window");
 
-		glfwSetKeyCallback(LWJGLwindow, (window, key, scancode, action, mods) -> {
-			int id = (action == GLFW.GLFW_PRESS) ? KeyEvent.KEY_PRESSED : KeyEvent.KEY_RELEASED;
-			long when = System.currentTimeMillis();
-			int modifiers = 0;  // You might also want to map GLFW's mods parameter to AWT modifiers
+		class KeyMapping {
 			int keyCode;
+			char keyChar;
+
+			KeyMapping(int keyCode, char keyChar) {
+				this.keyCode = keyCode;
+				this.keyChar = keyChar;
+			}
+		}
+
+		Map<Integer, KeyMapping> keyMappings = new HashMap<>();
+		keyMappings.put(GLFW.GLFW_KEY_ENTER, new KeyMapping(KeyEvent.VK_ENTER, '\n'));
+		keyMappings.put(GLFW.GLFW_KEY_BACKSPACE, new KeyMapping(KeyEvent.VK_BACK_SPACE, '\b'));
+		keyMappings.put(GLFW.GLFW_KEY_TAB, new KeyMapping(KeyEvent.VK_TAB, '\t'));
+		keyMappings.put(GLFW.GLFW_KEY_UP, new KeyMapping(KeyEvent.VK_UP, KeyEvent.CHAR_UNDEFINED));
+		keyMappings.put(GLFW.GLFW_KEY_DOWN, new KeyMapping(KeyEvent.VK_DOWN, KeyEvent.CHAR_UNDEFINED));
+		keyMappings.put(GLFW.GLFW_KEY_LEFT, new KeyMapping(KeyEvent.VK_LEFT, KeyEvent.CHAR_UNDEFINED));
+		keyMappings.put(GLFW.GLFW_KEY_RIGHT, new KeyMapping(KeyEvent.VK_RIGHT, KeyEvent.CHAR_UNDEFINED));
+		keyMappings.put(GLFW_KEY_LEFT_SHIFT, new KeyMapping(KeyEvent.VK_SHIFT, KeyEvent.CHAR_UNDEFINED));
+		keyMappings.put(GLFW_KEY_RIGHT_SHIFT, new KeyMapping(KeyEvent.VK_SHIFT, KeyEvent.CHAR_UNDEFINED));
+
+		Map<Integer, Character> specialCharMappings = new HashMap<>();
+		specialCharMappings.put(GLFW.GLFW_KEY_1, '!');
+		specialCharMappings.put(GLFW.GLFW_KEY_2, '@');
+		specialCharMappings.put(GLFW.GLFW_KEY_3, '#');
+		specialCharMappings.put(GLFW.GLFW_KEY_4, '$');
+		specialCharMappings.put(GLFW.GLFW_KEY_5, '%');
+		specialCharMappings.put(GLFW.GLFW_KEY_6, '^');
+		specialCharMappings.put(GLFW.GLFW_KEY_7, '&');
+		specialCharMappings.put(GLFW.GLFW_KEY_8, '*');
+		specialCharMappings.put(GLFW.GLFW_KEY_9, '(');
+		specialCharMappings.put(GLFW.GLFW_KEY_0, ')');
+		specialCharMappings.put(GLFW.GLFW_KEY_MINUS, '_');
+		specialCharMappings.put(GLFW.GLFW_KEY_EQUAL, '+');
+		specialCharMappings.put(GLFW.GLFW_KEY_LEFT_BRACKET, '{');
+		specialCharMappings.put(GLFW.GLFW_KEY_RIGHT_BRACKET, '}');
+		specialCharMappings.put(GLFW.GLFW_KEY_SEMICOLON, ':');
+		specialCharMappings.put(GLFW.GLFW_KEY_APOSTROPHE, '"');
+		specialCharMappings.put(GLFW.GLFW_KEY_COMMA, '<');
+		specialCharMappings.put(GLFW.GLFW_KEY_PERIOD, '>');
+		specialCharMappings.put(GLFW.GLFW_KEY_SLASH, '?');
+		specialCharMappings.put(GLFW.GLFW_KEY_BACKSLASH, '|');
+
+		glfwSetKeyCallback(LWJGLwindow, (window, keyCode, scancode, action, mods) -> {
+			int id;
+			if (action == GLFW.GLFW_PRESS) {
+				id = KeyEvent.KEY_PRESSED;
+			} else if (action == GLFW.GLFW_RELEASE) {
+				id = KeyEvent.KEY_RELEASED;
+			} else if (action == GLFW.GLFW_REPEAT) {
+				id = KeyEvent.KEY_PRESSED;  // Add key typed event when GLFW_REPEAT action is received
+			} else {
+				return; // Ignore any other unknown actions
+			}
+
+			long when = System.currentTimeMillis();
 			char keyChar;
 			boolean shiftPressed = (mods & GLFW.GLFW_MOD_SHIFT) != 0;
 
-			// map GLFW keys to AWT keys
-			switch (key) {
-				case GLFW.GLFW_KEY_ENTER:
-					keyCode = KeyEvent.VK_ENTER;
-					keyChar = '\n';
-					break;
-				case GLFW.GLFW_KEY_BACKSPACE:
-					keyCode = KeyEvent.VK_BACK_SPACE;
-					keyChar = '\b';
-					break;
-				case GLFW.GLFW_KEY_TAB:
-					keyCode = KeyEvent.VK_TAB;
-					keyChar = '\t';
-					break;
-				// Add more cases here as needed
-				default:
-					keyCode = key;
-					if (key >= GLFW.GLFW_KEY_A && key <= GLFW.GLFW_KEY_Z) {
-						keyChar = (char) (key + (shiftPressed ? 0 : 32));  // Convert to lowercase if Shift is not pressed
-					} else if (key >= GLFW.GLFW_KEY_0 && key <= GLFW.GLFW_KEY_9) {
-						keyChar = (char) (key - GLFW.GLFW_KEY_0 + '0');  // Convert GLFW number key code to corresponding character
+			KeyMapping mapping = keyMappings.get(keyCode);
+
+			if (mapping != null) {
+				keyChar = mapping.keyChar;
+			} else {
+				if (keyCode >= GLFW.GLFW_KEY_A && keyCode <= GLFW.GLFW_KEY_Z) {
+					keyChar = (char) (keyCode + (shiftPressed ? 0 : 32)); // Convert to lowercase if Shift is not pressed
+				} else if (keyCode >= GLFW.GLFW_KEY_0 && keyCode <= GLFW.GLFW_KEY_9 || specialCharMappings.get(keyCode) != null) {
+					if(shiftPressed) {
+						Character specialChar = specialCharMappings.get(keyCode);
+						keyChar = (specialChar != null) ? specialChar : KeyEvent.CHAR_UNDEFINED;
 					} else {
-						keyChar = KeyEvent.CHAR_UNDEFINED;
+						keyChar = (char) (keyCode - GLFW.GLFW_KEY_0 + '0'); // Convert GLFW number key code to corresponding character
 					}
-					break;
+				} else {
+					keyChar = (char) keyCode;
+				}
 			}
 
-			KeyEvent event = new KeyEvent(canvas, id, when, modifiers, keyCode, keyChar, KeyEvent.KEY_LOCATION_STANDARD);
+			KeyEvent event = new KeyEvent(canvas, id, when, 0, (mapping != null) ? mapping.keyCode : keyCode, keyChar, KeyEvent.KEY_LOCATION_STANDARD);
 
-			if (key == GLFW.GLFW_KEY_ENTER || key == GLFW.GLFW_KEY_BACKSPACE || key == GLFW.GLFW_KEY_TAB) {
-				if (id == KeyEvent.KEY_PRESSED)
+			if (id == KeyEvent.KEY_PRESSED) {
+				if(mapping != null) {
 					Keyboard.instance.keyPressed(event);
-			} else {
-				if (id == KeyEvent.KEY_PRESSED)
+				} else {
 					Keyboard.instance.keyTyped(event);
-				else
-					Keyboard.instance.keyReleased(event);
+				}
+			} else {
+				Keyboard.instance.keyReleased(event);
 			}
 		});
 
@@ -686,7 +732,6 @@ public final class GlRenderer {
 			else
 				Mouse.instance.mouseReleased(event);
 		});
-
 
 
 		// Get the thread stack and push a new frame
@@ -779,11 +824,10 @@ public final class GlRenderer {
 			}
 			enabled = true;
 			glLineWidth((float) GameShell.canvasScale);
-
 			genTextures();
 			resetOpenGLState();
 			glClear(GL20.GL_COLOR_BUFFER_BIT);
-			setCanvasSize(1280,720);
+			setCanvasSize(canvasWidth,canvasHeight);
 			setViewportBounds(0,0,canvasWidth,canvasHeight);
 
 			while (true) {

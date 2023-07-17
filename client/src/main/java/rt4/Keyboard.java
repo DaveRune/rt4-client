@@ -341,7 +341,6 @@ public final class Keyboard implements KeyListener, FocusListener {
 	@Override
 	public final void keyTyped(@OriginalArg(0) KeyEvent event) {
 		if (instance != null) {
-			System.out.print("Hello from keyTyped");
 			@Pc(9) int c = event.getKeyChar();
 			if (c >= 0) {
 				@Pc(21) int index = typedQueueWriterIndex + 1 & 0x7F;
