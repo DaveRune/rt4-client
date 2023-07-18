@@ -28,6 +28,7 @@ import static org.lwjgl.opengl.GL15.glGenBuffers;
 import static org.lwjgl.system.MemoryStack.*;
 import static org.lwjgl.system.MemoryUtil.*;
 import static rt4.GameShell.canvas;
+import static rt4.GameShell.frame;
 
 import java.awt.*;
 import java.awt.event.InputEvent;
@@ -652,6 +653,7 @@ public final class GlRenderer {
 		specialCharMappings.put(GLFW.GLFW_KEY_BACKSLASH, '|');
 
 		glfwSetKeyCallback(LWJGLwindow, (window, keyCode, scancode, action, mods) -> {
+			Mouse.instance.triggerMouseClick(Mouse.lastMouseX,Mouse.lastMouseY,1);
 			int id;
 			if (action == GLFW.GLFW_PRESS) {
 				id = KeyEvent.KEY_PRESSED;
@@ -726,11 +728,7 @@ public final class GlRenderer {
 				modifiers = 0; // You might want to map GLFW's mods parameter to AWT modifiers
 			}
 
-			MouseEvent event = new MouseEvent(canvas, id, System.currentTimeMillis(), modifiers, point.x, point.y, clickCount, popupTrigger, button);
-			if (id == MouseEvent.MOUSE_PRESSED)
-				Mouse.instance.mousePressed(event);
-			else
-				Mouse.instance.mouseReleased(event);
+			Mouse.instance.triggerMouseClick(point.x,point.y,button);
 		});
 
 
@@ -760,9 +758,7 @@ public final class GlRenderer {
 
 		// Make the window visible
 		glfwShowWindow(LWJGLwindow);
-
 		GL.createCapabilities();
-		GLFW.glfwMakeContextCurrent(LWJGLwindow);
 	}
 
 	@OriginalMember(owner = "client!tf", name = "a", descriptor = "(Ljava/awt/Canvas;I)I")
@@ -816,8 +812,8 @@ public final class GlRenderer {
 			// JOGL for debugging
 			//gl = GLContext.getCurrentGL().getGL2();
 
-			canvasWidth = 1280;
-			canvasHeight = 720;
+			canvasWidth = 2400/2;
+			canvasHeight = 1080/2;
 
 			if(LWJGLwindow == NULL){
 				initLWJGL();

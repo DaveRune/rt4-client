@@ -123,6 +123,23 @@ public final class Mouse implements MouseListener, MouseMotionListener, FocusLis
 		}
 	}
 
+	public final synchronized void triggerMouseClick(int x, int y, int button) {
+		if (instance != null) {
+			anInt2467 = 0;
+			anInt1034 = Mouse.currentMouseX;
+			anInt4973 = Mouse.currentMouseY;
+			aLong161 = System.currentTimeMillis(); // MonotonicClock is not standard Java, use System.currentTimeMillis()
+			if (button == MouseEvent.BUTTON3) {
+				anInt1313 = 2;
+				anInt1759 = 2;
+			} else {
+				anInt1313 = 1;
+				anInt1759 = 1;
+			}
+			clickButton = 1;
+		}
+	}
+
 	@OriginalMember(owner = "client!ug", name = "mouseDragged", descriptor = "(Ljava/awt/event/MouseEvent;)V")
 	@Override
 	public final synchronized void mouseDragged(@OriginalArg(0) MouseEvent event) {
