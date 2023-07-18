@@ -1382,7 +1382,7 @@ public class Cs1ScriptRunner {
 				local176.mouseY = local130;
 				ScriptRunner.run(local176);
 			}
-			if (Mouse.pressedButton == 0) {
+			if (Mouse.lastAction == 0) {
 				if (aBoolean172) {
 					if (aClass13_14.onDragRelease != null) {
 						local176 = new HookRequest();

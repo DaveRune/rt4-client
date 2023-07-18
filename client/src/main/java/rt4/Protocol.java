@@ -2391,7 +2391,7 @@ public class Protocol {
 		synchronized (mouseRecorder) {
 			if (!MouseRecorder.enabled) {
 				MouseRecorder.instance.samples = 0;
-			} else if (Mouse.clickButton != 0 || MouseRecorder.instance.samples >= 40) {
+			} else if (Mouse.lastButton != 0 || MouseRecorder.instance.samples >= 40) {
 				outboundBuffer.p1isaac(ClientProt.EVENT_MOUSE_MOVE);
 				type = 0;
 				outboundBuffer.p1(0);
@@ -2465,7 +2465,7 @@ public class Protocol {
 				}
 			}
 		}
-		if (Mouse.clickButton != 0) {
+		if (Mouse.lastButton != 0) {
 			@Pc(411) long loops = (Mouse.clickTime - Mouse.prevClickTime) / 50L;
 			type = Mouse.clickY;
 			if (type < 0) {
@@ -2485,7 +2485,7 @@ public class Protocol {
 				i = 65535;
 			}
 			x = (int) loops;
-			if (Mouse.clickButton == 2) {
+			if (Mouse.lastButton == 2) {
 				button = 1;
 			}
 			outboundBuffer.p1isaac(ClientProt.EVENT_MOUSE_CLICK);
@@ -2689,7 +2689,7 @@ public class Protocol {
 			}
 			InterfaceList.clickedInventoryComponentCycle++;
 
-			if (Mouse.pressedButton == 0) {
+			if (Mouse.lastAction == 0) {
 				if (InterfaceList.draggingClickedInventoryObject && InterfaceList.clickedInventoryComponentCycle >= 5) {
 					if (InterfaceList.clickedInventoryComponent == InterfaceList.mouseOverInventoryInterface && InterfaceList.mouseOverInventoryObjectIndex != MiniMenu.clickedInventoryIndex) {
 						component = InterfaceList.clickedInventoryComponent;
@@ -2736,7 +2736,7 @@ public class Protocol {
 				} else if (MiniMenu.size > 0) {
 					MiniMenu.method1372();
 				}
-				Mouse.clickButton = 0;
+				Mouse.lastButton = 0;
 				MiniMenu.anInt2043 = 10;
 				InterfaceList.clickedInventoryComponent = null;
 			}
@@ -3513,7 +3513,7 @@ public class Protocol {
 		if (InterfaceList.clickedInventoryComponent != null || Cs1ScriptRunner.aClass13_14 != null) {
 			return;
 		}
-		@Pc(20) int local20 = Mouse.clickButton;
+		@Pc(20) int local20 = Mouse.lastButton;
 		@Pc(93) int local93;
 		@Pc(99) int local99;
 		if (!Cs1ScriptRunner.aBoolean108) {

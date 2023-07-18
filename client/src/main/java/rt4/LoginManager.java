@@ -1404,7 +1404,7 @@ public class LoginManager {
 			if (MiniMenu.anInt3953 != 0) {
 				ScriptRunner.anInt3751 = Mouse.anInt5850;
 				ScriptRunner.anInt1892 = Mouse.anInt5895;
-			} else if (Mouse.clickButton == 0) {
+			} else if (Mouse.lastButton == 0) {
 				ScriptRunner.anInt3751 = Mouse.lastMouseX;
 				ScriptRunner.anInt1892 = Mouse.lastMouseY;
 			} else {

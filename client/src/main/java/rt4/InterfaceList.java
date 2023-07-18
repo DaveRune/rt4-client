@@ -663,8 +663,8 @@ public class InterfaceList {
 					if (component.if3) {
 						@Pc(207) boolean local207;
 						local207 = Mouse.lastMouseX >= local61 && Mouse.lastMouseY >= local63 && Mouse.lastMouseX < local65 && Mouse.lastMouseY < local67;
-						@Pc(212) boolean local212 = Mouse.pressedButton == 1 && local207;
-						@Pc(221) boolean local221 = Mouse.clickButton == 1 && Mouse.clickX >= local61 && Mouse.clickY >= local63 && Mouse.clickX < local65 && Mouse.clickY < local67;
+						@Pc(212) boolean local212 = Mouse.lastAction == 1 && local207;
+						@Pc(221) boolean local221 = Mouse.lastButton == 1 && Mouse.clickX >= local61 && Mouse.clickY >= local63 && Mouse.clickX < local65 && Mouse.clickY < local67;
 						@Pc(243) int i;
 						@Pc(322) int k;
 						if (component.aByteArray8 != null) {
@@ -1181,7 +1181,7 @@ public class InterfaceList {
 		}
 		aBoolean84 = false;
 		@Pc(139) int local139;
-		if (Mouse.pressedButton != 0) {
+		if (Mouse.lastAction != 0) {
 			if (arg4 <= arg3 && arg4 + 16 > arg3 && arg0 >= arg5 && arg5 + 16 > arg0) {
 				arg2.scrollY -= 4;
 				redraw(arg2);

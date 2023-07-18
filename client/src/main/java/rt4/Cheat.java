@@ -91,7 +91,7 @@ public class Cheat {
 	@OriginalMember(owner = "client!hk", name = "db", descriptor = "Lclient!na;")
 	public static final JagString WM3 = JagString.parse("::wm3");
 	@OriginalMember(owner = "client!dg", name = "f", descriptor = "Z")
-	public static boolean displayFps = false;
+	public static boolean displayFps = true;
 	@OriginalMember(owner = "client!nj", name = "a", descriptor = "Z")
 	public static boolean shiftClick = GlobalConfig.USE_SHIFT_CLICK;
 	@OriginalMember(owner = "client!qc", name = "U", descriptor = "I")

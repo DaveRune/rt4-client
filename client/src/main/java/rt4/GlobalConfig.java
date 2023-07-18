@@ -44,7 +44,7 @@ public class GlobalConfig {
 	//endregion
 
 	// default distance is 28
-	public static int TILE_DISTANCE = 56;
+	public static int TILE_DISTANCE = 28;
 	public static int VIEW_DISTANCE = TILE_DISTANCE * 128;
 	public static float VIEW_FADE_DISTANCE = ((float) TILE_DISTANCE / 28.0f) * 256.0f;
 
@@ -55,6 +55,6 @@ public class GlobalConfig {
 
 	public static int JS5_RESPONSE_TIMEOUT = 5000;
 
-        public static int AUDIO_SAMPLE_RATE = 44100; //default is 22050
+        public static int AUDIO_SAMPLE_RATE = 22050; //default is 22050
 
 }

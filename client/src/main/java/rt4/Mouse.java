@@ -23,27 +23,27 @@ public final class Mouse implements MouseListener, MouseMotionListener, FocusLis
 	@OriginalMember(owner = "client!he", name = "bb", descriptor = "Lclient!ug;")
 	public static Mouse instance = new Mouse();
 	@OriginalMember(owner = "client!he", name = "Y", descriptor = "I")
-	public static volatile int anInt2467 = 0;
+	public static volatile int idleLoops = 0;
 	@OriginalMember(owner = "client!lk", name = "Z", descriptor = "I")
-	public static int clickButton = 0;
+	public static int lastButton = 0;
 	@OriginalMember(owner = "client!bl", name = "Q", descriptor = "I")
-	public static int pressedButton = 0;
+	public static int lastAction = 0;
 	@OriginalMember(owner = "client!ra", name = "jb", descriptor = "J")
-	public static volatile long aLong161 = 0L;
+	public static volatile long eventTime = 0L;
 	@OriginalMember(owner = "client!ck", name = "k", descriptor = "I")
-	public static volatile int anInt1034 = 0;
+	public static volatile int eventMouseDownX = 0;
 	@OriginalMember(owner = "client!eg", name = "w", descriptor = "I")
-	public static volatile int anInt1759 = 0;
+	public static volatile int eventAction = 0;
 	@OriginalMember(owner = "client!kf", name = "c", descriptor = "J")
 	public static long clickTime = 0L;
 	@OriginalMember(owner = "client!dc", name = "W", descriptor = "I")
-	public static volatile int anInt1313 = 0;
+	public static volatile int eventButton = 0;
 	@OriginalMember(owner = "client!nb", name = "j", descriptor = "I")
-	public static volatile int currentMouseY = -1;
+	public static volatile int eventMouseY = -1;
 	@OriginalMember(owner = "client!lh", name = "u", descriptor = "I")
-	public static volatile int currentMouseX = -1;
+	public static volatile int eventMouseX = -1;
 	@OriginalMember(owner = "client!sa", name = "Y", descriptor = "I")
-	public static volatile int anInt4973 = 0;
+	public static volatile int eventMouseDownY = 0;
 	@OriginalMember(owner = "client!wi", name = "W", descriptor = "I")
 	public static int anInt5850 = 0;
 	@OriginalMember(owner = "client!ok", name = "f", descriptor = "J")
@@ -56,7 +56,7 @@ public final class Mouse implements MouseListener, MouseMotionListener, FocusLis
 		arg0.removeMouseListener(instance);
 		arg0.removeMouseMotionListener(instance);
 		arg0.removeFocusListener(instance);
-		anInt1759 = 0;
+		eventAction = 0;
 	}
 
 	@OriginalMember(owner = "client!ug", name = "a", descriptor = "(I)V")
@@ -73,15 +73,15 @@ public final class Mouse implements MouseListener, MouseMotionListener, FocusLis
 	public static void loop() {
 		@Pc(2) Mouse local2 = instance;
 		synchronized (instance) {
-			pressedButton = anInt1759;
-			lastMouseX = currentMouseX;
-			lastMouseY = currentMouseY;
-			clickButton = anInt1313;
-			clickX = anInt1034;
-			anInt2467++;
-			clickY = anInt4973;
-			clickTime = aLong161;
-			anInt1313 = 0;
+			clickX = eventMouseDownX;
+			clickY = eventMouseDownY;
+			lastAction = eventAction;
+			lastButton = eventButton;
+			lastMouseX = eventMouseX;
+			lastMouseY = eventMouseY;
+			idleLoops++;
+			clickTime = eventTime;
+			eventButton = 0;
 		}
 	}
 
@@ -94,14 +94,14 @@ public final class Mouse implements MouseListener, MouseMotionListener, FocusLis
 
 	@OriginalMember(owner = "client!lc", name = "a", descriptor = "(B)I")
 	public static int getIdleLoops() {
-		return anInt2467;
+		return idleLoops;
 	}
 
 	@OriginalMember(owner = "client!dl", name = "a", descriptor = "(II)V")
 	public static void setIdleLoops(@OriginalArg(1) int arg0) {
 		@Pc(10) Mouse local10 = instance;
 		synchronized (instance) {
-			anInt2467 = arg0;
+			idleLoops = arg0;
 		}
 	}
 
@@ -109,9 +109,9 @@ public final class Mouse implements MouseListener, MouseMotionListener, FocusLis
 	@Override
 	public final synchronized void mouseMoved(@OriginalArg(0) MouseEvent arg0) {
 		if (instance != null) {
-			anInt2467 = 0;
-			currentMouseX = arg0.getX();
-			currentMouseY = arg0.getY();
+			idleLoops = 0;
+			eventMouseX = arg0.getX();
+			eventMouseY = arg0.getY();
 		}
 	}
 
@@ -119,24 +119,30 @@ public final class Mouse implements MouseListener, MouseMotionListener, FocusLis
 	@Override
 	public final synchronized void focusLost(@OriginalArg(0) FocusEvent arg0) {
 		if (instance != null) {
-			anInt1759 = 0;
+			eventAction = 0;
 		}
 	}
 
-	public final synchronized void triggerMouseClick(int x, int y, int button) {
+	public final synchronized void triggerMouseClick(int x, int y, int button, int action) {
 		if (instance != null) {
-			anInt2467 = 0;
-			anInt1034 = Mouse.currentMouseX;
-			anInt4973 = Mouse.currentMouseY;
-			aLong161 = System.currentTimeMillis(); // MonotonicClock is not standard Java, use System.currentTimeMillis()
-			if (button == MouseEvent.BUTTON3) {
-				anInt1313 = 2;
-				anInt1759 = 2;
-			} else {
-				anInt1313 = 1;
-				anInt1759 = 1;
+			idleLoops = 0;
+			if(action == 0) {
+				// Button Released
+				eventAction = 0;
+				return;
 			}
-			clickButton = 1;
+			eventMouseX = x;
+			eventMouseY = y;
+			eventMouseDownX = x;
+			eventMouseDownY = y;
+			eventTime = System.currentTimeMillis();
+			if (button == MouseEvent.BUTTON1) {
+				eventButton = 2;
+				eventAction = 2;
+			} else {
+				eventButton = 1;
+				eventAction = 1;
+			}
 		}
 	}
 
@@ -149,9 +155,9 @@ public final class Mouse implements MouseListener, MouseMotionListener, FocusLis
 		if (SwingUtilities.isMiddleMouseButton(event)) return;
 
 		if (instance != null) {
-			anInt2467 = 0;
-			currentMouseX = x;
-			currentMouseY = y;
+			idleLoops = 0;
+			eventMouseX = x;
+			eventMouseY = y;
 		}
 	}
 
@@ -159,8 +165,8 @@ public final class Mouse implements MouseListener, MouseMotionListener, FocusLis
 	@Override
 	public final synchronized void mouseReleased(@OriginalArg(0) MouseEvent arg0) {
 		if (instance != null) {
-			anInt2467 = 0;
-			anInt1759 = 0;
+			idleLoops = 0;
+			eventAction = 0;
 			@Pc(14) int local14 = arg0.getModifiers();
 			if ((local14 & 0x10) == 0) {
 			}
@@ -195,16 +201,16 @@ public final class Mouse implements MouseListener, MouseMotionListener, FocusLis
 		}
 
 		if (instance != null) {
-			anInt2467 = 0;
-			anInt1034 = event.getX();
-			anInt4973 = event.getY();
-			aLong161 = MonotonicClock.currentTimeMillis();
+			idleLoops = 0;
+			eventMouseDownX = event.getX();
+			eventMouseDownY = event.getY();
+			eventTime = MonotonicClock.currentTimeMillis();
 			if ((event.getModifiersEx() & MouseEvent.BUTTON3_DOWN_MASK) == 0) {
-				anInt1313 = 1;
-				anInt1759 = 1;
+				eventButton = 1;
+				eventAction = 1;
 			} else {
-				anInt1313 = 2;
-				anInt1759 = 2;
+				eventButton = 2;
+				eventAction = 2;
 			}
 			@Pc(29) int local29 = event.getModifiers();
 			if ((local29 & 0x10) == 0) {
@@ -223,9 +229,9 @@ public final class Mouse implements MouseListener, MouseMotionListener, FocusLis
 	@Override
 	public final synchronized void mouseExited(@OriginalArg(0) MouseEvent arg0) {
 		if (instance != null) {
-			anInt2467 = 0;
-			currentMouseX = -1;
-			currentMouseY = -1;
+			idleLoops = 0;
+			eventMouseX = -1;
+			eventMouseY = -1;
 		}
 	}
 
@@ -233,9 +239,9 @@ public final class Mouse implements MouseListener, MouseMotionListener, FocusLis
 	@Override
 	public final synchronized void mouseEntered(@OriginalArg(0) MouseEvent arg0) {
 		if (instance != null) {
-			anInt2467 = 0;
-			currentMouseX = arg0.getX();
-			currentMouseY = arg0.getY();
+			idleLoops = 0;
+			eventMouseX = arg0.getX();
+			eventMouseY = arg0.getY();
 		}
 	}
 }

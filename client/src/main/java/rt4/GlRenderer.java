@@ -5,6 +5,10 @@ import com.jogamp.nativewindow.awt.JAWTWindow;
 import com.jogamp.opengl.*;
 import com.jogamp.opengl.GLCapabilities;
 import jogamp.newt.awt.NewtFactoryAWT;
+import org.lwjgl.openal.AL;
+import org.lwjgl.openal.ALC;
+import org.lwjgl.openal.ALCCapabilities;
+import org.lwjgl.openal.ALCapabilities;
 import org.lwjgl.opengl.GL;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL20;
@@ -12,6 +16,8 @@ import org.lwjgl.system.MemoryUtil;
 import org.openrs2.deob.annotation.OriginalArg;
 import org.openrs2.deob.annotation.OriginalMember;
 import org.openrs2.deob.annotation.Pc;
+
+import java.awt.event.MouseWheelEvent;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.function.Function;
@@ -22,6 +28,7 @@ import org.lwjgl.system.*;
 
 import static org.lwjgl.glfw.Callbacks.*;
 import static org.lwjgl.glfw.GLFW.*;
+import static org.lwjgl.openal.ALC10.*;
 import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.opengl.GL13.glActiveTexture;
 import static org.lwjgl.opengl.GL15.glGenBuffers;
@@ -653,7 +660,6 @@ public final class GlRenderer {
 		specialCharMappings.put(GLFW.GLFW_KEY_BACKSLASH, '|');
 
 		glfwSetKeyCallback(LWJGLwindow, (window, keyCode, scancode, action, mods) -> {
-			Mouse.instance.triggerMouseClick(Mouse.lastMouseX,Mouse.lastMouseY,1);
 			int id;
 			if (action == GLFW.GLFW_PRESS) {
 				id = KeyEvent.KEY_PRESSED;
@@ -701,34 +707,44 @@ public final class GlRenderer {
 			}
 		});
 
+		glfwSetScrollCallback(LWJGLwindow, new GLFWScrollCallback() {
+			@Override
+			public void invoke(long window, double xoffset, double yoffset) {
+				int type = MouseWheelEvent.MOUSE_WHEEL;
+				int mods = 0;
+				Point point = new Point(0,0); // You may want to fill these with actual values
+				int clickCount = 0;
+				int scrollType = MouseWheelEvent.WHEEL_UNIT_SCROLL;
+				int scrollAmount = 1; // Usually a single 'click' of the mouse wheel
+				int wheelRotation = (int)-yoffset; // Cast to int if your yoffset is a double
+				boolean popupTrigger = false;
+
+				MouseWheelEvent event = new MouseWheelEvent(canvas, type, System.currentTimeMillis(),
+						mods, point.x, point.y, clickCount, popupTrigger,
+						scrollType, scrollAmount, wheelRotation);
+				canvas.getMouseWheelListeners()[0].mouseWheelMoved(event);
+			}
+		});
+
 		glfwSetCursorPosCallback(LWJGLwindow, (window, xpos, ypos) -> {
-			int id = MouseEvent.MOUSE_MOVED;
-			int modifiers = 0; // This will be set depending on the button pressed
-			Point point = new Point((int)xpos, (int)ypos);
-			int clickCount = 0;
-			boolean popupTrigger = false;
-			MouseEvent event = new MouseEvent(canvas, id, System.currentTimeMillis(), modifiers, point.x, point.y, clickCount, popupTrigger);
-			Mouse.instance.mouseMoved(event);
+				int id = MouseEvent.MOUSE_MOVED;
+				int modifiers = 0; // This will be set depending on the button pressed
+				Point point = new Point((int) xpos, (int) ypos);
+				int clickCount = 0;
+				boolean popupTrigger = false;
+				MouseEvent event = new MouseEvent(canvas, id, System.currentTimeMillis(), modifiers, point.x, point.y, clickCount, popupTrigger);
+				Mouse.instance.mouseMoved(event);
 		});
 
 		glfwSetMouseButtonCallback(LWJGLwindow, (window, button, action, mods) -> {
-			int id = (action == GLFW.GLFW_PRESS) ? MouseEvent.MOUSE_PRESSED : MouseEvent.MOUSE_RELEASED;
-			int modifiers;  // Initialize modifiers
 			double[] xpos = new double[1];
 			double[] ypos = new double[1];
 			glfwGetCursorPos(window, xpos, ypos); // get current mouse position
 			Point point = new Point((int)xpos[0], (int)ypos[0]);
-			int clickCount = (action == GLFW.GLFW_PRESS) ? 1 : 0; // update as per your requirements
-			boolean popupTrigger = (button == GLFW.GLFW_MOUSE_BUTTON_RIGHT); // Trigger popup on right click
 
-			// Check for right mouse button press
-			if (button == GLFW.GLFW_MOUSE_BUTTON_RIGHT) {
-				modifiers = InputEvent.BUTTON3_DOWN_MASK;
-			} else {
-				modifiers = 0; // You might want to map GLFW's mods parameter to AWT modifiers
-			}
-
-			Mouse.instance.triggerMouseClick(point.x,point.y,button);
+			// This should trigger normal AWT events in the future but I got frustrated making it work
+			// if we convert it to AWT (such as the other bridges) all plugins will work.
+			Mouse.instance.triggerMouseClick(point.x,point.y,button,action);
 		});
 
 

@@ -198,11 +198,11 @@ public class API {
     }
 
     public static int GetMouseX() {
-        return Mouse.currentMouseX;
+        return Mouse.eventMouseX;
     }
 
     public static int GetMouseY() {
-        return Mouse.currentMouseY;
+        return Mouse.eventMouseY;
     }
 
     /**
