@@ -141,16 +141,13 @@ public class AudioChannel {
 	}
 
 	@OriginalMember(owner = "client!vh", name = "a", descriptor = "()V")
-	protected void write() throws Exception {
-	}
+	protected void write() throws Exception { }
 
 	@OriginalMember(owner = "client!vh", name = "a", descriptor = "(I)V")
-	public void open(@OriginalArg(0) int arg0) throws Exception {
-	}
+	public void open(@OriginalArg(0) int arg0) throws Exception { }
 
 	@OriginalMember(owner = "client!vh", name = "b", descriptor = "()V")
-	protected void close() throws Exception {
-	}
+	protected void close() throws Exception { }
 
 	@OriginalMember(owner = "client!vh", name = "a", descriptor = "([II)V")
 	private void readAudioData(@OriginalArg(0) int[] audioBuffer) {
@@ -343,9 +340,7 @@ public class AudioChannel {
 	}
 
 	@OriginalMember(owner = "client!vh", name = "c", descriptor = "()I")
-	protected int getBufferSize() throws Exception {
-		return this.bufferCapacity;
-	}
+	protected int getBufferSize() { return this.bufferCapacity; }
 
 	@OriginalMember(owner = "client!vh", name = "b", descriptor = "(B)V")
 	public final synchronized void stopAudio() {
@@ -360,13 +355,12 @@ public class AudioChannel {
 	}
 
 	@OriginalMember(owner = "client!vh", name = "b", descriptor = "(I)V")
-	public final void method3571() {
+	public final void skipConsumptionCheck() {
 		this.skipConsumptionCheck = true;
 	}
 
 	@OriginalMember(owner = "client!vh", name = "d", descriptor = "()V")
-	protected void flush() {
-	}
+	protected void flush() { }
 
 	@OriginalMember(owner = "client!vh", name = "a", descriptor = "(II)V")
 	private void skip() {
@@ -404,6 +398,5 @@ public class AudioChannel {
 	}
 
 	@OriginalMember(owner = "client!vh", name = "a", descriptor = "(Ljava/awt/Component;)V")
-	public void init(@OriginalArg(0) Component arg0) throws Exception {
-	}
+	public void init(@OriginalArg(0) Component arg0) throws Exception { }
 }

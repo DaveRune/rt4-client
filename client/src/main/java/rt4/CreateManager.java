@@ -65,17 +65,17 @@ public class CreateManager {
 				Protocol.socketRequest = null;
 				Protocol.socket.write(Protocol.outboundBuffer.data, Protocol.outboundBuffer.offset);
 				if (client.musicChannel != null) {
-					client.musicChannel.method3571();
+					client.musicChannel.skipConsumptionCheck();
 				}
 				if (client.soundChannel != null) {
-					client.soundChannel.method3571();
+					client.soundChannel.skipConsumptionCheck();
 				}
 				local120 = Protocol.socket.read();
 				if (client.musicChannel != null) {
-					client.musicChannel.method3571();
+					client.musicChannel.skipConsumptionCheck();
 				}
 				if (client.soundChannel != null) {
-					client.soundChannel.method3571();
+					client.soundChannel.skipConsumptionCheck();
 				}
 				if (local120 != 21) {
 					reply = local120;

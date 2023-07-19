@@ -103,17 +103,17 @@ public class WorldList {
 				Protocol.outboundBuffer.p4(local82);
 				Protocol.socket.write(Protocol.outboundBuffer.data, Protocol.outboundBuffer.offset);
 				if (client.musicChannel != null) {
-					client.musicChannel.method3571();
+					client.musicChannel.skipConsumptionCheck();
 				}
 				if (client.soundChannel != null) {
-					client.soundChannel.method3571();
+					client.soundChannel.skipConsumptionCheck();
 				}
 				local124 = Protocol.socket.read();
 				if (client.musicChannel != null) {
-					client.musicChannel.method3571();
+					client.musicChannel.skipConsumptionCheck();
 				}
 				if (client.soundChannel != null) {
-					client.soundChannel.method3571();
+					client.soundChannel.skipConsumptionCheck();
 				}
 				if (local124 != 0) {
 					return close(local124);

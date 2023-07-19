@@ -208,17 +208,17 @@ public class LoginManager {
 				Protocol.socketRequest = null;
 				Protocol.socket.write(Protocol.outboundBuffer.data, Protocol.outboundBuffer.offset);
 				if (client.musicChannel != null) {
-					client.musicChannel.method3571();
+					client.musicChannel.skipConsumptionCheck();
 				}
 				if (client.soundChannel != null) {
-					client.soundChannel.method3571();
+					client.soundChannel.skipConsumptionCheck();
 				}
 				local126 = Protocol.socket.read();
 				if (client.musicChannel != null) {
-					client.musicChannel.method3571();
+					client.musicChannel.skipConsumptionCheck();
 				}
 				if (client.soundChannel != null) {
-					client.soundChannel.method3571();
+					client.soundChannel.skipConsumptionCheck();
 				}
 				if (local126 != 101) {
 					reply = local126;
@@ -317,17 +317,17 @@ public class LoginManager {
 				Protocol.outboundBuffer.p1(local120);
 				Protocol.socket.write(Protocol.outboundBuffer.data, 2);
 				if (client.musicChannel != null) {
-					client.musicChannel.method3571();
+					client.musicChannel.skipConsumptionCheck();
 				}
 				if (client.soundChannel != null) {
-					client.soundChannel.method3571();
+					client.soundChannel.skipConsumptionCheck();
 				}
 				@Pc(150) int local150 = Protocol.socket.read();
 				if (client.musicChannel != null) {
-					client.musicChannel.method3571();
+					client.musicChannel.skipConsumptionCheck();
 				}
 				if (client.soundChannel != null) {
-					client.soundChannel.method3571();
+					client.soundChannel.skipConsumptionCheck();
 				}
 				if (local150 != 0) {
 					reply = local150;
