@@ -8,19 +8,19 @@ import org.openrs2.deob.annotation.OriginalMember;
 public abstract class PcmStream extends Node {
 
 	@OriginalMember(owner = "client!qb", name = "p", descriptor = "I")
-	public int anInt5626;
+	public int index;
 
 	@OriginalMember(owner = "client!qb", name = "q", descriptor = "Lclient!ik;")
 	public Sound sound;
 
 	@OriginalMember(owner = "client!qb", name = "s", descriptor = "Lclient!qb;")
-	public PcmStream aClass3_Sub3_8;
+	public PcmStream nextPcmStream;
 
 	@OriginalMember(owner = "client!qb", name = "r", descriptor = "Z")
 	public volatile boolean active = true;
 
 	@OriginalMember(owner = "client!qb", name = "a", descriptor = "()I")
-	public abstract int method4404();
+	public abstract int calculateSomething();
 
 	@OriginalMember(owner = "client!qb", name = "a", descriptor = "([III)V")
 	protected final void readIfActive(@OriginalArg(0) int[] arg0, @OriginalArg(1) int arg1, @OriginalArg(2) int arg2) {
@@ -35,7 +35,7 @@ public abstract class PcmStream extends Node {
 	public abstract PcmStream firstSubStream();
 
 	@OriginalMember(owner = "client!qb", name = "c", descriptor = "()I")
-	public int method4407() {
+	public int getSomeCalculationResult() {
 		return 255;
 	}
 

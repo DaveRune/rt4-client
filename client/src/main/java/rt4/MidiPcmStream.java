@@ -176,7 +176,7 @@ public final class MidiPcmStream extends PcmStream {
 
 	@OriginalMember(owner = "client!va", name = "a", descriptor = "()I")
 	@Override
-	public final synchronized int method4404() {
+	public final synchronized int calculateSomething() {
 		return 0;
 	}
 

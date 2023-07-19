@@ -120,7 +120,7 @@ public final class MixerPcmStream extends PcmStream {
 
 	@OriginalMember(owner = "client!ei", name = "a", descriptor = "()I")
 	@Override
-	public final int method4404() {
+	public final int calculateSomething() {
 		return 0;
 	}
 

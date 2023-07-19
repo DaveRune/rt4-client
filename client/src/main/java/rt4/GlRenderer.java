@@ -236,6 +236,9 @@ public final class GlRenderer {
 				// Poll for window events. The key callback above will only be
 				// invoked during this call.
 				glfwPollEvents();
+			} else {
+				GameShell.instance.mainQuit();
+				glfwTerminate();
 			}
 		} catch (@Pc(3) Exception local3) {
 		}

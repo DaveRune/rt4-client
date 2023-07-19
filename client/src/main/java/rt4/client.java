@@ -666,9 +666,9 @@ public final class client extends GameShell {
 		}
 		AudioChannel.init(Preferences.stereo);
 		musicChannel = AudioChannel.create(GlobalConfig.AUDIO_SAMPLE_RATE, signLink, canvas, 0);
-		musicChannel.setStream(musicStream);
+		musicChannel.setAudioStream(musicStream);
 		soundChannel = AudioChannel.create(2048, signLink, canvas, 1);
-		soundChannel.setStream(soundStream);
+		soundChannel.setAudioStream(soundStream);
 	}
 
 	@OriginalMember(owner = "client!ag", name = "j", descriptor = "(I)V")
@@ -710,7 +710,7 @@ public final class client extends GameShell {
 		}
 		@Pc(15) boolean local15 = MidiPlayer.method2699();
 		if (local15 && MidiPlayer.jingle && musicChannel != null) {
-			musicChannel.method3570();
+			musicChannel.stopAudio();
 		}
 		if ((gameState == 30 || gameState == 10) && (GameShell.replaceCanvas || DisplayMode.aLong89 != 0L && DisplayMode.aLong89 < MonotonicClock.currentTimeMillis())) {
 			DisplayMode.setWindowMode(GameShell.replaceCanvas, DisplayMode.getWindowMode(), Preferences.fullScreenWidth, Preferences.fullScreenHeight);
@@ -1366,11 +1366,11 @@ public final class client extends GameShell {
 			musicStream = new MidiPcmStream();
 			musicStream.init();
 			musicChannel = AudioChannel.create(GlobalConfig.AUDIO_SAMPLE_RATE, GameShell.signLink, GameShell.canvas, 0);
-			musicChannel.setStream(musicStream);
+			musicChannel.setAudioStream(musicStream);
 			MidiPlayer.init(musicStream, js5Archive15, js5Archive14, js5Archive4);
 			soundChannel = AudioChannel.create(2048, GameShell.signLink, GameShell.canvas, 1);
 			soundStream = new MixerPcmStream();
-			soundChannel.setStream(soundStream);
+			soundChannel.setAudioStream(soundStream);
 			resampler = new PcmResampler(GlobalConfig.AUDIO_SAMPLE_RATE, AudioChannel.sampleRate);
 			MusicPlayer.titleSong = js5Archive6.getGroupId(TITLE_SONG);
 			mainLoadPercentage = 30;

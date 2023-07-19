@@ -128,13 +128,14 @@ public final class Mouse implements MouseListener, MouseMotionListener, FocusLis
 			idleLoops = 0;
 			if(action == 0) {
 				// Button Released
+				//lastButton = 0;
 				eventAction = 0;
 				return;
 			}
-			eventMouseX = x;
-			eventMouseY = y;
-			eventMouseDownX = x;
-			eventMouseDownY = y;
+			eventMouseX = lastMouseX;
+			eventMouseY = lastMouseY;
+			eventMouseDownX = lastMouseX;
+			eventMouseDownY = lastMouseY;
 			eventTime = System.currentTimeMillis();
 			if (button == MouseEvent.BUTTON1) {
 				eventButton = 2;
@@ -143,6 +144,7 @@ public final class Mouse implements MouseListener, MouseMotionListener, FocusLis
 				eventButton = 1;
 				eventAction = 1;
 			}
+			//lastButton = button;
 		}
 	}
 

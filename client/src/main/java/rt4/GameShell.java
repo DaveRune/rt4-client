@@ -684,13 +684,13 @@ public abstract class GameShell extends Applet implements Runnable, FocusListene
 			frame.setTitle("Jagex");
 			frame.setResizable(true);
 			frame.addWindowListener(this);
-			frame.setVisible(true);
+			frame.setVisible(false);
 			frame.setBackground(Color.black);
 			frame.toFront();
-                        frame.setIconImage(new javax.swing.ImageIcon(getClass().getResource("/saradomin.png")).getImage());
+			frame.setIconImage(new javax.swing.ImageIcon(getClass().getResource("/saradomin.png")).getImage());
 			@Pc(44) Insets insets = frame.getInsets();
 			frame.setSize(insets.left + frameWidth + insets.right, insets.top + frameHeight + insets.bottom);
-                        configureTargetFPS();
+			configureTargetFPS();
 			signLink2 = signLink = new SignLink(null, cacheId, cacheSubDir, 28);
 			@Pc(76) PrivilegedRequest request = signLink.startThread(1, this);
 			while (request.status == 0) {

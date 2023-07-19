@@ -16,63 +16,63 @@ import java.awt.Component;
 public final class JavaAudioChannel extends AudioChannel {
 
 	@OriginalMember(owner = "client!qa", name = "L", descriptor = "I")
-	private int anInt4645;
+	private int bufferSize;
 
 	@OriginalMember(owner = "client!qa", name = "M", descriptor = "Ljavax/sound/sampled/SourceDataLine;")
-	private SourceDataLine aSourceDataLine1;
+	private SourceDataLine sourceDataLine;
 
 	@OriginalMember(owner = "client!qa", name = "O", descriptor = "Ljavax/sound/sampled/AudioFormat;")
-	private AudioFormat anAudioFormat1;
+	private AudioFormat audioFormat;
 
 	@OriginalMember(owner = "client!qa", name = "P", descriptor = "[B")
-	private byte[] aByteArray64;
+	private byte[] audioData;
 
 	@OriginalMember(owner = "client!qa", name = "N", descriptor = "Z")
-	private boolean aBoolean230 = false;
+	private boolean isSoundMax = false;
 
 	@OriginalMember(owner = "client!qa", name = "d", descriptor = "()V")
 	@Override
 	protected final void flush() {
-		if (this.aSourceDataLine1 != null) {
-			this.aSourceDataLine1.close();
-			this.aSourceDataLine1 = null;
+		if (this.sourceDataLine != null) {
+			this.sourceDataLine.close();
+			this.sourceDataLine = null;
 		}
 	}
 
 	@OriginalMember(owner = "client!qa", name = "a", descriptor = "(Ljava/awt/Component;)V")
 	@Override
 	public final void init(@OriginalArg(0) Component arg0) {
-		@Pc(1) Info[] local1 = AudioSystem.getMixerInfo();
-		if (local1 != null) {
-			for (@Pc(9) int local9 = 0; local9 < local1.length; local9++) {
-				@Pc(21) Info local21 = local1[local9];
-				if (local21 != null) {
-					@Pc(28) String local28 = local21.getName();
-					if (local28 != null && local28.toLowerCase().indexOf("soundmax") >= 0) {
-						this.aBoolean230 = true;
+		@Pc(1) Info[] mixers = AudioSystem.getMixerInfo();
+		if (mixers != null) {
+			for (@Pc(9) int mixerIndex = 0; mixerIndex < mixers.length; mixerIndex++) {
+				@Pc(21) Info mixerInfo = mixers[mixerIndex];
+				if (mixerInfo != null) {
+					@Pc(28) String mixerName = mixerInfo.getName();
+					if (mixerName != null && mixerName.toLowerCase().contains("soundmax")) {
+						this.isSoundMax = true;
 					}
 				}
 			}
 		}
-		this.anAudioFormat1 = new AudioFormat((float) AudioChannel.sampleRate, 16, AudioChannel.stereo ? 2 : 1, true, false);
-		this.aByteArray64 = new byte[0x100 << (AudioChannel.stereo ? 2 : 1)];
+		this.audioFormat = new AudioFormat((float) AudioChannel.sampleRate, 16, AudioChannel.stereo ? 2 : 1, true, false);
+		this.audioData = new byte[0x100 << (AudioChannel.stereo ? 2 : 1)];
 	}
 
 	@OriginalMember(owner = "client!qa", name = "a", descriptor = "(I)V")
 	@Override
-	public final void open(@OriginalArg(0) int arg0) throws LineUnavailableException {
+	public final void open(@OriginalArg(0) int size) throws LineUnavailableException {
 		try {
-			@Pc(20) javax.sound.sampled.DataLine.Info local20 = new javax.sound.sampled.DataLine.Info(SourceDataLine.class, this.anAudioFormat1, arg0 << (AudioChannel.stereo ? 2 : 1));
-			this.aSourceDataLine1 = (SourceDataLine) AudioSystem.getLine(local20);
-			this.aSourceDataLine1.open();
-			this.aSourceDataLine1.start();
-			this.anInt4645 = arg0;
-		} catch (@Pc(36) LineUnavailableException local36) {
-			if (IntUtils.bitCountFast(arg0) == 1) {
-				this.aSourceDataLine1 = null;
-				throw local36;
+			@Pc(20) javax.sound.sampled.DataLine.Info lineInfo = new javax.sound.sampled.DataLine.Info(SourceDataLine.class, this.audioFormat, size << (AudioChannel.stereo ? 2 : 1));
+			this.sourceDataLine = (SourceDataLine) AudioSystem.getLine(lineInfo);
+			this.sourceDataLine.open();
+			this.sourceDataLine.start();
+			this.bufferSize = size;
+		} catch (@Pc(36) LineUnavailableException e) {
+			if (IntUtils.bitCountFast(size) == 1) {
+				this.sourceDataLine = null;
+				throw e;
 			} else {
-				this.open(IntUtils.clp2(arg0));
+				this.open(IntUtils.clp2(size));
 			}
 		}
 	}
@@ -80,39 +80,39 @@ public final class JavaAudioChannel extends AudioChannel {
 	@OriginalMember(owner = "client!qa", name = "b", descriptor = "()V")
 	@Override
 	protected final void close() throws LineUnavailableException {
-		this.aSourceDataLine1.flush();
-		if (!this.aBoolean230) {
+		this.sourceDataLine.flush();
+		if (!this.isSoundMax) {
 			return;
 		}
-		this.aSourceDataLine1.close();
-		this.aSourceDataLine1 = null;
-		@Pc(34) javax.sound.sampled.DataLine.Info local34 = new javax.sound.sampled.DataLine.Info(SourceDataLine.class, this.anAudioFormat1, this.anInt4645 << (AudioChannel.stereo ? 2 : 1));
-		this.aSourceDataLine1 = (SourceDataLine) AudioSystem.getLine(local34);
-		this.aSourceDataLine1.open();
-		this.aSourceDataLine1.start();
+		this.sourceDataLine.close();
+		this.sourceDataLine = null;
+		@Pc(34) javax.sound.sampled.DataLine.Info lineInfo = new javax.sound.sampled.DataLine.Info(SourceDataLine.class, this.audioFormat, this.bufferSize << (AudioChannel.stereo ? 2 : 1));
+		this.sourceDataLine = (SourceDataLine) AudioSystem.getLine(lineInfo);
+		this.sourceDataLine.open();
+		this.sourceDataLine.start();
 	}
 
 	@OriginalMember(owner = "client!qa", name = "c", descriptor = "()I")
 	@Override
 	protected final int getBufferSize() {
-		return this.anInt4645 - (this.aSourceDataLine1.available() >> (AudioChannel.stereo ? 2 : 1));
+		return this.bufferSize - (this.sourceDataLine.available() >> (AudioChannel.stereo ? 2 : 1));
 	}
 
 	@OriginalMember(owner = "client!qa", name = "a", descriptor = "()V")
 	@Override
 	protected final void write() {
-		@Pc(1) short local1 = 256;
+		@Pc(1) short sampleBatchSize = 256;
 		if (AudioChannel.stereo) {
-			local1 = 512;
+			sampleBatchSize = 512;
 		}
-		for (@Pc(9) int local9 = 0; local9 < local1; local9++) {
-			@Pc(17) int local17 = this.samples[local9];
-			if ((local17 + 8388608 & 0xFF000000) != 0) {
-				local17 = local17 >> 31 ^ 0x7FFFFF;
+		for (@Pc(9) int i = 0; i < sampleBatchSize; i++) {
+			@Pc(17) int sampleData = this.samples[i];
+			if ((sampleData + 8388608 & 0xFF000000) != 0) {
+				sampleData = sampleData >> 31 ^ 0x7FFFFF;
 			}
-			this.aByteArray64[local9 * 2] = (byte) (local17 >> 8);
-			this.aByteArray64[local9 * 2 + 1] = (byte) (local17 >> 16);
+			this.audioData[i * 2] = (byte) (sampleData >> 8);
+			this.audioData[i * 2 + 1] = (byte) (sampleData >> 16);
 		}
-		this.aSourceDataLine1.write(this.aByteArray64, 0, local1 << 1);
+		this.sourceDataLine.write(this.audioData, 0, sampleBatchSize << 1);
 	}
 }
