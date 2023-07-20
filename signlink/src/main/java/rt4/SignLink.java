@@ -58,10 +58,6 @@ public final class SignLink implements Runnable {
 
 	@OriginalMember(owner = "signlink!ll", name = "q", descriptor = "J")
 	private static volatile long breakConnectionsUntil = 0L;
-
-	@OriginalMember(owner = "signlink!ll", name = "A", descriptor = "Lsignlink!ai;")
-	private AudioSource audioSource;
-
 	@OriginalMember(owner = "signlink!ll", name = "g", descriptor = "Lsignlink!qm;")
 	public FileOnDisk cacheData;
 
@@ -501,11 +497,6 @@ public final class SignLink implements Runnable {
 			} catch (@Pc(93) IOException ex) {
 			}
 		}
-	}
-
-	@OriginalMember(owner = "signlink!ll", name = "b", descriptor = "(B)Lsignlink!ai;")
-	public final AudioSource getAudioSource() {
-		return this.audioSource;
 	}
 
 	@OriginalMember(owner = "signlink!ll", name = "a", descriptor = "(ILjava/lang/String;Ljava/lang/Class;)Lsignlink!im;")

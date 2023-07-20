@@ -149,7 +149,7 @@ public class AudioChannel {
 
 		while (currentStream != null) {
 			if (isReadyToProcess(currentStream, offset)) {
-				sumProcessed = processStream(currentStream, sumProcessed, bitIndex);
+				sumProcessed = processStream(currentStream, sumProcessed);
 				lastActiveStream = switchStream(bitIndex, lastActiveStream, currentStream);
 				currentStream = lastActiveStream != null ? lastActiveStream.nextPcmStream : pcmStreamsArrayOne[bitIndex];
 			} else {
@@ -170,7 +170,7 @@ public class AudioChannel {
 		return currentSound == null || currentSound.position <= offset;
 	}
 
-	private int processStream(PcmStream currentStream, int sumProcessed, int bitIndex) {
+	private int processStream(PcmStream currentStream, int sumProcessed) {
 		currentStream.active = true;
 		int processed = currentStream.shouldPlay();
 		sumProcessed += processed;
@@ -377,11 +377,6 @@ public class AudioChannel {
 			closeUntil = MonotonicClock.currentTimeMillis() + 2000L;
 		}
 	}
-	public final void skipConsumptionCheck() { skipConsumptionCheck = true; }
-	protected int getBufferSize() throws Exception { return bufferCapacity; }
-	public final synchronized void setAudioStream(@OriginalArg(1) PcmStream pcmStream) { audioStream = pcmStream; }
-
-	protected void flush() { }
 
 	private void skip() {
 		bufferPosition -= 256;
@@ -414,6 +409,11 @@ public class AudioChannel {
 		flush();
 		samples = null;
 	}
+
+	public final void skipConsumptionCheck() { skipConsumptionCheck = true; }
+	protected int getBufferSize() throws Exception { return bufferCapacity; }
+	public final synchronized void setAudioStream(@OriginalArg(1) PcmStream pcmStream) { audioStream = pcmStream; }
+	protected void flush() { }
 	public void init(@OriginalArg(0) Component arg0) throws Exception { }
 	protected void write() throws Exception { }
 	public void open(@OriginalArg(0) int arg0) throws Exception { }
