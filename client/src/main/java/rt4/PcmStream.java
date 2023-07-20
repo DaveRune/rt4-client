@@ -20,7 +20,7 @@ public abstract class PcmStream extends Node {
 	public volatile boolean active = true;
 
 	@OriginalMember(owner = "client!qb", name = "a", descriptor = "()I")
-	public abstract int calculateSomething();
+	public abstract int shouldPlay();
 
 	@OriginalMember(owner = "client!qb", name = "a", descriptor = "([III)V")
 	protected final void readIfActive(@OriginalArg(0) int[] arg0, @OriginalArg(1) int arg1, @OriginalArg(2) int arg2) {
@@ -33,11 +33,6 @@ public abstract class PcmStream extends Node {
 
 	@OriginalMember(owner = "client!qb", name = "b", descriptor = "()Lclient!qb;")
 	public abstract PcmStream firstSubStream();
-
-	@OriginalMember(owner = "client!qb", name = "c", descriptor = "()I")
-	public int getSomeCalculationResult() {
-		return 255;
-	}
 
 	@OriginalMember(owner = "client!qb", name = "b", descriptor = "([III)V")
 	public abstract void read(@OriginalArg(0) int[] arg0, @OriginalArg(1) int arg1, @OriginalArg(2) int arg2);

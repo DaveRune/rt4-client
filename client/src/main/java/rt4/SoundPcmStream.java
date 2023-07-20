@@ -1124,22 +1124,9 @@ public final class SoundPcmStream extends PcmStream {
 		this.method408(arg0 << 6, this.getPan());
 	}
 
-	@OriginalMember(owner = "client!b", name = "c", descriptor = "()I")
-	@Override
-	public final int getSomeCalculationResult() {
-		@Pc(6) int local6 = this.anInt348 * 3 >> 6;
-		local6 = (local6 ^ local6 >> 31) + (local6 >>> 31);
-		if (this.anInt350 == 0) {
-			local6 -= local6 * this.anInt346 / (((PcmSound) this.sound).samples.length << 8);
-		} else if (this.anInt350 >= 0) {
-			local6 -= local6 * this.start / ((PcmSound) this.sound).samples.length;
-		}
-		return local6 > 255 ? 255 : local6;
-	}
-
 	@OriginalMember(owner = "client!b", name = "a", descriptor = "()I")
 	@Override
-	public final int calculateSomething() {
+	public final int shouldPlay() {
 		return this.volume == 0 && this.anInt351 == 0 ? 0 : 1;
 	}
 
