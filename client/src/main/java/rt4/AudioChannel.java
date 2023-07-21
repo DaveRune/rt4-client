@@ -1,14 +1,9 @@
 package rt4;
 
-import org.openrs2.deob.annotation.OriginalArg;
-import org.openrs2.deob.annotation.OriginalClass;
-import org.openrs2.deob.annotation.OriginalMember;
-import org.openrs2.deob.annotation.Pc;
-
+import javax.sound.sampled.LineUnavailableException;
 import java.awt.Component;
 import java.util.Arrays;
 
-@OriginalClass("client!vh")
 public class AudioChannel {
 	public static boolean stereo;
 	public static int threadPriority;
@@ -17,9 +12,8 @@ public class AudioChannel {
 	private PcmStream audioStream;
 	public int[] samples;
 	private int bufferSizeAdjustment;
-	public int sampleRate2;
+	public int channelSampleRate;
 	public int bufferCapacity;
-	private final int MAX_STREAMS = 32;
 	private long currentClockTime = MonotonicClock.currentTimeMillis();
 	private final PcmStream[] pcmStreamsArrayOne = new PcmStream[8];
 	private int consumedSamples = 0;
@@ -30,26 +24,27 @@ public class AudioChannel {
 	private long closeUntil = 0L;
 	private int prevConsumedSamples = 0;
 	private int prevBufferSize = 0;
-	public static void init(@OriginalArg(3) boolean stereo) {
+	public static void init(boolean stereo) {
 		threadPriority = 2;
 		AudioChannel.stereo = stereo;
 		sampleRate = GlobalConfig.AUDIO_SAMPLE_RATE;
 	}
+
 	public static AudioChannel create(int sampleRate, SignLink signLink, Component component, int channelIndex) {
 		try {
-			AudioChannel audioChannel = initializeAudioChannel(new JavaAudioChannel(), sampleRate, component, signLink, channelIndex);
+			AudioChannel audioChannel;
+			audioChannel = initializeAudioChannel(new JavaAudioChannel(), sampleRate, component, signLink, channelIndex);
 			return audioChannel;
-		} catch (@Pc(109) Throwable ex1) {
-			ex1.printStackTrace();
+		} catch (Throwable ex1) {
 			return new AudioChannel();
 		}
 	}
 
-	private static AudioChannel initializeAudioChannel(AudioChannel audioChannel, int sampleRate, Component component, SignLink signLink, int channelIndex) throws Exception {
-		audioChannel.sampleRate2 = sampleRate;
+	private static AudioChannel initializeAudioChannel(AudioChannel audioChannel, int channelSampleRate, Component component, SignLink signLink, int channelIndex) throws Exception {
+		audioChannel.channelSampleRate = channelSampleRate;
 		audioChannel.samples = new int[(stereo ? 2 : 1) * 256];
 		audioChannel.init(component);
-		audioChannel.bufferCapacity = (sampleRate & -1024) + 1024;
+		audioChannel.bufferCapacity = (channelSampleRate & -1024) + 1024;
 		audioChannel.bufferCapacity = Math.min(audioChannel.bufferCapacity, 16384);
 		audioChannel.open(audioChannel.bufferCapacity);
 		initializeAudioThread(signLink, channelIndex, audioChannel);
@@ -63,9 +58,6 @@ public class AudioChannel {
 			signLink.startThread(threadPriority, audioThread);
 		}
 		if (audioThread != null) {
-			if (audioThread.audioChannels[channelIndex] != null) {
-				throw new IllegalArgumentException();
-			}
 			audioThread.audioChannels[channelIndex] = audioChannel;
 		}
 	}
@@ -79,13 +71,14 @@ public class AudioChannel {
 			setInactive(subStream);
 		}
 	}
-	private void readAudioData(@OriginalArg(0) int[] audioBuffer) {
+
+	private void readAudioData(int[] audioBuffer) {
 		resetBuffer(audioBuffer);
 		processAudioStream();
 		resetPcmStreamArrays();
 		validateBufferPosition();
 		readIntoAudioBuffer(audioBuffer);
-		updateClockTime();
+		currentClockTime = MonotonicClock.currentTimeMillis();
 	}
 
 	private void resetBuffer(int[] audioBuffer) {
@@ -150,16 +143,12 @@ public class AudioChannel {
 		while (currentStream != null) {
 			if (isReadyToProcess(currentStream, offset)) {
 				sumProcessed = processStream(currentStream, sumProcessed);
-				lastActiveStream = switchStream(bitIndex, lastActiveStream, currentStream);
+				swapBuffers(bitIndex, lastActiveStream, currentStream);
 				currentStream = lastActiveStream != null ? lastActiveStream.nextPcmStream : pcmStreamsArrayOne[bitIndex];
 			} else {
 				bitMask |= 0x1 << bitIndex;
 				lastActiveStream = currentStream;
 				currentStream = currentStream.nextPcmStream;
-			}
-
-			if (sumProcessed >= MAX_STREAMS || currentStream == null) {
-				break;
 			}
 		}
 		return bitMask;
@@ -194,7 +183,7 @@ public class AudioChannel {
 		}
 	}
 
-	private PcmStream switchStream(int bitIndex, PcmStream lastActiveStream, PcmStream currentStream) {
+	private void swapBuffers(int bitIndex, PcmStream lastActiveStream, PcmStream currentStream) {
 		PcmStream nextStream = currentStream.nextPcmStream;
 		currentStream.nextPcmStream = null;
 		if (lastActiveStream == null) {
@@ -205,7 +194,6 @@ public class AudioChannel {
 		if (nextStream == null) {
 			pcmStreamsArrayTwo[bitIndex] = lastActiveStream;
 		}
-		return lastActiveStream;
 	}
 
 	private void resetPcmStreamArrays() {
@@ -226,9 +214,7 @@ public class AudioChannel {
 	}
 
 	private void validateBufferPosition() {
-		if (bufferPosition < 0) {
-			bufferPosition = 0;
-		}
+		bufferPosition = Math.max(0, bufferPosition);
 	}
 
 	private void readIntoAudioBuffer(int[] audioBuffer) {
@@ -237,11 +223,6 @@ public class AudioChannel {
 		}
 	}
 
-	private void updateClockTime() {
-		currentClockTime = MonotonicClock.currentTimeMillis();
-	}
-
-	@OriginalMember(owner = "client!vh", name = "a", descriptor = "(B)V")
 	public final synchronized void loop() {
 		if (samples == null) {
 			return;
@@ -257,15 +238,8 @@ public class AudioChannel {
 			processAudioData(desiredBufferSize, currentBufferSize);
 			handleConsumptionCalculation(currentTime);
 			prevBufferSize = currentBufferSize;
-		} catch (@Pc(202) Exception ex) {
-			handleExceptionState(currentTime, ex);
-		}
-
-		try {
-			handleClockTimeUpdate(currentTime);
-		} catch (@Pc(247) Exception ex) {
-			handleClockExceptionState(currentTime, ex);
-		}
+		} catch (Exception ex) { }
+		handleClockTimeUpdate(currentTime);
 	}
 
 	private void handleCloseUntilState(long currentTime) throws Exception {
@@ -286,7 +260,7 @@ public class AudioChannel {
 	}
 
 	private int adjustDesiredBufferSize() {
-		int desiredBufferSize = sampleRate2 + bufferSizeAdjustment;
+		int desiredBufferSize = channelSampleRate + bufferSizeAdjustment;
 		if (desiredBufferSize + 256 > 16384) {
 			desiredBufferSize = 16128;
 		}
@@ -303,7 +277,7 @@ public class AudioChannel {
 			open(bufferCapacity);
 			if (bufferCapacity < desiredBufferSize + 256) {
 				desiredBufferSize = bufferCapacity - 256;
-				bufferSizeAdjustment = desiredBufferSize - sampleRate2;
+				bufferSizeAdjustment = desiredBufferSize - channelSampleRate;
 			}
 			skipConsumptionCheck = true;
 		}
@@ -334,12 +308,6 @@ public class AudioChannel {
 		}
 	}
 
-	private void handleExceptionState(long currentTime, Exception ex) {
-		ex.printStackTrace();
-		flush();
-		closeUntil = currentTime + 2000L;
-	}
-
 	private void handleClockTimeUpdate(long currentTime) {
 		if (currentTime > currentClockTime + 500000L) {
 			currentTime = currentClockTime;
@@ -348,11 +316,6 @@ public class AudioChannel {
 			skip();
 			currentClockTime += 256000 / sampleRate;
 		}
-	}
-
-	private void handleClockExceptionState(long currentTime, Exception ex) {
-		ex.printStackTrace();
-		currentClockTime = currentTime;
 	}
 
 	private void updatePcmStreamArray(PcmStream pcmStream, int index) {
@@ -369,23 +332,12 @@ public class AudioChannel {
 
 	public final synchronized void stopAudio() {
 		skipConsumptionCheck = true;
-		try {
-			close();
-		} catch (Exception ex) {
-			ex.printStackTrace();
-			flush();
-			closeUntil = MonotonicClock.currentTimeMillis() + 2000L;
-		}
+		close();
 	}
 
 	private void skip() {
-		bufferPosition -= 256;
-		if (bufferPosition < 0) {
-			bufferPosition = 0;
-		}
-		if (audioStream != null) {
-			audioStream.skip(256);
-		}
+		bufferPosition = Math.max(0, bufferPosition - 256);
+		if (audioStream != null) { audioStream.skip(256); }
 	}
 	public final synchronized void quit() {
 		if (audioThread != null) {
@@ -394,9 +346,7 @@ public class AudioChannel {
 				if (audioThread.audioChannels[i] == this) {
 					audioThread.audioChannels[i] = null;
 				}
-				if (audioThread.audioChannels[i] != null) {
-					isCurrentChannel = false;
-				}
+				isCurrentChannel &= (audioThread.audioChannels[i] == null);
 			}
 			if (isCurrentChannel) {
 				audioThread.shouldStop = true;
@@ -411,11 +361,11 @@ public class AudioChannel {
 	}
 
 	public final void skipConsumptionCheck() { skipConsumptionCheck = true; }
-	protected int getBufferSize() throws Exception { return bufferCapacity; }
-	public final synchronized void setAudioStream(@OriginalArg(1) PcmStream pcmStream) { audioStream = pcmStream; }
+	protected int getBufferSize() { return bufferCapacity; }
+	public final synchronized void setAudioStream(PcmStream pcmStream) { audioStream = pcmStream; }
 	protected void flush() { }
-	public void init(@OriginalArg(0) Component arg0) throws Exception { }
+	public void init(Component arg0) throws Exception { }
 	protected void write() throws Exception { }
-	public void open(@OriginalArg(0) int arg0) throws Exception { }
-	protected void close() throws Exception { }
+	public void open(int arg0) throws LineUnavailableException { }
+	protected void close() { }
 }

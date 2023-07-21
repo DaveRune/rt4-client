@@ -6,44 +6,23 @@ import java.awt.Component;
 public final class JavaAudioChannel extends AudioChannel {
 
 	private int bufferSize;
-	private SourceDataLine sourceDataLine;
+	private SourceDataLine line;
 	private AudioFormat audioFormat;
 	private byte[] audioData;
-	private boolean isSoundMaxMixer; // SoundMAX is a suite of audio processing algorithms (has nothing to do with volume)
-	private final int stereoMultiplier = AudioChannel.stereo ? 2 : 1; // constant variable for stereo check result
+	private final int stereoMultiplier = AudioChannel.stereo ? 2 : 1;
 
 	@Override
 	public void init(Component component) {
-		Mixer.Info[] mixers = AudioSystem.getMixerInfo();
-		if (mixers != null) {
-			for (Mixer.Info mixerInfo : mixers) {
-				if (mixerInfo == null) { continue; }
-				String mixerName = mixerInfo.getName();
-				if (mixerName != null && mixerName.toLowerCase().contains("soundmax")) {
-					isSoundMaxMixer = true;
-					break;
-				}
-			}
-		}
 		audioFormat = new AudioFormat((float) AudioChannel.sampleRate, 16, AudioChannel.stereo ? 2 : 1, true, false);
 		audioData = new byte[0x100 << stereoMultiplier];
 	}
 
 	@Override
 	public void open(int size) throws LineUnavailableException {
-		try {
-			sourceDataLine = getAudioLine(size << stereoMultiplier);
-			sourceDataLine.open();
-			sourceDataLine.start();
-			bufferSize = size;
-		} catch (LineUnavailableException e) {
-			if (Integer.bitCount(size) == 1) {
-				sourceDataLine = null;
-				throw e;
-			} else {
-				open(Integer.highestOneBit(size));
-			}
-		}
+		line = getAudioLine(size << stereoMultiplier);
+		line.open();
+		line.start();
+		bufferSize = size;
 	}
 
 	private SourceDataLine getAudioLine(int lineSize) throws LineUnavailableException {
@@ -52,18 +31,10 @@ public final class JavaAudioChannel extends AudioChannel {
 	}
 
 	@Override
-	protected void close() throws LineUnavailableException {
-		sourceDataLine.flush();
-		if (isSoundMaxMixer) {
-			sourceDataLine.close();
-			sourceDataLine = getAudioLine(bufferSize << stereoMultiplier);
-			sourceDataLine.open();
-			sourceDataLine.start();
-		}
-	}
+	protected void close() { line.flush(); }
 	@Override
 	protected int getBufferSize() {
-		return bufferSize - (sourceDataLine.available() >> stereoMultiplier);
+		return bufferSize - (line.available() >> stereoMultiplier);
 	}
 
 	protected void write() {
@@ -76,6 +47,6 @@ public final class JavaAudioChannel extends AudioChannel {
 			audioData[i * 2] = (byte) (sampleData >> 8);
 			audioData[i * 2 + 1] = (byte) (sampleData >> 16);
 		}
-		sourceDataLine.write(audioData, 0, audioSamplesPerBatch << 1);
+		line.write(audioData, 0, audioSamplesPerBatch << 1);
 	}
 }
