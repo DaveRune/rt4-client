@@ -63,9 +63,6 @@ public class GlSprite extends Sprite {
 
 	@OriginalMember(owner = "client!cf", name = "d", descriptor = "(I)V")
 	private void method1424(@OriginalArg(0) int arg0) {
-		if (this.anInt1873 == arg0) {
-			return;
-		}
 		this.anInt1873 = arg0;
 		if (arg0 == 2) {
 			glTexParameteri(GL2.GL_TEXTURE_2D, GL2.GL_TEXTURE_MIN_FILTER, GL2.GL_LINEAR);
@@ -123,7 +120,6 @@ public class GlSprite extends Sprite {
 	@OriginalMember(owner = "client!cf", name = "c", descriptor = "(IIIII)V")
 	public final void method1426(@OriginalArg(0) int arg0, @OriginalArg(1) int arg1, @OriginalArg(2) int arg2, @OriginalArg(3) int arg3, @OriginalArg(4) int arg4) {
 		GlRenderer.setupRgbAlphaMode0Rendering();
-
 		GlRenderer.setTextureId(this.textureId);
 		this.method1424(1);
 		@Pc(16) float local16 = (float) this.width / (float) this.powerOfTwoWidth;
@@ -243,12 +239,12 @@ public class GlSprite extends Sprite {
 		glTranslatef((float) local5, (float) (GlRenderer.canvasHeight - local10), 0.0F);
 		glCallList(this.anInt1871);
 		glLoadIdentity();
+		GlCleaner.clear(); // Gigahack. There was a bunch of issues with texture corruption and this fixed it.
 	}
 
 	@OriginalMember(owner = "client!cf", name = "b", descriptor = "(IIIIII)V")
 	public final void method1428(@OriginalArg(2) int arg0, @OriginalArg(3) int arg1, @OriginalArg(4) int arg2) {
 		GlRenderer.setupRgbAlphaMode1Rendering();
-
 		GlRenderer.setTextureId(this.textureId);
 		this.method1424(2);
 		@Pc(15) int local15 = 240 - (this.anInt1863 << 4);
@@ -344,7 +340,6 @@ public class GlSprite extends Sprite {
 	@Override
 	protected final void method1416(@OriginalArg(0) int arg0, @OriginalArg(1) int arg1, @OriginalArg(2) int arg2, @OriginalArg(3) int arg3, @OriginalArg(4) int arg4, @OriginalArg(5) int arg5) {
 		GlRenderer.setupRgbAlphaMode1Rendering();
-
 		GlRenderer.setTextureId(this.textureId);
 		this.method1424(1);
 		@Pc(15) int local15 = arg0 - (this.anInt1863 << 4);
@@ -484,7 +479,6 @@ public class GlSprite extends Sprite {
 		GlRenderer.setupRgbAlphaMode0Rendering();
 		@Pc(5) int local5 = arg0 + this.anInt1863;
 		@Pc(10) int local10 = arg1 + this.anInt1861;
-
 		GlRenderer.setTextureId(this.textureId);
 		this.method1424(1);
 		glColor4f(1.0F, 1.0F, 1.0F, (float) arg2 / 256.0F);

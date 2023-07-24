@@ -1,6 +1,7 @@
 package rt4;
 
 import com.jogamp.opengl.GL2;
+import org.lwjgl.BufferUtils;
 import org.lwjgl.opengl.GL11;
 import org.openrs2.deob.annotation.OriginalArg;
 import org.openrs2.deob.annotation.OriginalClass;
@@ -201,8 +202,12 @@ public final class GlFont extends Font {
 				}
 			}
 		}
-		ByteBuffer buffer = ByteBuffer.allocateDirect(dest.length).order(ByteOrder.nativeOrder());
-		buffer.put(dest).flip();
+
+		ByteBuffer tempBuffer = ByteBuffer.wrap(dest);
+		ByteBuffer buffer = BufferUtils.createByteBuffer(tempBuffer.capacity());
+		buffer.put(tempBuffer);
+		buffer.flip();
+
 		if (this.textureId == -1) {
 			this.textureId = GL11.glGenTextures();
 			this.contextId = GlCleaner.contextId;

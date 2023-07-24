@@ -67,25 +67,22 @@ public final class GlRenderer {
 	private static float depthScaleFactor;
 
 	@OriginalMember(owner = "client!tf", name = "e", descriptor = "I")
-	public static int maxTextureUnits;
+	public static int maxTextureUnits = 2;
 
 	@OriginalMember(owner = "client!tf", name = "f", descriptor = "Z")
-	public static boolean bigEndian;
+	public static boolean bigEndian = false;
 
 	@OriginalMember(owner = "client!tf", name = "k", descriptor = "F")
 	private static float scaledFarClipDistance;
-
-	@OriginalMember(owner = "client!tf", name = "p", descriptor = "Lgl!javax/media/opengl/GLContext;")
-	private static GLContext context;
 
 	@OriginalMember(owner = "client!tf", name = "r", descriptor = "Z")
 	public static boolean extTexture3dSupported;
 
 	@OriginalMember(owner = "client!tf", name = "v", descriptor = "I")
-	private static int maxTextureImageUnits;
+	private static int maxTextureImageUnits = 32;
 
 	@OriginalMember(owner = "client!tf", name = "y", descriptor = "Z")
-	public static boolean arbMultisampleSupported;
+	public static boolean arbMultisampleSupported = true;
 
 	@OriginalMember(owner = "client!tf", name = "z", descriptor = "I")
 	public static int anInt5328;
@@ -93,28 +90,16 @@ public final class GlRenderer {
 	@OriginalMember(owner = "client!tf", name = "A", descriptor = "I")
 	public static int canvasHeight;
 
-	@OriginalMember(owner = "client!tf", name = "B", descriptor = "I")
-	private static int version;
-
 	@OriginalMember(owner = "client!tf", name = "C", descriptor = "Z")
-	public static boolean arbVboSupported;
-
-	@OriginalMember(owner = "client!tf", name = "D", descriptor = "I")
-	private static int maxTextureCoords;
+	public static boolean arbVboSupported = false;
 
 	private static long LWJGLwindow;
-
-	@OriginalMember(owner = "client!tf", name = "E", descriptor = "Lgl!javax/media/opengl/GLDrawable;")
-	private static GLDrawable drawable;
-
-	@OriginalMember(owner = "client!tf", name = "H", descriptor = "Z")
-	public static boolean arbVertexProgramSupported;
 
 	@OriginalMember(owner = "client!tf", name = "J", descriptor = "I")
 	public static int canvasWidth;
 
 	@OriginalMember(owner = "client!tf", name = "K", descriptor = "Z")
-	public static boolean arbTextureCubeMapSupported;
+	public static boolean arbTextureCubeMapSupported = false;
 
 	@OriginalMember(owner = "client!tf", name = "d", descriptor = "Z")
 	private static boolean textureMatrixModified = false;
@@ -161,19 +146,9 @@ public final class GlRenderer {
 	@OriginalMember(owner = "client!tf", name = "F", descriptor = "Z")
 	private static boolean fogEnabled = true;
 
-	@OriginalMember(owner = "client!tf", name = "I", descriptor = "Lclient!na;")
-	private static final JagString RADEON = JagString.parse("radeon");
-
 	public static void glDrawElementsWrapper(int mode, int count, int type, java.nio.Buffer buffer) {
 		long pointer = MemoryUtil.memAddress(buffer);
 		glDrawElements(mode, count, type, pointer);
-	}
-
-	@OriginalMember(owner = "client!tf", name = "a", descriptor = "(Ljava/lang/String;)Lclient!na;")
-	private static JagString convertStringToJagString(@OriginalArg(0) String s) {
-		@Pc(3) byte[] bytes;
-		bytes = s.getBytes(StandardCharsets.ISO_8859_1);
-		return JagString.decodeString(bytes, bytes.length, 0);
 	}
 
 	@OriginalMember(owner = "client!tf", name = "a", descriptor = "(IIII)V")
@@ -401,10 +376,25 @@ public final class GlRenderer {
 			glfwTerminate();
 			glfwSetErrorCallback(null).free();
 			GlCleaner.clear(); // GlCleaner
-			context = null;
-			drawable = null;
 			LightingManager.releaseLighting();
 			enabled = false;
+		}
+	}
+
+	public static void checkGLError(String operation) {
+		int error;
+		while ((error = GL11.glGetError()) != GL11.GL_NO_ERROR) {
+			String errorMessage;
+			switch (error) {
+				case GL11.GL_INVALID_ENUM: errorMessage = "Invalid enum"; break;
+				case GL11.GL_INVALID_VALUE: errorMessage = "Invalid value"; break;
+				case GL11.GL_INVALID_OPERATION: errorMessage = "Invalid operation"; break;
+				case GL11.GL_STACK_OVERFLOW: errorMessage = "Stack overflow"; break;
+				case GL11.GL_STACK_UNDERFLOW: errorMessage = "Stack underflow"; break;
+				case GL11.GL_OUT_OF_MEMORY: errorMessage = "Out of memory"; break;
+				default: errorMessage = "Unknown error"; break;
+			}
+			System.err.println("OpenGL Error [" + error + " - " + errorMessage + "] after " + operation);
 		}
 	}
 
@@ -933,10 +923,7 @@ public final class GlRenderer {
 
 	@OriginalMember(owner = "client!tf", name = "s", descriptor = "()V")
 	private static void genTextures() {
-		@Pc(2) int[] local2 = new int[1];
-		glGenTextures(local2);
-		anInt5328 = local2[0];
-		glBindTexture(GL20.GL_TEXTURE_2D, anInt5328);
+		glBindTexture(GL20.GL_TEXTURE_2D, glGenTextures());
 		glTexImage2D(GL20.GL_TEXTURE_2D, 0, 4, 1, 1, 0, GL20.GL_RGBA, GL20.GL_UNSIGNED_BYTE, IntBuffer.wrap(new int[]{-1}));
 		LightingManager.init();
 		MaterialManager.init();

@@ -1,6 +1,7 @@
 package rt4;
 
 import com.jogamp.opengl.GL2;
+import org.lwjgl.BufferUtils;
 import org.openrs2.deob.annotation.OriginalArg;
 import org.openrs2.deob.annotation.OriginalClass;
 import org.openrs2.deob.annotation.OriginalMember;
@@ -31,7 +32,12 @@ public final class GlSolidColorTexture extends SecondaryNode {
 
 		@Pc(32) int rgb = Rasteriser.palette[hsl];
 		@Pc(58) byte[] bytes = new byte[]{(byte) (rgb >> 16), (byte) (rgb >> 8), (byte) rgb, -1};
-		@Pc(61) ByteBuffer buffer = ByteBuffer.wrap(bytes);
+
+
+		ByteBuffer tempBuffer = ByteBuffer.wrap(bytes);
+		ByteBuffer buffer = BufferUtils.createByteBuffer(tempBuffer.capacity());
+		buffer.put(tempBuffer);
+		buffer.flip();
 
 		glTexImage2D(GL2.GL_TEXTURE_2D, 0, GL2.GL_RGBA, 1, 1, 0, GL2.GL_RGBA, GL2.GL_UNSIGNED_BYTE, buffer);
 		glTexParameteri(GL2.GL_TEXTURE_2D, GL2.GL_TEXTURE_MIN_FILTER, GL2.GL_LINEAR);

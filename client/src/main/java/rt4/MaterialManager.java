@@ -172,6 +172,7 @@ public class MaterialManager {
 			GL12.glTexImage3D(GL12.GL_TEXTURE_3D, 0, GL11.GL_LUMINANCE_ALPHA, 64, 64, 64, 0, GL11.GL_LUMINANCE_ALPHA, GL11.GL_UNSIGNED_BYTE, textureBuffer);
 			GL11.glTexParameteri(GL12.GL_TEXTURE_3D, GL11.GL_TEXTURE_MIN_FILTER, GL11.GL_LINEAR);
 			GL11.glTexParameteri(GL12.GL_TEXTURE_3D, GL11.GL_TEXTURE_MAG_FILTER, GL11.GL_LINEAR);
+			GlCleaner.onCardTexture += textureBuffer.limit() * 2;
 		} else {
 			anIntArray341 = new int[64];
 			for (int local65 = 0; local65 < 64; local65++) {
@@ -182,6 +183,7 @@ public class MaterialManager {
 				GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MIN_FILTER, GL11.GL_LINEAR);
 				GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MAG_FILTER, GL11.GL_LINEAR);
 			}
+			GlCleaner.onCardTexture += textureBuffer.limit() * 2;
 		}
 	}
 

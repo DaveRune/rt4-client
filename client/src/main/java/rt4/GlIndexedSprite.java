@@ -1,6 +1,7 @@
 package rt4;
 
 import com.jogamp.opengl.GL2;
+import org.lwjgl.BufferUtils;
 import org.lwjgl.opengl.GL11;
 import org.openrs2.deob.annotation.OriginalArg;
 import org.openrs2.deob.annotation.OriginalClass;
@@ -69,7 +70,12 @@ public final class GlIndexedSprite extends IndexedSprite {
 			}
 			local22 += (this.anInt4287 - this.width) * 4;
 		}
-		@Pc(93) ByteBuffer local93 = ByteBuffer.wrap(local20);
+
+		ByteBuffer tempBuffer = ByteBuffer.wrap(local20);
+		ByteBuffer local93 = BufferUtils.createByteBuffer(tempBuffer.capacity());
+		local93.put(tempBuffer);
+		local93.flip();
+
 		if (this.anInt4281 == -1) {
 			int[] local102 = new int[1];
 			GL11.glGenTextures(local102);
