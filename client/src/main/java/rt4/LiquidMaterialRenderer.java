@@ -37,8 +37,7 @@ public final class LiquidMaterialRenderer implements MaterialRenderer {
 	private FloatBuffer aFloatBuffer1;
 
 	public LiquidMaterialRenderer() {
-		// Idk what happened here but probably not important for now
-		if (this.anInt4831 < 0 && (GL11.glGetInteger(GL20.GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS) >= 2)) {
+		if (this.anInt4831 < 0 && (true)) {
 			IntBuffer local19 = BufferUtils.createIntBuffer(1);
 			GL15.glGenBuffers(local19);
 			this.anInt4830 = local19.get(0);
@@ -135,7 +134,7 @@ public final class LiquidMaterialRenderer implements MaterialRenderer {
 
 	@OriginalMember(owner = "client!rd", name = "e", descriptor = "()V")
 	private void method3719() {
-		this.anInt4831 = glGenLists(2);
+		this.anInt4831 = -1;
 		glNewList(this.anInt4831, GL2.GL_COMPILE);
 		glActiveTexture(GL2.GL_TEXTURE1);
 		if (MaterialManager.allows3DTextureMapping) {

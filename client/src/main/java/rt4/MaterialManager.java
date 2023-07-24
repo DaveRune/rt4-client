@@ -47,6 +47,8 @@ public class MaterialManager {
 
 	@OriginalMember(owner = "client!cb", name = "b", descriptor = "(III)V")
 	public static void setMaterial(@OriginalArg(1) int arg, @OriginalArg(2) int type) {
+		// Force Low Detail Water
+		Preferences.highWaterDetail = false;
 		if (type == 4 && !Preferences.highWaterDetail) {
 			type = 2;
 			arg = 2;

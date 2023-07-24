@@ -3079,8 +3079,11 @@ public class SceneGraph {
 						local336.method1944(tiles, local350, false);
 					}
 					if (local32 == 0 && Preferences.sceneryShadowsType > 0) {
-						GlRenderer.configureFixedDepthAdjustment(101.5F);
-						ShadowManager.method4198(anInt4069, anInt4539, visibility, arg1, aBooleanArrayArray1, tileHeights[0]);
+						Preferences.sceneryShadowsType = 0;
+						// TODO: actually fix sceneryShadows
+						// Disable sceneryShadows for mobile due to corruption.
+						//GlRenderer.configureFixedDepthAdjustment(101.5F);
+						//ShadowManager.method4198(anInt4069, anInt4539, visibility, arg1, aBooleanArrayArray1, tileHeights[0]);
 					}
 					local32++;
 				}

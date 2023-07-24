@@ -78,11 +78,8 @@ public final class GlRenderer {
 	@OriginalMember(owner = "client!tf", name = "r", descriptor = "Z")
 	public static boolean extTexture3dSupported;
 
-	@OriginalMember(owner = "client!tf", name = "v", descriptor = "I")
-	private static int maxTextureImageUnits = 32;
-
 	@OriginalMember(owner = "client!tf", name = "y", descriptor = "Z")
-	public static boolean arbMultisampleSupported = true;
+	public static boolean arbMultisampleSupported = false;
 
 	@OriginalMember(owner = "client!tf", name = "z", descriptor = "I")
 	public static int anInt5328;

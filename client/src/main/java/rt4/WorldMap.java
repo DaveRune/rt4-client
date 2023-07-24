@@ -4,6 +4,7 @@ import org.openrs2.deob.annotation.OriginalArg;
 import org.openrs2.deob.annotation.OriginalMember;
 import org.openrs2.deob.annotation.Pc;
 import plugin.PluginRepository;
+import plugin.api.API;
 
 public class WorldMap {
 	@OriginalMember(owner = "client!nc", name = "e", descriptor = "Lclient!na;")
@@ -113,7 +114,8 @@ public class WorldMap {
 
 	@OriginalMember(owner = "client!pa", name = "d", descriptor = "(I)V")
 	public static void load() {
-		if (currentMap == null) {
+		if (currentMap == null | GlRenderer.enabled) {
+			API.SendMessage("World Map disabled on Mobile due to a crash! Sorry!");
 			return;
 		}
 
