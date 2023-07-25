@@ -157,6 +157,8 @@ public final class DisplayMode {
 			// Switch back to SD
 			//GlRenderer.createAndDestroyContext(GameShell.canvas);
 		}
+
+		//TODO: Add a check to launch in SD mode here and remove windowchrome
 		if (useHD && newMode > 0) {
 			GameShell.canvas.setIgnoreRepaint(true);
 			GlRenderer.init(null, 0);
