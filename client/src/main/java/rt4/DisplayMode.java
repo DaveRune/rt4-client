@@ -7,6 +7,7 @@ import org.openrs2.deob.annotation.Pc;
 import plugin.PluginRepository;
 
 import java.awt.*;
+import java.util.Objects;
 
 @OriginalClass("client!od")
 public final class DisplayMode {
@@ -79,6 +80,7 @@ public final class DisplayMode {
 	@OriginalMember(owner = "client!pm", name = "a", descriptor = "(ZIZIZII)V")
 	public static void setWindowMode(@OriginalArg(0) boolean replaceCanvas, @OriginalArg(1) int newMode, @OriginalArg(2) boolean useHD, @OriginalArg(3) int currentMode, @OriginalArg(5) int fullscreenW, @OriginalArg(6) int fullscreenH) {
 		System.out.println("Hello from setWindowMode! (the other one!)");
+		boolean launchSD = Objects.equals(System.getProperty("launchSD"), "true");
 		if (useHD) {
 			GlRenderer.quit();
 		}
@@ -157,43 +159,9 @@ public final class DisplayMode {
 			// Switch back to SD
 			//GlRenderer.createAndDestroyContext(GameShell.canvas);
 		}
-
-		//TODO: Add a check to launch in SD mode here and remove windowchrome
-		if (useHD && newMode > 0) {
+		if (useHD && newMode > 0 && !launchSD) {
 			GameShell.canvas.setIgnoreRepaint(true);
 			GlRenderer.init(null, 0);
-			/*
-			if (!aBoolean73) {
-				SceneGraph.clear();
-				SoftwareRaster.frameBuffer = null;
-				SoftwareRaster.frameBuffer = FrameBuffer.create(GameShell.canvasHeight, GameShell.canvasWidth, GameShell.canvas);
-				SoftwareRaster.clear();
-				if (client.gameState == 5) {
-					LoadingBar.render(true, Fonts.b12Full);
-				} else {
-					Fonts.drawTextOnScreen(false, LocalizedText.LOADING);
-				}
-				try {
-					@Pc(269) Graphics local269 = GameShell.canvas.getGraphics();
-					SoftwareRaster.frameBuffer.draw(local269);
-				} catch (@Pc(277) Exception local277) {
-				}
-				GameShell.method2704();
-				if (currentMode == 0) {
-					SoftwareRaster.frameBuffer = FrameBuffer.create(503, 765, GameShell.canvas);
-				} else {
-					SoftwareRaster.frameBuffer = null;
-				}
-				/*
-				@Pc(300) PrivilegedRequest local300 = GameShell.signLink.loadGlNatives(client.instance.getClass());
-				while (local300.status == 0) {
-					ThreadUtils.sleep(100L);
-				}
-				if (local300.status == 1) {
-					aBoolean73 = true;
-				}
-
-			 */
 		}
 		if (!GlRenderer.enabled && newMode > 0) {
 			setWindowMode(true, 0, true, currentMode, -1, -1);

@@ -9,15 +9,15 @@ import org.lwjgl.openal.AL;
 import org.lwjgl.openal.ALC;
 import org.lwjgl.openal.ALCCapabilities;
 import org.lwjgl.openal.ALCapabilities;
+import org.lwjgl.opengl.*;
 import org.lwjgl.opengl.GL;
-import org.lwjgl.opengl.GL11;
-import org.lwjgl.opengl.GL20;
 import org.lwjgl.system.MemoryUtil;
 import org.openrs2.deob.annotation.OriginalArg;
 import org.openrs2.deob.annotation.OriginalMember;
 import org.openrs2.deob.annotation.Pc;
 
 import java.awt.event.MouseWheelEvent;
+import java.nio.ByteBuffer;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.function.Function;
@@ -202,15 +202,11 @@ public final class GlRenderer {
 	public static void swapBuffers() {
 		try {
 			if ( !glfwWindowShouldClose(LWJGLwindow) ) {
-				//glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // clear the framebuffer
 				glfwSwapBuffers(LWJGLwindow); // swap the color buffers
-
-				// Poll for window events. The key callback above will only be
-				// invoked during this call.
 				glfwPollEvents();
 			} else {
-				GameShell.instance.mainQuit();
 				glfwTerminate();
+				GameShell.instance.mainQuit();
 			}
 		} catch (@Pc(3) Exception local3) {
 		}
@@ -702,11 +698,11 @@ public final class GlRenderer {
 			public void invoke(long window, double xoffset, double yoffset) {
 				int type = MouseWheelEvent.MOUSE_WHEEL;
 				int mods = 0;
-				Point point = new Point(0,0); // You may want to fill these with actual values
+				Point point = new Point(0,0);
 				int clickCount = 0;
 				int scrollType = MouseWheelEvent.WHEEL_UNIT_SCROLL;
-				int scrollAmount = 1; // Usually a single 'click' of the mouse wheel
-				int wheelRotation = (int)-yoffset; // Cast to int if your yoffset is a double
+				int scrollAmount = 1;
+				int wheelRotation = (int)-yoffset;
 				boolean popupTrigger = false;
 
 				MouseWheelEvent event = new MouseWheelEvent(canvas, type, System.currentTimeMillis(),
@@ -718,11 +714,11 @@ public final class GlRenderer {
 
 		glfwSetCursorPosCallback(LWJGLwindow, (window, xpos, ypos) -> {
 				int id = MouseEvent.MOUSE_MOVED;
-				int modifiers = 0; // This will be set depending on the button pressed
+				int modifiers = 0;
 				Point point = new Point((int) xpos, (int) ypos);
 				int clickCount = 0;
 				boolean popupTrigger = false;
-				MouseEvent event = new MouseEvent(canvas, id, System.currentTimeMillis(), modifiers, point.x, point.y, clickCount, popupTrigger);
+				MouseEvent event = new MouseEvent(canvas, id, System.currentTimeMillis(), 0, point.x, point.y, 0, popupTrigger);
 				Mouse.instance.mouseMoved(event);
 		});
 
@@ -732,7 +728,7 @@ public final class GlRenderer {
 			glfwGetCursorPos(window, xpos, ypos); // get current mouse position
 			Point point = new Point((int)xpos[0], (int)ypos[0]);
 
-			// This should trigger normal AWT events in the future but I got frustrated making it work
+			// This should trigger normal AWT events in the future, but I got frustrated making it work
 			// if we convert it to AWT (such as the other bridges) all plugins will work.
 			Mouse.instance.triggerMouseClick(point.x,point.y,button,action);
 		});
@@ -760,7 +756,7 @@ public final class GlRenderer {
 		// Make the OpenGL context current
 		glfwMakeContextCurrent(LWJGLwindow);
 		// Enable v-sync
-		glfwSwapInterval(0);
+		glfwSwapInterval(1);
 
 		// Make the window visible
 		glfwShowWindow(LWJGLwindow);
@@ -769,61 +765,20 @@ public final class GlRenderer {
 
 	@OriginalMember(owner = "client!tf", name = "a", descriptor = "(Ljava/awt/Canvas;I)I")
 	public static int init(@OriginalArg(0) Canvas canvas, @OriginalArg(1) int numSamples) {
-		System.out.println("Initializing...");  // Add this at the beginning of init()
+		System.out.println("Initializing LWJGL...");  // Add this at the beginning of init()
 		try {
 
 			int swapBuffersAttempts = 0;
-
-			/*
-			// Create JOGL
-			GLProfile profile = GLProfile.get(GLProfile.GL4bc);
-			@Pc(8) GLCapabilities capabilities = new GLCapabilities(profile);
-			if (numSamples > 0) {
-				capabilities.setSampleBuffers(true);
-				capabilities.setNumSamples(numSamples * 4);
-			}
-			@Pc(18) GLDrawableFactory factory = GLDrawableFactory.getFactory(profile);
-			AWTGraphicsConfiguration config = AWTGraphicsConfiguration.create(canvas.getGraphicsConfiguration(), capabilities, capabilities);
-			window = NewtFactoryAWT.getNativeWindow(canvas, config);
-			if (!window.getLock().isLocked()) {
-				window.lockSurface();
-			}
-			try {
-				drawable = factory.createGLDrawable(window);
-				drawable.setRealized(true);
-			} finally {
-				window.unlockSurface();
-			}
-			@Pc(36) int result;
-
-			while (true) {
-				context = drawable.createContext(null);
-				try {
-					result = context.makeCurrent();
-					if (result != 0) {
-						break;
-					}
-				} catch (@Pc(41) Exception local41) {
-				}
-				if (swapBuffersAttempts++ > 5) {
-					return -2;
-				}
-			}
-			 */
-
-
-			// Create LWJGL (I think we snatch the context in the thread from the above code)...
 			System.out.println("Hello LWJGL " + Version.getVersion() + "!");
 
-			// JOGL for debugging
-			//gl = GLContext.getCurrentGL().getGL2();
-
+			// Reslution scaling... Should be done with a system prop
 			canvasWidth = 2400/2;
 			canvasHeight = 1080/2;
 
 			if(LWJGLwindow == NULL){
 				initLWJGL();
 			}
+
 			enabled = true;
 			glLineWidth((float) GameShell.canvasScale);
 			genTextures();
@@ -832,9 +787,10 @@ public final class GlRenderer {
 			setCanvasSize(canvasWidth,canvasHeight);
 			setViewportBounds(0,0,canvasWidth,canvasHeight);
 
+
+			// Main draw loop
 			while (true) {
 				try {
-					// Main draw loop
 					swapBuffers();
 					break;
 				} catch (@Pc(86) Exception ex) {

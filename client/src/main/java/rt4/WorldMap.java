@@ -115,7 +115,7 @@ public class WorldMap {
 	@OriginalMember(owner = "client!pa", name = "d", descriptor = "(I)V")
 	public static void load() {
 		if (currentMap == null | GlRenderer.enabled) {
-			API.SendMessage("World Map disabled on Mobile due to a crash! Sorry!");
+			API.SendMessage("World Map disabled on Mobile HD due to a crash!");
 			return;
 		}
 
@@ -1655,7 +1655,8 @@ public class WorldMap {
 			method4364(arg3, 0, local61, local50, 0, local236, arg2, local211);
 			method1195(arg3, 0, local61, local236, arg2, 0, local211, local50);
 			method959(0, 0, local211, arg3, local236, local50, local61, arg2);
-			GlRaster.drawPixels(aClass3_Sub2_Sub1_Sub1_2.pixels, arg0, arg1, arg3, arg2);
+			// TODO: GlRaster.drawPixels and also drawing a pixel intbuffer in general crashes pojav
+			//GlRaster.drawPixels(aClass3_Sub2_Sub1_Sub1_2.pixels, arg0, arg1, arg3, arg2);
 			SoftwareRaster.pixels = null;
 		} else {
 			method4364(arg3 + arg0, arg1, local61, local50, arg0, local236, arg1 + arg2, local211);
