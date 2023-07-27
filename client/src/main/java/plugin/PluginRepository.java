@@ -51,8 +51,12 @@ public class PluginRepository {
     }
 
     public static void Init() {
+        System.out.println("PluginDir = " + System.getProperty("pluginDir"));
         if (GlobalJsonConfig.instance == null)
             return;
+        if(System.getProperty("pluginDir").length() > 0){
+            GlobalJsonConfig.instance.pluginsFolder = System.getProperty("pluginDir");
+        }
         File pluginsDirectory = new File(GlobalJsonConfig.instance.pluginsFolder);
 
         if (!pluginsDirectory.exists()) {

@@ -217,11 +217,15 @@ public final class client extends GameShell {
 	@OriginalMember(owner = "client!client", name = "main", descriptor = "([Ljava/lang/String;)V")
 	public static void main(@OriginalArg(0) String[] arg0) {
 		System.out.println("Hello from rt4 client mainclass");
-		try {
+		if(System.getProperty("configFile") != null) {
+			GlobalConfig.EXTENDED_CONFIG_PATH = System.getProperty("configFile");
 			GlobalJsonConfig.load(GlobalConfig.EXTENDED_CONFIG_PATH);
-		} catch (Exception ex) {
-			ex.printStackTrace();
 		}
+
+		if(System.getProperty("pluginDir") != null){
+			GlobalJsonConfig.instance.pluginsFolder = System.getProperty("pluginDir");
+		}
+
 		try {
 			if (arg0.length != 4) {
 				arg0 = new String[4];

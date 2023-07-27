@@ -36,6 +36,7 @@ import static org.lwjgl.system.MemoryStack.*;
 import static org.lwjgl.system.MemoryUtil.*;
 import static rt4.GameShell.canvas;
 import static rt4.GameShell.frame;
+import static rt4.client.gameState;
 
 import java.awt.*;
 import java.awt.event.InputEvent;
@@ -201,8 +202,10 @@ public final class GlRenderer {
 	@OriginalMember(owner = "client!tf", name = "d", descriptor = "()V")
 	public static void swapBuffers() {
 		try {
+
 			if ( !glfwWindowShouldClose(LWJGLwindow) ) {
-				glfwSwapBuffers(LWJGLwindow); // swap the color buffers
+				if(gameState != 25) // Hack for now to prevent flashing screen on loading new areas
+					glfwSwapBuffers(LWJGLwindow); // swap the color buffers
 				glfwPollEvents();
 			} else {
 				glfwTerminate();
@@ -308,22 +311,11 @@ public final class GlRenderer {
 
 	@OriginalMember(owner = "client!tf", name = "h", descriptor = "()V")
 	public static void draw() {
-		@Pc(2) int[] ints = new int[2];
-		ints[0] = GL11.glGetInteger(GL11.GL_DRAW_BUFFER);
-		ints[1] = GL11.glGetInteger(GL11.GL_READ_BUFFER);
-		glDrawBuffer(GL20.GL_BACK_LEFT);
-		glReadBuffer(GL20.GL_FRONT_LEFT);
-		setTextureId(-1);
-		glPushAttrib(GL20.GL_ENABLE_BIT);
-		glDisable(GL20.GL_FOG);
-		glDisable(GL20.GL_BLEND);
-		glDisable(GL20.GL_DEPTH_TEST);
-		glDisable(GL20.GL_ALPHA_TEST);
-		glRasterPos2i(0, 0);
-		glCopyPixels(0, 0, canvasWidth, canvasHeight, GL20.GL_COLOR);
-		glPopAttrib();
-		glDrawBuffer(ints[0]);
-		glReadBuffer(ints[1]);
+		// Set the clear color to black.
+		GL11.glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+		// Clear the screen.
+		//GL11.glClear(GL11.GL_COLOR_BUFFER_BIT);
+
 	}
 
 	@OriginalMember(owner = "client!tf", name = "j", descriptor = "()V")
@@ -622,6 +614,18 @@ public final class GlRenderer {
 		keyMappings.put(GLFW.GLFW_KEY_RIGHT, new KeyMapping(KeyEvent.VK_RIGHT, KeyEvent.CHAR_UNDEFINED));
 		keyMappings.put(GLFW_KEY_LEFT_SHIFT, new KeyMapping(KeyEvent.VK_SHIFT, KeyEvent.CHAR_UNDEFINED));
 		keyMappings.put(GLFW_KEY_RIGHT_SHIFT, new KeyMapping(KeyEvent.VK_SHIFT, KeyEvent.CHAR_UNDEFINED));
+		keyMappings.put(GLFW.GLFW_KEY_F1, new KeyMapping(KeyEvent.VK_F1, KeyEvent.CHAR_UNDEFINED));
+		keyMappings.put(GLFW.GLFW_KEY_F2, new KeyMapping(KeyEvent.VK_F2, KeyEvent.CHAR_UNDEFINED));
+		keyMappings.put(GLFW.GLFW_KEY_F3, new KeyMapping(KeyEvent.VK_F3, KeyEvent.CHAR_UNDEFINED));
+		keyMappings.put(GLFW.GLFW_KEY_F4, new KeyMapping(KeyEvent.VK_F4, KeyEvent.CHAR_UNDEFINED));
+		keyMappings.put(GLFW.GLFW_KEY_F5, new KeyMapping(KeyEvent.VK_F5, KeyEvent.CHAR_UNDEFINED));
+		keyMappings.put(GLFW.GLFW_KEY_F6, new KeyMapping(KeyEvent.VK_F6, KeyEvent.CHAR_UNDEFINED));
+		keyMappings.put(GLFW.GLFW_KEY_F7, new KeyMapping(KeyEvent.VK_F7, KeyEvent.CHAR_UNDEFINED));
+		keyMappings.put(GLFW.GLFW_KEY_F8, new KeyMapping(KeyEvent.VK_F8, KeyEvent.CHAR_UNDEFINED));
+		keyMappings.put(GLFW.GLFW_KEY_F9, new KeyMapping(KeyEvent.VK_F9, KeyEvent.CHAR_UNDEFINED));
+		keyMappings.put(GLFW.GLFW_KEY_F10, new KeyMapping(KeyEvent.VK_F10, KeyEvent.CHAR_UNDEFINED));
+		keyMappings.put(GLFW.GLFW_KEY_F11, new KeyMapping(KeyEvent.VK_F11, KeyEvent.CHAR_UNDEFINED));
+		keyMappings.put(GLFW.GLFW_KEY_F12, new KeyMapping(KeyEvent.VK_F12, KeyEvent.CHAR_UNDEFINED));
 
 		Map<Integer, Character> specialCharMappings = new HashMap<>();
 		specialCharMappings.put(GLFW.GLFW_KEY_1, '!');

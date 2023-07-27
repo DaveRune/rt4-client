@@ -4,6 +4,7 @@ import org.openrs2.deob.annotation.OriginalArg;
 import org.openrs2.deob.annotation.OriginalClass;
 import org.openrs2.deob.annotation.OriginalMember;
 import org.openrs2.deob.annotation.Pc;
+import plugin.api.API;
 
 import javax.swing.*;
 import java.awt.Component;
@@ -46,6 +47,15 @@ public final class Mouse implements MouseListener, MouseMotionListener, FocusLis
 	public static volatile int eventMouseDownY = 0;
 	@OriginalMember(owner = "client!wi", name = "W", descriptor = "I")
 	public static int anInt5850 = 0;
+
+	public static boolean isDragClick = false;
+	public static boolean isCameraToggle = false;
+	public static boolean isRightClick = false;
+
+	public static float lastMouseWheelX = 0;
+	public static float lastMouseWheelY = 0;
+
+
 	@OriginalMember(owner = "client!ok", name = "f", descriptor = "J")
 	public static long prevClickTime = 0L;
 	@OriginalMember(owner = "client!wl", name = "u", descriptor = "I")
@@ -76,7 +86,13 @@ public final class Mouse implements MouseListener, MouseMotionListener, FocusLis
 			clickX = eventMouseDownX;
 			clickY = eventMouseDownY;
 			lastAction = eventAction;
-			lastButton = eventButton;
+
+			if(isDragClick) {
+				lastButton = 1;
+			} else {
+				lastButton = eventButton;
+			}
+
 			lastMouseX = eventMouseX;
 			lastMouseY = eventMouseY;
 			idleLoops++;
@@ -109,6 +125,17 @@ public final class Mouse implements MouseListener, MouseMotionListener, FocusLis
 	@Override
 	public final synchronized void mouseMoved(@OriginalArg(0) MouseEvent arg0) {
 		if (instance != null) {
+			if (isCameraToggle) {
+				float x = arg0.getX();
+				float y = arg0.getY();
+				float accelX = lastMouseWheelX - x;
+				float accelY = lastMouseWheelY - y;
+				lastMouseWheelX = x;
+				lastMouseWheelY = y;
+				API.UpdateCameraYaw(accelX * 2.0);
+				API.UpdateCameraPitch(-accelY * 2.0);
+			}
+
 			idleLoops = 0;
 			eventMouseX = arg0.getX();
 			eventMouseY = arg0.getY();

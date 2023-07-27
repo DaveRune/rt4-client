@@ -114,7 +114,7 @@ public class WorldMap {
 
 	@OriginalMember(owner = "client!pa", name = "d", descriptor = "(I)V")
 	public static void load() {
-		if (currentMap == null | GlRenderer.enabled) {
+		if (currentMap == null) {
 			API.SendMessage("World Map disabled on Mobile HD due to a crash!");
 			return;
 		}
