@@ -223,6 +223,8 @@ public final class client extends GameShell {
 		}
 
 		if(System.getProperty("pluginDir") != null){
+			// Instantiate the instance if it's not already created...
+			//GlobalJsonConfig.load(GlobalConfig.EXTENDED_CONFIG_PATH);
 			GlobalJsonConfig.instance.pluginsFolder = System.getProperty("pluginDir");
 		}
 
@@ -283,7 +285,7 @@ public final class client extends GameShell {
 			instance = c;
 			c.startApplication(modeWhat + 32, "runescape");
 			GameShell.frame.setLocationRelativeTo(null);
-			GameShell.frame.setSize(1024, 768); // set a reasonable size by default
+			GameShell.frame.setSize(765, 503); // set a reasonable size by default
 		} catch (@Pc(167) Exception ex) {
 			TracingException.report(null, ex);
 		}

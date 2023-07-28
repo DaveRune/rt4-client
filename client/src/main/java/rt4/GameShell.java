@@ -322,10 +322,12 @@ public abstract class GameShell extends Applet implements Runnable, FocusListene
 
 	@OriginalMember(owner = "client!rc", name = "b", descriptor = "(B)V")
 	public final synchronized void addCanvas() {
+		Mouse ml = new Mouse();
 		if (canvas != null) {
 			canvas.removeFocusListener(this);
 			canvas.getParent().remove(canvas);
 		}
+
 		@Pc(19) Container container;
 		if (fullScreenFrame != null) {
 			container = fullScreenFrame;
@@ -347,6 +349,11 @@ public abstract class GameShell extends Applet implements Runnable, FocusListene
 		}
 		canvas.addFocusListener(this);
 		canvas.requestFocus();
+		canvas.addMouseListener(ml);
+		canvas.addMouseMotionListener(ml);
+		frame.addMouseListener(ml);
+		frame.addMouseMotionListener(ml);
+
 		focusIn = true;
 		fullRedraw = true;
 		focus = true;
@@ -674,8 +681,8 @@ public abstract class GameShell extends Applet implements Runnable, FocusListene
 		try {
 			leftMargin = 0;
 			clientBuild = 530;
-			frameWidth = 1024;
-			frameHeight = 768;
+			frameWidth = 765;
+			frameHeight = 503;
 			canvasWidth = frameWidth;
 			canvasHeight = frameHeight;
 			topMargin = 0;
@@ -684,10 +691,10 @@ public abstract class GameShell extends Applet implements Runnable, FocusListene
 			frame.setTitle("Jagex");
 			frame.setResizable(true);
 			frame.addWindowListener(this);
+			frame.setUndecorated(true);
 			frame.setVisible(true);
 			frame.setBackground(Color.black);
 			frame.toFront();
-			frame.setIconImage(new javax.swing.ImageIcon(getClass().getResource("/saradomin.png")).getImage());
 			@Pc(44) Insets insets = frame.getInsets();
 			frame.setSize(insets.left + frameWidth + insets.right, insets.top + frameHeight + insets.bottom);
 			configureTargetFPS();
