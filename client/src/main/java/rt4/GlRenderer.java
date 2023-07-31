@@ -775,9 +775,17 @@ public final class GlRenderer {
 			int swapBuffersAttempts = 0;
 			System.out.println("Hello LWJGL " + Version.getVersion() + "!");
 
-			// Reslution scaling... Should be done with a system prop
-			canvasWidth = 2400/2;
-			canvasHeight = 1080/2;
+
+			// Set from inside of pojav launch args for resolution scaling ect
+			if(System.getProperty("glfwWidth") != null && System.getProperty("glfwHeight") != null) {
+				canvasWidth = Integer.parseInt(System.getProperty("glfwWidth"));
+				canvasHeight = Integer.parseInt(System.getProperty("glfwHeight"));
+			} else {
+				// These are the size of my pixel 6 at 50% resolution scaling..
+				canvasWidth = 2400/2;
+				canvasHeight = 1080/2;
+			}
+
 
 			if(LWJGLwindow == NULL){
 				initLWJGL();
