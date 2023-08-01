@@ -154,6 +154,8 @@ class plugin : Plugin() {
                 return;
             }
             if(e.keyCode == KeyEvent.VK_F5) {
+                Mouse.clickX = Mouse.lastMouseX;
+                Mouse.clickY = Mouse.lastMouseY;
                 Mouse.isDragClick = !Mouse.isDragClick;
                 return;
             }

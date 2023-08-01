@@ -88,6 +88,7 @@ public final class Mouse implements MouseListener, MouseMotionListener, FocusLis
 			lastAction = eventAction;
 
 			if(isDragClick) {
+				lastAction = 1;
 				lastButton = 1;
 			} else {
 				lastButton = eventButton;
