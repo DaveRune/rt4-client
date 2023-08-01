@@ -39,6 +39,8 @@ public class PluginRepository {
         for (MouseAdapter m : API.registeredMouseListeners) {
             GameShell.canvas.removeMouseListener(m);
             GameShell.canvas.removeMouseMotionListener(m);
+            GameShell.frame.removeMouseListener(m);
+            GameShell.frame.removeMouseMotionListener(m);
         }
         for (MouseWheelListener mw : API.registeredWheelListeners) {
             GameShell.canvas.removeMouseWheelListener(mw);
