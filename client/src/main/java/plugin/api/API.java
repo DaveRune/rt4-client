@@ -242,6 +242,7 @@ public class API {
 
     public static void StoreData(String key, Object value) {
         PluginRepository.pluginStorage.put(key, value);
+        PluginRepository.pluginStorage.put("_keystoreDirty", true);
     }
 
     public static Object GetData(String key) {

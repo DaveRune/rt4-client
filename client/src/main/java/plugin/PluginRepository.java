@@ -47,6 +47,7 @@ public class PluginRepository {
         API.registeredMouseListeners.clear();
         API.registeredKeyListeners.clear();
         loadedPlugins.clear();
+        SaveStorage();
         Init();
     }
 
@@ -69,13 +70,7 @@ public class PluginRepository {
            } catch (Exception e) {e.printStackTrace();}
         }
 
-        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
-            try(FileOutputStream fos = new FileOutputStream(GlobalJsonConfig.instance.pluginsFolder + File.separator + "plsto")) {
-                ObjectOutputStream oos = new ObjectOutputStream(fos);
-                oos.writeObject(PluginRepository.pluginStorage);
-                oos.close();
-            } catch (Exception e) {e.printStackTrace();}
-        }));
+        Runtime.getRuntime().addShutdownHook(new Thread(PluginRepository::SaveStorage));
 
         try {
             URL[] classPath = {pluginsDirectory.toURI().toURL()};
@@ -182,5 +177,16 @@ public class PluginRepository {
 
     public static void OnLogin() {
         loadedPlugins.values().forEach((plugin) -> plugin.OnLogin());
+    }
+
+    public static void SaveStorage() {
+        if (pluginStorage.containsKey("_keystoreDirty")) {
+            pluginStorage.remove("_keystoreDirty");
+            try(FileOutputStream fos = new FileOutputStream(GlobalJsonConfig.instance.pluginsFolder + File.separator + "plsto")) {
+                ObjectOutputStream oos = new ObjectOutputStream(fos);
+                oos.writeObject(PluginRepository.pluginStorage);
+                oos.close();
+            } catch (Exception e) {e.printStackTrace();}
+        }
     }
 }
