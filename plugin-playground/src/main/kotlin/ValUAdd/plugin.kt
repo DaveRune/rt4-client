@@ -18,10 +18,13 @@ class plugin : Plugin() {
             "::valuadd" -> {
                 var value = 0
                 val inventory = Inv.objectContainerCache.get(93) as Inv
-                for(i in inventory.objectIds) {
-                    if(i != -1) {
-                        val obj = ObjTypeList.get(i)
-                        value += round(obj.cost * 0.6).toInt()
+                for(i in 0 until inventory.objectIds.size) {
+                    if(inventory.objectIds[i] != -1) {
+                        val obj = ObjTypeList.get(inventory.objectIds[i])
+                        val stackSize = inventory.objectStackSizes[i]
+                        val itemBaseCost = round(obj.cost * 0.6).toInt()
+                        val itemStackCost = itemBaseCost * stackSize
+                        value += itemStackCost
                     }
                 }
                 SendMessage("Total HA value of inventory: $value GP")

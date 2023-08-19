@@ -26,7 +26,7 @@ public final class Inv extends Node {
 	public int[] objectIds = new int[]{-1};
 
 	@OriginalMember(owner = "client!qe", name = "u", descriptor = "[I")
-	public int[] anIntArray422 = new int[]{0};
+	public int[] objectStackSizes = new int[]{0};
 
 	@OriginalMember(owner = "client!ba", name = "a", descriptor = "(IB)I")
 	public static int getFreeSpace(@OriginalArg(0) int arg0) {
@@ -60,7 +60,7 @@ public final class Inv extends Node {
 					@Pc(68) IntNode local68 = (IntNode) local56.params.get(arg2);
 					if (local68 != null) {
 						if (arg0) {
-							local27 += local19.anIntArray422[local29] * local68.value;
+							local27 += local19.objectStackSizes[local29] * local68.value;
 						} else {
 							local27 += local68.value;
 						}
@@ -80,9 +80,9 @@ public final class Inv extends Node {
 			return 0;
 		} else {
 			@Pc(25) int local25 = 0;
-			for (@Pc(27) int local27 = 0; local27 < local8.anIntArray422.length; local27++) {
+			for (@Pc(27) int local27 = 0; local27 < local8.objectStackSizes.length; local27++) {
 				if (arg1 == local8.objectIds[local27]) {
-					local25 += local8.anIntArray422[local27];
+					local25 += local8.objectStackSizes[local27];
 				}
 			}
 			return local25;
@@ -94,8 +94,8 @@ public final class Inv extends Node {
 		@Pc(10) Inv local10 = (Inv) objectContainerCache.get(arg0);
 		if (local10 == null) {
 			return 0;
-		} else if (arg1 >= 0 && arg1 < local10.anIntArray422.length) {
-			return local10.anIntArray422[arg1];
+		} else if (arg1 >= 0 && arg1 < local10.objectStackSizes.length) {
+			return local10.objectStackSizes[arg1];
 		} else {
 			return 0;
 		}
@@ -139,17 +139,17 @@ public final class Inv extends Node {
 			@Pc(46) int local46;
 			for (local46 = 0; local46 < local12.objectIds.length; local46++) {
 				local39[local46] = local12.objectIds[local46];
-				local44[local46] = local12.anIntArray422[local46];
+				local44[local46] = local12.objectStackSizes[local46];
 			}
 			for (local46 = local12.objectIds.length; local46 < arg1; local46++) {
 				local39[local46] = -1;
 				local44[local46] = 0;
 			}
 			local12.objectIds = local39;
-			local12.anIntArray422 = local44;
+			local12.objectStackSizes = local44;
 		}
 		local12.objectIds[arg1] = arg0;
-		local12.anIntArray422[arg1] = arg2;
+		local12.objectStackSizes[arg1] = arg2;
 	}
 
 	@OriginalMember(owner = "client!pf", name = "a", descriptor = "(IIZIII)Lclient!qf;")
@@ -277,7 +277,7 @@ public final class Inv extends Node {
 		if (local8 != null) {
 			for (@Pc(24) int local24 = 0; local24 < local8.objectIds.length; local24++) {
 				local8.objectIds[local24] = -1;
-				local8.anIntArray422[local24] = 0;
+				local8.objectStackSizes[local24] = 0;
 			}
 		}
 	}
