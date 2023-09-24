@@ -728,11 +728,18 @@ public abstract class GameShell extends Applet implements Runnable, FocusListene
         }
 
         private final void configureTargetFPS() {
-            int refreshRate = getCurrentDevice().getDisplayMode().getRefreshRate();
-            if (refreshRate == java.awt.DisplayMode.REFRESH_RATE_UNKNOWN) {  
-                refreshRate = 60; //just assume 60hz and call it a day.
+            int targetFps = 0;
+            String clientFps = System.getProperty("clientFps");
+            if (clientFps != null) {
+                targetFps = Integer.parseInt(clientFps); //if invalid number, we're happy to get the exception
+	    }
+	    if (targetFps == 0) {
+                targetFps = getCurrentDevice().getDisplayMode().getRefreshRate();
+                if (targetFps == java.awt.DisplayMode.REFRESH_RATE_UNKNOWN) {
+                    targetFps = 60; //just assume 60hz and call it a day.
+                }
             }
-            GameShell.setFpsTarget(refreshRate);
+            GameShell.setFpsTarget(targetFps);
         }
 
 	@OriginalMember(owner = "client!rc", name = "windowOpened", descriptor = "(Ljava/awt/event/WindowEvent;)V")
