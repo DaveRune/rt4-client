@@ -42,7 +42,7 @@ public final class client extends GameShell {
 	@OriginalMember(owner = "client!al", name = "r", descriptor = "Lclient!na;")
 	public static final JagString aClass100_35 = JagString.parse("showVideoAd");
 	@OriginalMember(owner = "client!a", name = "e", descriptor = "Lclient!na;")
-	public static final JagString TITLE_SONG = JagString.parse("scape main");
+	public static JagString TITLE_SONG = JagString.parse("scape main");
 	@OriginalMember(owner = "client!jm", name = "A", descriptor = "Lclient!na;")
 	static final JagString aClass100_603 = JagString.parse("");
 	@OriginalMember(owner = "client!jm", name = "z", descriptor = "Lclient!na;")
