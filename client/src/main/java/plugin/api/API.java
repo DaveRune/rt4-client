@@ -279,6 +279,10 @@ public class API {
         MidiPlayer.playFadeOut(trackId, client.js5Archive6, volume);
     }
 
+    public static void SetLoginScreenMusicOnLoad(String song) {
+        client.TITLE_SONG = JagString.parse(song);
+    }
+
     /**
      * Calculates the 2D screen position for a position in the SceneGraph.
      *
