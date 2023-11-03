@@ -181,7 +181,7 @@ public abstract class GameShell extends Applet implements Runnable, FocusListene
 	}
 
 	@OriginalMember(owner = "client!qh", name = "a", descriptor = "(Z)V")
-	public static void method3662() {
+	public static void configureFrame() {
 		@Pc(8) Container local8;
 		if (fullScreenFrame != null) {
 			local8 = fullScreenFrame;

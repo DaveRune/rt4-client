@@ -740,7 +740,7 @@ public final class client extends GameShell {
 				local84 -= local90.top + local90.bottom;
 			}
 			if (local80 != GameShell.frameWidth || local84 != GameShell.frameHeight) {
-				GameShell.method3662();
+				GameShell.configureFrame();
 				DisplayMode.aLong89 = MonotonicClock.currentTimeMillis() + 500L;
 			}
 		}
@@ -944,7 +944,7 @@ public final class client extends GameShell {
 	@OriginalMember(owner = "client!client", name = "g", descriptor = "(I)V")
 	@Override
 	protected final void mainInit() {
-		GameShell.method3662();
+		GameShell.configureFrame();
 		js5CacheQueue = new Js5CacheQueue();
 		js5NetQueue = new Js5NetQueue();
 

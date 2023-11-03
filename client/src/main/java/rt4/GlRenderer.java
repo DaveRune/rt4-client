@@ -204,8 +204,7 @@ public final class GlRenderer {
 		try {
 
 			if ( !glfwWindowShouldClose(LWJGLwindow) ) {
-				if(gameState != 25) // Hack for now to prevent flashing screen on loading new areas
-					glfwSwapBuffers(LWJGLwindow); // swap the color buffers
+				glfwSwapBuffers(LWJGLwindow); // swap the color buffers
 				glfwPollEvents();
 			} else {
 				glfwTerminate();
@@ -311,11 +310,6 @@ public final class GlRenderer {
 
 	@OriginalMember(owner = "client!tf", name = "h", descriptor = "()V")
 	public static void draw() {
-		// Set the clear color to black.
-		GL11.glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-		// Clear the screen.
-		//GL11.glClear(GL11.GL_COLOR_BUFFER_BIT);
-
 	}
 
 	@OriginalMember(owner = "client!tf", name = "j", descriptor = "()V")
