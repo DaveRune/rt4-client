@@ -366,23 +366,6 @@ public final class GlRenderer {
 		}
 	}
 
-	public static void checkGLError(String operation) {
-		int error;
-		while ((error = GL11.glGetError()) != GL11.GL_NO_ERROR) {
-			String errorMessage;
-			switch (error) {
-				case GL11.GL_INVALID_ENUM: errorMessage = "Invalid enum"; break;
-				case GL11.GL_INVALID_VALUE: errorMessage = "Invalid value"; break;
-				case GL11.GL_INVALID_OPERATION: errorMessage = "Invalid operation"; break;
-				case GL11.GL_STACK_OVERFLOW: errorMessage = "Stack overflow"; break;
-				case GL11.GL_STACK_UNDERFLOW: errorMessage = "Stack underflow"; break;
-				case GL11.GL_OUT_OF_MEMORY: errorMessage = "Out of memory"; break;
-				default: errorMessage = "Unknown error"; break;
-			}
-			System.err.println("OpenGL Error [" + error + " - " + errorMessage + "] after " + operation);
-		}
-	}
-
 	@OriginalMember(owner = "client!tf", name = "a", descriptor = "(FFF)V")
 	public static void translateTextureMatrix(@OriginalArg(0) float x, @OriginalArg(1) float y, @OriginalArg(2) float z) {
 		glMatrixMode(GL20.GL_TEXTURE);
@@ -541,36 +524,6 @@ public final class GlRenderer {
 			glBindTexture(GL20.GL_TEXTURE_2D, id);
 		}
 		textureId = id;
-	}
-
-	private static int convertToAWTKeyCode(int glfwKeyCode) {
-		switch (glfwKeyCode) {
-			case GLFW.GLFW_KEY_ENTER:
-				return KeyEvent.VK_ENTER;
-			case GLFW.GLFW_KEY_0:
-				return KeyEvent.VK_0;
-			case GLFW.GLFW_KEY_1:
-				return KeyEvent.VK_1;
-			case GLFW.GLFW_KEY_2:
-				return KeyEvent.VK_2;
-			case GLFW.GLFW_KEY_3:
-				return KeyEvent.VK_3;
-			case GLFW.GLFW_KEY_4:
-				return KeyEvent.VK_4;
-			case GLFW.GLFW_KEY_5:
-				return KeyEvent.VK_5;
-			case GLFW.GLFW_KEY_6:
-				return KeyEvent.VK_6;
-			case GLFW.GLFW_KEY_7:
-				return KeyEvent.VK_7;
-			case GLFW.GLFW_KEY_8:
-				return KeyEvent.VK_8;
-			case GLFW.GLFW_KEY_9:
-				return KeyEvent.VK_9;
-			// Add more cases here for other keys
-			default:
-				return KeyEvent.VK_UNDEFINED;
-		}
 	}
 
 	private static void initLWJGL() {
@@ -800,7 +753,7 @@ public final class GlRenderer {
 			setViewportBounds(0,0,canvasWidth,canvasHeight);
 
 
-			// Main draw loop
+			// Check initialization
 			while (true) {
 				try {
 					swapBuffers();

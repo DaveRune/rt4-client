@@ -492,7 +492,7 @@ public final class client extends GameShell {
 	}
 
 	@OriginalMember(owner = "client!lb", name = "a", descriptor = "(Z)V")
-	public static void method2721() {
+	public static void clearSoftwareRenderer() {
 		SceneGraph.clear();
 		MiniMap.sprite = null;
 		LightingManager.anInt2875 = -1;

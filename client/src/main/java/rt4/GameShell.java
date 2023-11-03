@@ -541,10 +541,6 @@ public abstract class GameShell extends Applet implements Runnable, FocusListene
 		}
 	}
 
-	public double calcUpdateDelta(double value) {
-		return value / 1_000_000_000.0d * (double) updateDelta * value;
-	}
-
 	public double calcRenderDelta(double value) {
 		return value / 1_000_000_000.0d * (double) renderDelta * value;
 	}

@@ -8,10 +8,13 @@ import plugin.PluginRepository;
 
 import java.awt.*;
 import java.util.Objects;
-
 @OriginalClass("client!od")
 public final class DisplayMode {
 
+	private static final int HD_FULLSCREEN = 3;
+	private static final int HD_RESIZABLE = 2;
+	private static final int HD_FIXED = 1;
+	private static final int SD_FIXED = 0;
 	@OriginalMember(owner = "client!ib", name = "i", descriptor = "[Lclient!od;")
 	public static DisplayMode[] aClass114Array1;
 	@OriginalMember(owner = "client!rc", name = "M", descriptor = "Z")
@@ -67,13 +70,13 @@ public final class DisplayMode {
 	@OriginalMember(owner = "client!le", name = "a", descriptor = "(I)I")
 	public static int getWindowMode() {
 		if (GameShell.fullScreenFrame != null) {
-			return 3;
+			return HD_FULLSCREEN;
 		} else if (GlRenderer.enabled && resizable) {
-			return 2;
+			return HD_RESIZABLE;
 		} else if (GlRenderer.enabled && !resizable) {
-			return 1;
+			return HD_FIXED;
 		} else {
-			return 0;
+			return SD_FIXED;
 		}
 	}
 
@@ -84,11 +87,11 @@ public final class DisplayMode {
 		if (useHD) {
 			GlRenderer.quit();
 		}
-		if (GameShell.fullScreenFrame != null && (newMode != 3 || fullscreenW != Preferences.fullScreenWidth || fullscreenH != Preferences.fullScreenHeight)) {
+		if (GameShell.fullScreenFrame != null && (newMode != HD_FULLSCREEN || fullscreenW != Preferences.fullScreenWidth || fullscreenH != Preferences.fullScreenHeight)) {
 			exitFullScreen(GameShell.fullScreenFrame, GameShell.signLink);
 			GameShell.fullScreenFrame = null;
 		}
-		if (newMode == 3 && GameShell.fullScreenFrame == null) {
+		if (newMode == HD_FULLSCREEN && GameShell.fullScreenFrame == null) {
 			GameShell.fullScreenFrame = method3176(0, fullscreenH, fullscreenW, GameShell.signLink);
 			if (GameShell.fullScreenFrame != null) {
 				Preferences.fullScreenHeight = fullscreenH;
@@ -96,29 +99,29 @@ public final class DisplayMode {
 				Preferences.write(GameShell.signLink);
 			}
 		}
-		if (newMode == 3 && GameShell.fullScreenFrame == null) {
+		if (newMode == HD_FULLSCREEN && GameShell.fullScreenFrame == null) {
 			setWindowMode(true, Preferences.favoriteWorlds, true, currentMode, -1, -1);
 			return;
 		}
-		@Pc(85) Container local85;
+		@Pc(85) Container container;
 		if (GameShell.fullScreenFrame != null) {
-			local85 = GameShell.fullScreenFrame;
+			container = GameShell.fullScreenFrame;
 		} else if (GameShell.frame == null) {
-			local85 = GameShell.signLink.applet;
+			container = GameShell.signLink.applet;
 		} else {
-			local85 = GameShell.frame;
+			container = GameShell.frame;
 		}
-		GameShell.frameWidth = local85.getSize().width;
-		GameShell.frameHeight = local85.getSize().height;
-		@Pc(109) Insets local109;
-		if (GameShell.frame == local85) {
-			local109 = GameShell.frame.getInsets();
-			GameShell.frameWidth -= local109.right + local109.left;
-			GameShell.frameHeight -= local109.bottom + local109.top;
+		GameShell.frameWidth = container.getSize().width;
+		GameShell.frameHeight = container.getSize().height;
+		@Pc(109) Insets insets;
+		if (GameShell.frame == container) {
+			insets = GameShell.frame.getInsets();
+			GameShell.frameWidth -= insets.right + insets.left;
+			GameShell.frameHeight -= insets.bottom + insets.top;
 		}
-		if (newMode >= 2) {
-			GameShell.canvasWidth = GameShell.frameWidth;
-			GameShell.canvasHeight = GameShell.frameHeight;
+		if (newMode == HD_RESIZABLE || newMode == HD_FULLSCREEN) {
+			GameShell.canvasWidth = GlRenderer.canvasWidth;
+			GameShell.canvasHeight = GlRenderer.canvasHeight;
 			GameShell.leftMargin = 0;
 			GameShell.topMargin = 0;
 		} else {
@@ -127,7 +130,6 @@ public final class DisplayMode {
 			GameShell.canvasWidth = 765;
 			GameShell.canvasHeight = 503;
 		}
-		System.out.println("... 128");
 		if (replaceCanvas) {
 			Keyboard.stop(GameShell.canvas);
 			Mouse.stop(GameShell.canvas);
@@ -148,26 +150,32 @@ public final class DisplayMode {
 				GlRenderer.setCanvasSize(GameShell.canvasWidth, GameShell.canvasHeight);
 			}
 			GameShell.canvas.setSize(GameShell.canvasWidth, GameShell.canvasHeight);
-			if (GameShell.frame == local85) {
-				local109 = GameShell.frame.getInsets();
-				GameShell.canvas.setLocation(local109.left + GameShell.leftMargin, local109.top + GameShell.topMargin);
+			if (GameShell.frame == container) {
+				insets = GameShell.frame.getInsets();
+				GameShell.canvas.setLocation(insets.left + GameShell.leftMargin, insets.top + GameShell.topMargin);
 			} else {
 				GameShell.canvas.setLocation(GameShell.leftMargin, GameShell.topMargin);
 			}
 		}
-		if (newMode == 0 && currentMode > 0) {
-			// Switch back to SD
-			//GlRenderer.createAndDestroyContext(GameShell.canvas);
+		if (newMode == SD_FIXED && GlRenderer.enabled) {
+			// Switch Back from HD to SD (Disabled)
+			// GlRenderer.quit();
+			// GameShell.frame.setVisible(true);
+
+			//Restore GameShell (It was just reset above)
+			GameShell.canvasWidth = GlRenderer.canvasWidth;
+			GameShell.canvasHeight = GlRenderer.canvasHeight;
+			return;
 		}
-		if (useHD && newMode > 0 && !launchSD) {
+		if (useHD && newMode != SD_FIXED && !launchSD) {
 			GameShell.canvas.setIgnoreRepaint(true);
 			GlRenderer.init(null, 0);
 		}
-		if (!GlRenderer.enabled && newMode > 0) {
+		if (!GlRenderer.enabled && newMode != SD_FIXED) {
 			setWindowMode(true, 0, true, currentMode, -1, -1);
 			return;
 		}
-		if (newMode > 0 && currentMode == 0) {
+		if (newMode != SD_FIXED && currentMode == SD_FIXED) {
 			GameShell.thread.setPriority(5);
 			SoftwareRaster.frameBuffer = null;
 			SoftwareModel.method4580();
@@ -176,7 +184,7 @@ public final class DisplayMode {
 				Rasteriser.setBrightness(0.7F);
 			}
 			LoginManager.method4637();
-		} else if (newMode == 0 && currentMode > 0) {
+		} else if (newMode == SD_FIXED && currentMode != SD_FIXED) {
 			GameShell.thread.setPriority(1);
 			SoftwareRaster.frameBuffer = FrameBuffer.create(503, 765, GameShell.canvas);
 			SoftwareModel.method4583();
@@ -201,7 +209,7 @@ public final class DisplayMode {
 		}
 		SceneGraph.aBoolean130 = !SceneGraph.allLevelsAreVisible();
 		if (useHD) {
-			client.method2721();
+			client.clearSoftwareRenderer();
 		}
 		resizable = newMode >= 2;
 		if (InterfaceList.topLevelInterface != -1) {
