@@ -1,14 +1,21 @@
 package rt4;
 
+import com.jogamp.opengl.GL2;
+import com.jogamp.opengl.util.GLReadBufferUtil;
 import org.openrs2.deob.annotation.OriginalArg;
 import org.openrs2.deob.annotation.OriginalClass;
 import org.openrs2.deob.annotation.OriginalMember;
 import org.openrs2.deob.annotation.Pc;
 import plugin.PluginRepository;
 
+import javax.imageio.ImageIO;
 import java.awt.*;
+import java.awt.image.BufferedImage;
+import java.io.File;
 import java.io.IOException;
 import java.net.Socket;
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 import java.nio.charset.StandardCharsets;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
@@ -482,6 +489,64 @@ public final class client extends GameShell {
 			}
 		}
 		arg0.pdata(local15, 24);
+	}
+	
+	public void saveScreenshot(String filename) {
+		int width = client.canvasWidth;
+		int height = client.canvasHeight;
+		if (GlRenderer.enabled) {
+			try {
+				GL2 gl = GlRenderer.gl;
+				// Create a buffer to hold the pixels
+				ByteBuffer buffer = ByteBuffer.allocateDirect(width * height * 4);
+				buffer.order(ByteOrder.LITTLE_ENDIAN);
+
+				// Read the pixels from the buffer
+				gl.glReadPixels(0, 0, width, height, GL2.GL_RGBA, GL2.GL_UNSIGNED_BYTE, buffer);
+				buffer.rewind();
+
+				// Create a BufferedImage and set its pixels
+				BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
+				for (int h = 0; h < height; h++) {
+					for (int w = 0; w < width; w++) {
+						int b = buffer.get() & 0xFF; // Blue component
+						int g = buffer.get() & 0xFF; // Green component
+						int r = buffer.get() & 0xFF; // Red component
+						int a = buffer.get() & 0xFF; // Alpha component
+						int pixel = (a << 24) | (b << 16) | (g << 8) | r;
+						image.setRGB(w, height - h - 1, pixel);
+					}
+				}
+
+				// Save the BufferedImage
+				File outputFile = new File(filename);
+				ImageIO.write(image, "png", outputFile);
+				System.out.println("Screenshot captured: " + filename);
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		} else {
+			try {
+			Window window = KeyboardFocusManager.getCurrentKeyboardFocusManager().getFocusedWindow();
+			Point point = window.getLocationOnScreen();
+			int x = (int) point.getX();
+			int y = (int) point.getY();
+			int w = window.getWidth();
+			int h = window.getHeight();
+			Robot robot = new Robot(window.getGraphicsConfiguration().getDevice());
+			Rectangle captureSize = new Rectangle(x, y, w, h);
+			BufferedImage image = robot.createScreenCapture(captureSize);
+			
+			// Save the BufferedImage
+			File outputFile = new File(filename);
+			ImageIO.write(image, "png", outputFile);
+			System.out.println("Screenshot captured: " + filename);
+			} catch (IOException e) {
+				e.printStackTrace();
+			} catch (AWTException e) {
+                throw new RuntimeException(e);
+            }
+        }
 	}
 
 	@OriginalMember(owner = "client!lb", name = "a", descriptor = "(Z)V")
