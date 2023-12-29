@@ -491,7 +491,7 @@ public final class client extends GameShell {
 		arg0.pdata(local15, 24);
 	}
 	
-	public void saveScreenshot(String filename) {
+	public void saveScreenshot(String filename, String... subfolders) {
 		String homeDirOverride = System.getProperty("clientHomeOverride");
 		String homeDir = null;
 		String osNameRaw = "";
@@ -525,7 +525,13 @@ public final class client extends GameShell {
 			} catch (Exception ex) {
 			}
 		}
-		File outputFolder = new File(homeDir + File.separatorChar + "screenshots" + File.separatorChar);
+		
+		String subfolderPath = String.join(File.separator, subfolders);
+		if (!subfolderPath.isEmpty()) {
+			subfolderPath += File.separator;
+		}
+		
+		File outputFolder = new File(homeDir + File.separatorChar + "screenshots" + File.separatorChar + subfolderPath);
 		if (!outputFolder.exists()){
 			outputFolder.mkdirs();
 		}
