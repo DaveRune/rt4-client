@@ -17,7 +17,7 @@ class plugin : Plugin() {
             override fun keyPressed(e: KeyEvent) {
                 if (e.keyCode == KeyEvent.VK_PRINTSCREEN && e.isControlDown) {
                     API.Screenshot()
-                } 
+                }
             }
         })
     }

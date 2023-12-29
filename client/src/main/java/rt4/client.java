@@ -492,6 +492,43 @@ public final class client extends GameShell {
 	}
 	
 	public void saveScreenshot(String filename) {
+		String homeDirOverride = System.getProperty("clientHomeOverride");
+		String homeDir = null;
+		String osNameRaw = "";
+		String osName = "";
+		try {
+			osNameRaw = System.getProperty("os.name");
+		} catch (Exception local48) {
+			osNameRaw = "Unknown";
+		}
+		osName = osNameRaw.toLowerCase();
+		if (homeDirOverride != null) {
+			homeDir = homeDirOverride;
+ 		} else {
+			try {
+				if (homeDir == null)
+					homeDir = System.getProperty("user.home") + File.separatorChar;
+
+				if (osName.startsWith("linux")) {
+					String xdgHome = System.getenv("XDG_DATA_HOME");
+
+					if (xdgHome != null) {
+						homeDir = xdgHome + "/2009scape/";
+					} else {
+						homeDir += ".local/share/2009scape/";
+					}
+				} else if (osName.startsWith("mac")) {
+					homeDir += "Library/Application Support/2009scape/";
+				} else if (osName.startsWith("windows")) {
+					homeDir += "2009scape\\";
+				}
+			} catch (Exception ex) {
+			}
+		}
+		File outputFolder = new File(homeDir + File.separatorChar + "screenshots" + File.separatorChar);
+		if (!outputFolder.exists()){
+			outputFolder.mkdirs();
+		}
 		int width = client.canvasWidth;
 		int height = client.canvasHeight;
 		if (GlRenderer.enabled) {
@@ -519,9 +556,8 @@ public final class client extends GameShell {
 				}
 
 				// Save the BufferedImage
-				File outputFile = new File(filename);
+				File outputFile = new File(outputFolder, filename);
 				ImageIO.write(image, "png", outputFile);
-				System.out.println("Screenshot captured: " + filename);
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
@@ -538,9 +574,8 @@ public final class client extends GameShell {
 			BufferedImage image = robot.createScreenCapture(captureSize);
 			
 			// Save the BufferedImage
-			File outputFile = new File(filename);
+			File outputFile = new File(outputFolder, filename);
 			ImageIO.write(image, "png", outputFile);
-			System.out.println("Screenshot captured: " + filename);
 			} catch (IOException e) {
 				e.printStackTrace();
 			} catch (AWTException e) {
