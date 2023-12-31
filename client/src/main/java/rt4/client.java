@@ -535,40 +535,8 @@ public final class client extends GameShell {
 		if (!outputFolder.exists()){
 			outputFolder.mkdirs();
 		}
-		int width = client.canvasWidth;
-		int height = client.canvasHeight;
-		if (GlRenderer.enabled) {
-			try {
-				GL2 gl = GlRenderer.gl;
-				// Create a buffer to hold the pixels
-				ByteBuffer buffer = ByteBuffer.allocateDirect(width * height * 4);
-				buffer.order(ByteOrder.LITTLE_ENDIAN);
-
-				// Read the pixels from the buffer
-				gl.glReadPixels(0, 0, width, height, GL2.GL_RGBA, GL2.GL_UNSIGNED_BYTE, buffer);
-				buffer.rewind();
-
-				// Create a BufferedImage and set its pixels
-				BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
-				for (int h = 0; h < height; h++) {
-					for (int w = 0; w < width; w++) {
-						int b = buffer.get() & 0xFF; // Blue component
-						int g = buffer.get() & 0xFF; // Green component
-						int r = buffer.get() & 0xFF; // Red component
-						int a = buffer.get() & 0xFF; // Alpha component
-						int pixel = (a << 24) | (b << 16) | (g << 8) | r;
-						image.setRGB(w, height - h - 1, pixel);
-					}
-				}
-
-				// Save the BufferedImage
-				File outputFile = new File(outputFolder, filename);
-				ImageIO.write(image, "png", outputFile);
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-		} else {
-			try {
+		
+		try {
 			Window window = KeyboardFocusManager.getCurrentKeyboardFocusManager().getFocusedWindow();
 			Point point = window.getLocationOnScreen();
 			int x = (int) point.getX();
@@ -582,12 +550,12 @@ public final class client extends GameShell {
 			// Save the BufferedImage
 			File outputFile = new File(outputFolder, filename);
 			ImageIO.write(image, "png", outputFile);
-			} catch (IOException e) {
-				e.printStackTrace();
-			} catch (AWTException e) {
-				throw new RuntimeException(e);
-			}
+		} catch (IOException e) {
+			e.printStackTrace();
+		} catch (AWTException e) {
+			throw new RuntimeException(e);
 		}
+		
 	}
 
 	@OriginalMember(owner = "client!lb", name = "a", descriptor = "(Z)V")
