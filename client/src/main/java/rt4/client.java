@@ -504,7 +504,7 @@ public final class client extends GameShell {
 		osName = osNameRaw.toLowerCase();
 		if (homeDirOverride != null) {
 			homeDir = homeDirOverride;
- 		} else {
+		} else {
 			try {
 				if (homeDir == null)
 					homeDir = System.getProperty("user.home") + File.separatorChar;
@@ -585,9 +585,9 @@ public final class client extends GameShell {
 			} catch (IOException e) {
 				e.printStackTrace();
 			} catch (AWTException e) {
-                throw new RuntimeException(e);
-            }
-        }
+				throw new RuntimeException(e);
+			}
+		}
 	}
 
 	@OriginalMember(owner = "client!lb", name = "a", descriptor = "(Z)V")
