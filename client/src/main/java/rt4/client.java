@@ -538,6 +538,9 @@ public final class client extends GameShell {
 		
 		try {
 			Window window = KeyboardFocusManager.getCurrentKeyboardFocusManager().getFocusedWindow();
+			if (window == null) {
+				return;
+			}
 			Point point = window.getLocationOnScreen();
 			int x = (int) point.getX();
 			int y = (int) point.getY();
