@@ -551,11 +551,11 @@ public final class client extends GameShell {
 			BufferedImage image = robot.createScreenCapture(captureSize);
 			File outputFile = new File(outputFolder, filename);
 			ImageIO.write(image, "png", outputFile);
-		} catch (IOException e) {
-			e.printStackTrace();
 		} catch (AWTException e) {
 			throw new RuntimeException(e);
-		}
+		} catch (Exception e) {
+			e.printStackTrace();
+		} 
 		
 	}
 
