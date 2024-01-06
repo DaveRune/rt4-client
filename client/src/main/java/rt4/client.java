@@ -555,8 +555,7 @@ public final class client extends GameShell {
 			throw new RuntimeException(e);
 		} catch (Exception e) {
 			e.printStackTrace();
-		} 
-		
+		}
 	}
 
 	@OriginalMember(owner = "client!lb", name = "a", descriptor = "(Z)V")
