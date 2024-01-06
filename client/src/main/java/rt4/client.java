@@ -549,8 +549,6 @@ public final class client extends GameShell {
 			Robot robot = new Robot(window.getGraphicsConfiguration().getDevice());
 			Rectangle captureSize = new Rectangle(x, y, w, h);
 			BufferedImage image = robot.createScreenCapture(captureSize);
-			
-			// Save the BufferedImage
 			File outputFile = new File(outputFolder, filename);
 			ImageIO.write(image, "png", outputFile);
 		} catch (IOException e) {
