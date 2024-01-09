@@ -276,7 +276,8 @@ public class API {
     public static void Screenshot(String... subfolders) {
         SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy_MM_dd-HH_mm_ss");
         String dateTime = dateFormat.format(new Date());
-        client.instance.saveScreenshot(PlayerList.self.username.toString() + "_" + dateTime + ".png", subfolders);
+        String username = PlayerList.self != null && PlayerList.self.username != null && !PlayerList.self.username.toString().isEmpty() ? PlayerList.self.username.toString() : "2009Scape";
+        client.instance.saveScreenshot( username + "_" + dateTime + ".png", subfolders);
     }
 
     public static void PlaySound(int volume, int trackId, int delay) {
