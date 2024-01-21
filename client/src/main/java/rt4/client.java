@@ -216,11 +216,38 @@ public final class client extends GameShell {
 
 	@OriginalMember(owner = "client!client", name = "main", descriptor = "([Ljava/lang/String;)V")
 	public static void main(@OriginalArg(0) String[] arg0) {
-		try {
-			GlobalJsonConfig.load(GlobalConfig.EXTENDED_CONFIG_PATH);
-		} catch (Exception ex) {
-			ex.printStackTrace();
-		}
+    try {
+      String configPath = GlobalConfig.EXTENDED_CONFIG_PATH;
+      boolean helpRequested = false;
+
+      for (int i = 0; i < arg0.length; i++) {
+        if ("--config".equals(arg0[i]) && i + 1 < arg0.length) {
+          configPath = arg0[i + 1];
+          i++; // Skip next argument since it's the config file path
+        } else if ("--help".equals(arg0[i])) {
+          helpRequested = true;
+        }
+      }
+
+      if (helpRequested) {
+        System.out.println("Usage: java path-to-jar.jra [--config <path>] [--help]");
+        System.out.println("Custom Options:");
+        System.out.println("  --config <path>  Path to the configuration file.");
+        System.out.println("  --help               Display this help message.");
+        System.out.println("\nDefault Arguments:");
+        System.out.println("  worldListId: Identifier for the world list, usually an integer.");
+        System.out.println("  modeWhat: Operational mode, where 'live' is normal operation, 'rc' for release candidate, and 'wip' for work-in-progress.");
+        System.out.println("  language: Language setting, like 'english' or 'german'.");
+        System.out.println("  game: Game version identifier, e.g., 'game0' or 'game1'.");
+        System.out.println("\nThese arguments are kept for authentic purposes, reflecting original application parameters.");
+        return;
+      }
+
+      System.out.println("Loading config path " + configPath);
+      GlobalJsonConfig.load(configPath);
+    } catch (Exception ex) {
+      ex.printStackTrace();
+    }
 		try {
 			if (arg0.length != 4) {
 				arg0 = new String[4];
