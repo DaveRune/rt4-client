@@ -16,6 +16,7 @@ import java.awt.image.BufferedImage
     version = 0.9
 )
 
+
 class plugin : Plugin() {
     private var xpGlobes = Array(Constants.SKILL_COUNT) { skillId -> XPGlobe(skillId, Constants.INVALID_XP, Constants.INVALID_XP, 0L, null) }
     private var lastGain = 0L
@@ -62,6 +63,7 @@ class plugin : Plugin() {
         }
     }
 
+
     override fun OnXPUpdate(skillId: Int, xp: Int) {
         if (xpGlobes[skillId].xp == Constants.INVALID_XP) {
             xpGlobes[skillId].xp = xp
@@ -76,7 +78,7 @@ class plugin : Plugin() {
         val prevXp = xpGlobes[skillId].xp
         xpGlobes[skillId].xp = xp
         xpGlobes[skillId].prevXp = prevXp
-        xpGlobes[skillId].timestamp = 0
+        xpGlobes[skillId].timestamp = 0L
         val (prevLevel, _) = XPTable.getLevelForXp(prevXp)
         val (level, gainedXp) = XPTable.getLevelForXp(xp)
 
@@ -112,7 +114,7 @@ class plugin : Plugin() {
 
     override fun OnLogout() {
         lastGain = 0L
-        xpGlobes = Array(24)  { skillId -> XPGlobe(skillId, Constants.INVALID_XP, Constants.INVALID_XP, 0, null) }
+        xpGlobes = Array(Constants.SKILL_COUNT)  { skillId -> XPGlobe(skillId, Constants.INVALID_XP, Constants.INVALID_XP, 0L, null) }
     }
 
 
@@ -155,6 +157,7 @@ class plugin : Plugin() {
     private fun createArcSprite(size: Int, arcColor: Color, weight: Double): Sprite {
         return SpritePNGLoader.getImageIndexedSprite(createArcImage(size, arcColor, weight))
     }
+
 
     private fun createArcImage(size: Int, arcColor: Color, weight: Double): BufferedImage {
         val image = BufferedImage(size, size, BufferedImage.TYPE_INT_ARGB)
