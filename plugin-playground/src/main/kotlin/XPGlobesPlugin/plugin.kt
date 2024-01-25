@@ -18,7 +18,7 @@ import java.awt.image.BufferedImage
 
 
 class plugin : Plugin() {
-    private var xpGlobes = Array(Constants.SKILL_COUNT) { skillId -> XPGlobe(skillId, Constants.INVALID_XP, Constants.INVALID_XP, 0L, null) }
+    private var xpGlobes = Array(Constants.SKILL_COUNT) { skillId -> XPGlobe(skillId, Constants.INVALID_XP, 0L, null) }
     private var lastGain = 0L
     private var backgroundSprite: Sprite? = null
     private var borderSprite: Sprite? = null
@@ -49,6 +49,7 @@ class plugin : Plugin() {
                 activeGlobes.add(xpGlobe) // alive
             }
         }
+
         val maxGlobes = if (API.GetWindowMode() == WindowMode.FIXED) Constants.MAX_GLOBES_SD else Constants.MAX_GLOBES
         val globeCount = if (activeGlobes.size > maxGlobes) maxGlobes else activeGlobes.size
         val (backgroundSize, globeBorder, xpBorder) = getGlobeDimensions()
@@ -67,7 +68,6 @@ class plugin : Plugin() {
     override fun OnXPUpdate(skillId: Int, xp: Int) {
         if (xpGlobes[skillId].xp == Constants.INVALID_XP) {
             xpGlobes[skillId].xp = xp
-            xpGlobes[skillId].prevXp = xp
             return
         }
 
@@ -77,14 +77,12 @@ class plugin : Plugin() {
 
         val prevXp = xpGlobes[skillId].xp
         xpGlobes[skillId].xp = xp
-        xpGlobes[skillId].prevXp = prevXp
         xpGlobes[skillId].timestamp = 0L
         val (prevLevel, _) = XPTable.getLevelForXp(prevXp)
         val (level, gainedXp) = XPTable.getLevelForXp(xp)
 
         // we do not draw XP globes for level >= MAX_LEVEL
         if (level != Constants.INVALID_LEVEL && level < Constants.MAX_LEVEL) {
-
             var arcWeight = 1.0
             var arcColor = Constants.GLOBE_XP_ARC_LEVEL_UP_COLOR
 
@@ -114,11 +112,11 @@ class plugin : Plugin() {
 
     override fun OnLogout() {
         lastGain = 0L
-        xpGlobes = Array(Constants.SKILL_COUNT)  { skillId -> XPGlobe(skillId, Constants.INVALID_XP, Constants.INVALID_XP, 0L, null) }
+        xpGlobes = Array(Constants.SKILL_COUNT)  { skillId -> XPGlobe(skillId, Constants.INVALID_XP, 0L, null) }
     }
 
 
-    data class XPGlobe(val skillId: Int, var prevXp: Int, var xp: Int, var timestamp: Long, var arcSprite: Sprite?)
+    data class XPGlobe(val skillId: Int, var xp: Int, var timestamp: Long, var arcSprite: Sprite?)
 
 
     private fun getGlobeDimensions() : Triple<Int, Int, Int> {
@@ -150,7 +148,11 @@ class plugin : Plugin() {
         val drawX = posX + totalBorder + xOffset
         val drawY = posY + totalBorder + yOffset
 
-        skillSprite?.render(drawX, drawY)
+        // even if the centering logic is correct, the sprite seems not to be well-centered inside the
+        // graphic resource. Manually adjust...
+        val (spriteXOffset, spriteYOffset) = XPSprites.getSpriteOffsetForSkill(globe.skillId)
+
+        skillSprite?.render(drawX + spriteXOffset, drawY + spriteYOffset)
     }
 
 

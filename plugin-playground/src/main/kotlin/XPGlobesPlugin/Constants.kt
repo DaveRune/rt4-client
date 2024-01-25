@@ -2,6 +2,7 @@ package XPGlobesPlugin
 
 import java.awt.Color
 
+
 object Constants {
     const val SKILL_COUNT = 24
     const val MAX_LEVEL = 99
