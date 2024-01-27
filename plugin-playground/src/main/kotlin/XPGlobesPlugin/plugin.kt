@@ -91,7 +91,6 @@ class plugin : Plugin() {
 
         val prevXp = xpGlobe.xp
         xpGlobe.xp = xp
-        xpGlobe.timestamp = 0L
         val (prevLevel, _) = XPTable.getLevelForXp(prevXp)
         val (level, gainedXp) = XPTable.getLevelForXp(xp)
 
@@ -99,7 +98,7 @@ class plugin : Plugin() {
         if (level != Constants.INVALID_LEVEL && level < Constants.MAX_LEVEL) {
             var arcWeight = 1.0
             var arcColor = Constants.GLOBE_XP_ARC_LEVEL_UP_COLOR
-            var hasLeveledUp = level != prevLevel
+            val hasLeveledUp = level != prevLevel
 
             if (!hasLeveledUp) {
                 val levelXpDiff = XPTable.getXpRequiredForLevel(level + 1) - XPTable.getXpRequiredForLevel(level)
@@ -107,20 +106,18 @@ class plugin : Plugin() {
                 arcColor = Constants.GLOBE_XP_ARC_COLOR
             }
 
-            // remember timestamp
-            xpGlobe.timestamp = System.currentTimeMillis()
-            hasActiveGlobes = true
-
             val (backgroundSize, globeBorder, xpBorder) = getGlobeDimensions()
             val globeSize = backgroundSize + globeBorder * 2 + xpBorder * 2
             if (xpGlobe.textSprite == null) {
-                // update the arcSprite only if the textSprite has finished the animation
+                // update arcSprite and timestamp only if the textSprite has finished the animation
                 xpGlobe.arcSprite = createArcSprite(backgroundSize + xpBorder * 2, arcColor, arcWeight)
+                xpGlobe.timestamp = System.currentTimeMillis()
             }
 
             if (borderSprite == null) {
                 borderSprite = createArcSprite(globeSize, Constants.GLOBE_BORDER_COLOR, 1.0)
             }
+
             if (backgroundSprite == null) {
                 backgroundSprite = createArcSprite(backgroundSize, Constants.GLOBE_BKG_COLOR, 1.0)
             }
@@ -131,7 +128,10 @@ class plugin : Plugin() {
                 val bgColor = Constants.GLOBE_TEXT_BG_COLOR
                 val outlineSize = Constants.GLOBE_TEXT_OUTLINE_WIDTH
                 xpGlobes[skillId].textSprite = createTextSprite(fontSize, fgColor, bgColor, outlineSize, level.toString())
+                xpGlobe.timestamp = System.currentTimeMillis()
             }
+
+            hasActiveGlobes = true
         }
     }
 
