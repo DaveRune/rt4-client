@@ -197,8 +197,8 @@ class plugin : Plugin() {
             val currentTime = System.currentTimeMillis()
             var animWeight = (currentTime - globe.timestamp).toFloat() / Constants.GLOBE_LIFETIME
             animWeight = clamp(animWeight, 0.0F, 1.0F)
-            // sample cosine for the text pulse animation effect (cosine offset is to respect number of pulses)
-            var pulseWeight = cos(animWeight * (PI + PI * 2 * Constants.GLOBE_TEXT_PULSES).toFloat())
+            // sample cosine for the text pulse animation effect (cosine phase-shift is to respect number of pulses)
+            var pulseWeight = cos(PI + animWeight * (PI * 2 * Constants.GLOBE_TEXT_PULSES).toFloat()).toFloat()
             pulseWeight = (pulseWeight + 1.0F) / 2.0F // map pulseWeight from [-1,1] to [0,1]
             val pulseIntensity = lerp(Constants.GLOBE_TEXT_PULSE_LOW, Constants.GLOBE_TEXT_PULSE_HIGH, pulseWeight)
 
