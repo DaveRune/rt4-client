@@ -27,6 +27,10 @@ object XPTable {
         var lowIndex = 0
         var highIndex = xpTable.size - 1
 
+        if (xp >= xpTable[highIndex]) {
+            return Pair(Constants.MAX_LEVEL, xp - xpTable[highIndex]) // Level is max or above, return the highest level
+        }
+
         while (lowIndex <= highIndex) {
             val midIndex = (lowIndex + highIndex) / 2
             when {
@@ -40,6 +44,7 @@ object XPTable {
             }
         }
 
-        return Pair(Constants.INVALID_LEVEL, 0) // If xp is above all defined levels
+        return Pair(Constants.INVALID_LEVEL, 0) // If xp is below all defined levels
     }
+
 }
