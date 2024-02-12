@@ -1,14 +1,21 @@
 package rt4;
 
+import com.jogamp.opengl.GL2;
+import com.jogamp.opengl.util.GLReadBufferUtil;
 import org.openrs2.deob.annotation.OriginalArg;
 import org.openrs2.deob.annotation.OriginalClass;
 import org.openrs2.deob.annotation.OriginalMember;
 import org.openrs2.deob.annotation.Pc;
 import plugin.PluginRepository;
 
+import javax.imageio.ImageIO;
 import java.awt.*;
+import java.awt.image.BufferedImage;
+import java.io.File;
 import java.io.IOException;
 import java.net.Socket;
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 import java.nio.charset.StandardCharsets;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
@@ -482,6 +489,71 @@ public final class client extends GameShell {
 			}
 		}
 		arg0.pdata(local15, 24);
+	}
+	
+	public void saveScreenshot(String filename, String... subfolders) {
+		String homeDirOverride = System.getProperty("clientHomeOverride");
+		String homeDir = null;
+		String osNameRaw = "";
+		String osName = "";
+		try {
+			osNameRaw = System.getProperty("os.name");
+		} catch (Exception local48) {
+			osNameRaw = "Unknown";
+		}
+		osName = osNameRaw.toLowerCase();
+		if (homeDirOverride != null) {
+			homeDir = homeDirOverride;
+		} else {
+			try {
+				if (homeDir == null)
+					homeDir = System.getProperty("user.home") + File.separatorChar;
+
+				if (osName.startsWith("linux")) {
+					String xdgHome = System.getenv("XDG_DATA_HOME");
+
+					if (xdgHome != null) {
+						homeDir = xdgHome + "/2009scape/";
+					} else {
+						homeDir += ".local/share/2009scape/";
+					}
+				} else if (osName.startsWith("mac")) {
+					homeDir += "Library/Application Support/2009scape/";
+				} else if (osName.startsWith("windows")) {
+					homeDir += "2009scape\\";
+				}
+			} catch (Exception ex) {
+			}
+		}
+		
+		String subfolderPath = String.join(File.separator, subfolders);
+		if (!subfolderPath.isEmpty()) {
+			subfolderPath += File.separator;
+		}
+		
+		File outputFolder = new File(homeDir + File.separatorChar + "screenshots" + File.separatorChar + subfolderPath);
+		if (!outputFolder.exists()){
+			outputFolder.mkdirs();
+		}
+		
+		try {
+			Window window = KeyboardFocusManager.getCurrentKeyboardFocusManager().getFocusedWindow();
+			if (window == null) {
+				return;
+			}
+			Point point = window.getLocationOnScreen();
+			int x = (int) point.getX();
+			int y = (int) point.getY();
+			int w = window.getWidth();
+			int h = window.getHeight();
+			Robot robot = new Robot(window.getGraphicsConfiguration().getDevice());
+			Rectangle captureSize = new Rectangle(x, y, w, h);
+			BufferedImage image = robot.createScreenCapture(captureSize);
+			File outputFile = new File(outputFolder, filename);
+			ImageIO.write(image, "png", outputFile);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 	}
 
 	@OriginalMember(owner = "client!lb", name = "a", descriptor = "(Z)V")

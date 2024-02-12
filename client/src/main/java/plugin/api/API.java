@@ -8,7 +8,9 @@ import rt4.Font;
 import java.awt.*;
 import java.awt.event.*;
 import java.awt.image.BufferedImage;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 
 import static rt4.MathUtils.clamp;
 import static rt4.Player.plane;
@@ -269,6 +271,13 @@ public class API {
 
     public static void DispatchCommand(String command) {
         Cheat.sendCheatPacket(JagString.of(command));
+    }
+    
+    public static void Screenshot(String... subfolders) {
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy_MM_dd-HH_mm_ss");
+        String dateTime = dateFormat.format(new Date());
+        String username = PlayerList.self != null && PlayerList.self.username != null && !PlayerList.self.username.toString().isEmpty() ? PlayerList.self.username.toString() : "2009Scape";
+        client.instance.saveScreenshot( username + "_" + dateTime + ".png", subfolders);
     }
 
     public static void PlaySound(int volume, int trackId, int delay) {
