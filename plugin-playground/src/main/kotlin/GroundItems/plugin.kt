@@ -24,7 +24,7 @@ import kotlin.math.roundToInt
         cmds ::set(low,med,high,insane,hide), ::(tag,ignore)item ID, ::(reset)groundconfig
         Special thanks to Chisato for the original skeleton.
         """,
-    version = 1.0
+    version = 1.1
 )
 open class plugin : Plugin() {
 
@@ -113,26 +113,23 @@ open class plugin : Plugin() {
         for (x in 0..103) {
             for (y in 0..103) {
                 val objstacknodeLL = SceneGraph.objStacks[Player.plane][x][y]
-                var itemCount = 0
-                var tempNode = objstacknodeLL?.head() as ObjStackNode?
-                while (tempNode != null) {
-                    itemCount++
-                    tempNode = objstacknodeLL.next() as ObjStackNode?
-                }
-                var offset = itemCount * 12
                 if (objstacknodeLL != null) {
-                    var item = objstacknodeLL.head() as ObjStackNode?
-                    while (item != null) {
-                        val itemDef = ObjTypeList.get(item.value.type)
-                        var haValue = if (itemDef.id == coindId) item.value.amount else (itemDef.cost * 0.6 * item.value.amount).roundToInt()
-                        val geValue = (gePriceMap[itemDef.id.toString()]?.toInt() ?: 0) * item.value.amount
 
-                        // If the HA value or GE value is below the hide threshold, don't render
-                        val highestValue = maxOf(haValue, geValue)
-                        if ((highestValue < hideBelowValue || isHidden(itemDef.id)) && !isTagged(itemDef.id)) {
+                    val itemCount = getDisplayedStackSize(objstacknodeLL)
+                    var offset = itemCount * 12
+                    var item = objstacknodeLL.head() as ObjStackNode?
+
+                    while (item != null) {
+
+                        if(!shouldDisplayItem(item)) {
                             item = objstacknodeLL.next() as ObjStackNode?
                             continue
                         }
+
+                        val itemDef = ObjTypeList.get(item.value.type)
+                        val haValue = if (itemDef.id == coindId) item.value.amount else (itemDef.cost * 0.6 * item.value.amount).roundToInt()
+                        val geValue = (gePriceMap[itemDef.id.toString()]?.toInt() ?: 0) * item.value.amount
+                        val highestValue = maxOf(haValue, geValue)
 
                         val screenPos: IntArray = CalculateSceneGraphScreenPosition((x shl 7) + 64, (y shl 7) + 64, 64)
                         if (screenPos[0] < 0 || screenPos[1] < 0) {
@@ -167,6 +164,25 @@ open class plugin : Plugin() {
                 }
             }
         }
+    }
+
+    private fun getDisplayedStackSize(objstacknodeLL: LinkedList): Int{
+        var displayedStackSize = 0;
+        var stackItem = objstacknodeLL.head() as ObjStackNode?
+        while (stackItem != null) {
+            if(shouldDisplayItem(stackItem)){
+                displayedStackSize++
+            }
+            stackItem = objstacknodeLL.next() as ObjStackNode?
+        }
+        return displayedStackSize;
+    }
+    private fun shouldDisplayItem(item: ObjStackNode): Boolean {
+        val itemDef = ObjTypeList.get(item.value.type)
+        val haValue = if (itemDef.id == coindId) item.value.amount else (itemDef.cost * 0.6 * item.value.amount).roundToInt()
+        val geValue = (gePriceMap[itemDef.id.toString()]?.toInt() ?: 0) * item.value.amount
+        val highestValue = maxOf(haValue, geValue)
+        return !((highestValue < hideBelowValue || isHidden(itemDef.id)) && !isTagged(itemDef.id))
     }
 
     override fun OnMiniMenuCreate(currentEntries: Array<out MiniMenuEntry>?) {
