@@ -1,10 +1,13 @@
 package rt4;
 
 import com.jogamp.opengl.GL2;
+import org.lwjgl.opengl.GL11;
 import org.openrs2.deob.annotation.OriginalArg;
 import org.openrs2.deob.annotation.OriginalMember;
 import org.openrs2.deob.annotation.Pc;
 
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 import java.nio.IntBuffer;
 
 import static org.lwjgl.opengl.GL11.*;
@@ -59,18 +62,25 @@ public final class GlRaster {
 		GlFont.method1173();
 	}
 
-	@OriginalMember(owner = "client!dj", name = "a", descriptor = "([IIIII)V")
-	public static void drawPixels(@OriginalArg(0) int[] pixels, @OriginalArg(1) int x, @OriginalArg(2) int y, @OriginalArg(3) int width, @OriginalArg(4) int height) {
+	public static void drawPixels(int[] pixels, int x, int y, int width, int height) {
 		GlRenderer.setupRenderingWithNoTexture();
-		glRasterPos2i(x, GlRenderer.canvasHeight - y);
-		glPixelZoom((float) GameShell.canvasScale, (float) -GameShell.canvasScale);
-		glDisable(GL2.GL_BLEND);
-		glDisable(GL2.GL_ALPHA_TEST);
-		glDrawPixels(width, height, GL2.GL_BGRA, GlRenderer.bigEndian ? GL2.GL_UNSIGNED_INT_8_8_8_8_REV : GL2.GL_UNSIGNED_BYTE, IntBuffer.wrap(pixels));
-		glPixelZoom(1.0F, 1.0F);
-		glEnable(GL2.GL_ALPHA_TEST);
-		glEnable(GL2.GL_BLEND);
+		GL11.glRasterPos2i(x, GlRenderer.canvasHeight - y);
+		GL11.glPixelZoom((float) GameShell.canvasScale, (float) -GameShell.canvasScale);
+		GL11.glDisable(GL2.GL_BLEND);
+		GL11.glDisable(GL2.GL_ALPHA_TEST);
+
+		// Create a direct IntBuffer and copy the pixels array into it
+		ByteBuffer byteBuffer = ByteBuffer.allocateDirect(pixels.length * 4).order(ByteOrder.nativeOrder());
+		IntBuffer intBuffer = byteBuffer.asIntBuffer();
+		intBuffer.put(pixels).flip();
+
+		GL11.glDrawPixels(width, height, GL2.GL_BGRA, GlRenderer.bigEndian ? GL2.GL_UNSIGNED_INT_8_8_8_8_REV : GL2.GL_UNSIGNED_BYTE, intBuffer);
+
+		GL11.glPixelZoom(1.0F, 1.0F);
+		GL11.glEnable(GL2.GL_ALPHA_TEST);
+		GL11.glEnable(GL2.GL_BLEND);
 	}
+
 
 	@OriginalMember(owner = "client!dj", name = "a", descriptor = "(IIIII)V")
 	public static void drawRect(@OriginalArg(0) int x, @OriginalArg(1) int y, @OriginalArg(2) int width, @OriginalArg(3) int height, @OriginalArg(4) int color) {
