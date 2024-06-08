@@ -55,6 +55,6 @@ public class GlobalConfig {
 
 	public static int JS5_RESPONSE_TIMEOUT = 5000;
 
-        public static int AUDIO_SAMPLE_RATE = 44100; //default is 22050
+        public static int AUDIO_SAMPLE_RATE = 22050; //default is 22050, buff is 44100
 
 }
