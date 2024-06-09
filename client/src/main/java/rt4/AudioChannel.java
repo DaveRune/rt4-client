@@ -33,7 +33,7 @@ public class AudioChannel {
 	public static AudioChannel create(int sampleRate, SignLink signLink, Component component, int channelIndex) {
 		try {
 			AudioChannel audioChannel;
-			audioChannel = initializeAudioChannel(new JavaAudioChannel(), sampleRate, component, signLink, channelIndex);
+			audioChannel = initializeAudioChannel(new OpenALAudioChannel(), sampleRate, component, signLink, channelIndex);
 			return audioChannel;
 		} catch (Throwable ex1) {
 			return new AudioChannel();
