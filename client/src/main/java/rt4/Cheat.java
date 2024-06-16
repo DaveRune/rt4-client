@@ -99,6 +99,7 @@ public class Cheat {
 	@OriginalMember(owner = "client!jg", name = "e", descriptor = "Z")
 	public static boolean qaOpTest = false;
 	public static final JagString RELOADPLUGINS = JagString.parse("::reloadplugins");
+	public static final JagString USERESIZABLESD = JagString.parse("::resizablesd");
 
 	@OriginalMember(owner = "client!en", name = "a", descriptor = "(IIIB)V")
 	public static void teleport(@OriginalArg(0) int arg0, @OriginalArg(1) int arg1, @OriginalArg(2) int arg2) {
@@ -231,6 +232,17 @@ public class Cheat {
 					shiftClick = true;
 				}
 			}
+		if(arg0.equalsIgnoreCase(USERESIZABLESD)){
+			DisplayMode.resizableSD = !DisplayMode.resizableSD;
+			if(!DisplayMode.resizableSD){
+				// Revert to fixed
+				DisplayMode.setWindowMode(true, 0, -1, -1);
+			} else {
+				// use resizable
+				DisplayMode.setWindowMode(true, 0, GameShell.frameWidth, GameShell.frameHeight);
+			}
+		}
+
 		if (arg0.equalsIgnoreCase(RELOADPLUGINS)) {
 			PluginRepository.reloadPlugins();
 		}

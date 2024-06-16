@@ -803,6 +803,10 @@ public final class client extends GameShell {
 	@OriginalMember(owner = "client!client", name = "f", descriptor = "(I)V")
 	@Override
 	protected final void mainRedraw() {
+		if(DisplayMode.resizableSD && !GlRenderer.enabled){
+			GameShell.fullRedraw = true;
+			InterfaceList.fullRedrawAllInterfaces();
+		}
 		if (gameState == 1000) {
 			return;
 		}
