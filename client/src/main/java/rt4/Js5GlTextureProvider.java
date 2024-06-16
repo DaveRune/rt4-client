@@ -263,8 +263,8 @@ public final class Js5GlTextureProvider implements TextureProvider {
 	}
 
 	@OriginalMember(owner = "client!nk", name = "k", descriptor = "(II)V")
-	public final void method3248(@OriginalArg(0) int arg0) {
-		this.capacity = arg0;
+	public final void method3248(@OriginalArg(0) int capacity) {
+		this.capacity = capacity;
 		this.glTextures = new LruHashTable(this.capacity);
 		if (GlRenderer.enabled) {
 			this.solidColorSprites = new LruHashTable(this.capacity);

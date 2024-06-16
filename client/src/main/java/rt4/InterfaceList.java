@@ -220,6 +220,23 @@ public class InterfaceList {
 		}
 	}
 
+	public static void fullRedrawAllInterfaces() {
+		// Loop over all the possible interfaces
+		for (int i = 0; i < components.length; i++) {
+			if (components[i] == null) {
+				load(i);
+			}
+			if (components[i] == null) {
+				continue;
+			}
+			for (int j = 0; j < components[i].length; j++) {
+				if (components[i][j] != null) {
+					redraw(components[i][j]);
+				}
+			}
+		}
+	}
+
 	@OriginalMember(owner = "client!af", name = "a", descriptor = "(BI)Lclient!be;")
 	public static Component getComponent(@OriginalArg(1) int id) {
 		try {

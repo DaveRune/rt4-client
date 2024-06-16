@@ -16,7 +16,7 @@ public final class DisplayMode {
 	@OriginalMember(owner = "client!rc", name = "M", descriptor = "Z")
 	public static boolean aBoolean73 = false;
 	@OriginalMember(owner = "client!jk", name = "y", descriptor = "Z")
-	public static boolean aBoolean156 = false;
+	public static boolean resizable = false;
 	@OriginalMember(owner = "client!hi", name = "f", descriptor = "J")
 	public static long aLong89 = 0L;
 
@@ -32,16 +32,18 @@ public final class DisplayMode {
 	@OriginalMember(owner = "client!od", name = "m", descriptor = "I")
 	public int bitDepth;
 
+	public static boolean resizableSD = false;
+
 	@OriginalMember(owner = "client!c", name = "a", descriptor = "(Ljava/awt/Frame;ZLsignlink!ll;)V")
-	public static void exitFullScreen(@OriginalArg(0) Frame arg0, @OriginalArg(2) SignLink arg1) {
+	public static void exitFullScreen(@OriginalArg(0) Frame frame, @OriginalArg(2) SignLink signLink) {
 		while (true) {
-			@Pc(16) PrivilegedRequest local16 = arg1.exitFullScreen(arg0);
-			while (local16.status == 0) {
+			@Pc(16) PrivilegedRequest request = signLink.exitFullScreen(frame);
+			while (request.status == 0) {
 				ThreadUtils.sleep(10L);
 			}
-			if (local16.status == 1) {
-				arg0.setVisible(false);
-				arg0.dispose();
+			if (request.status == 1) {
+				frame.setVisible(false);
+				frame.dispose();
 				return;
 			}
 			ThreadUtils.sleep(100L);
@@ -49,26 +51,26 @@ public final class DisplayMode {
 	}
 
 	@OriginalMember(owner = "client!th", name = "a", descriptor = "(ZIIII)V")
-	public static void setWindowMode(@OriginalArg(0) boolean arg0, @OriginalArg(1) int arg1, @OriginalArg(3) int arg2, @OriginalArg(4) int arg3) {
+	public static void setWindowMode(@OriginalArg(0) boolean replaceCanvas, @OriginalArg(1) int newMode, @OriginalArg(3) int width, @OriginalArg(4) int height) {
 		aLong89 = 0L;
-		@Pc(4) int mode = getWindowMode();
-		if (arg1 == 3 || mode == 3) {
-			arg0 = true;
+		@Pc(4) int currentMode = getWindowMode();
+		if (newMode == 3 || currentMode == 3) {
+			replaceCanvas = true;
 		}
-		@Pc(44) boolean useHd = mode > 0 != arg1 > 0;
-		if (arg0 && arg1 > 0) {
-			useHd = true;
+		@Pc(44) boolean useHD = currentMode > 0 != newMode > 0;
+		if (replaceCanvas && newMode > 0 && !resizableSD) {
+			useHD = true;
 		}
-		setWindowMode(arg0, arg1, useHd, mode, arg2, arg3);
+		setWindowMode(replaceCanvas, newMode, useHD, currentMode, width, height);
 	}
 
 	@OriginalMember(owner = "client!le", name = "a", descriptor = "(I)I")
 	public static int getWindowMode() {
 		if (GameShell.fullScreenFrame != null) {
 			return 3;
-		} else if (GlRenderer.enabled && aBoolean156) {
+		} else if ((GlRenderer.enabled && resizable) || resizableSD) {
 			return 2;
-		} else if (GlRenderer.enabled && !aBoolean156) {
+		} else if (GlRenderer.enabled && !resizable) {
 			return 1;
 		} else {
 			return 0;
@@ -76,43 +78,43 @@ public final class DisplayMode {
 	}
 
 	@OriginalMember(owner = "client!pm", name = "a", descriptor = "(ZIZIZII)V")
-	public static void setWindowMode(@OriginalArg(0) boolean arg0, @OriginalArg(1) int arg1, @OriginalArg(2) boolean arg2, @OriginalArg(3) int mode, @OriginalArg(5) int arg4, @OriginalArg(6) int arg5) {
-		if (arg2) {
+	public static void setWindowMode(@OriginalArg(0) boolean replaceCanvas, @OriginalArg(1) int newMode, @OriginalArg(2) boolean useHD, @OriginalArg(3) int currentMode, @OriginalArg(5) int width, @OriginalArg(6) int height) {
+		if (useHD) {
 			GlRenderer.quit();
 		}
-		if (GameShell.fullScreenFrame != null && (arg1 != 3 || arg4 != Preferences.fullScreenWidth || arg5 != Preferences.fullScreenHeight)) {
+		if (GameShell.fullScreenFrame != null && (newMode != 3 || width != Preferences.fullScreenWidth || height != Preferences.fullScreenHeight)) {
 			exitFullScreen(GameShell.fullScreenFrame, GameShell.signLink);
 			GameShell.fullScreenFrame = null;
 		}
-		if (arg1 == 3 && GameShell.fullScreenFrame == null) {
-			GameShell.fullScreenFrame = method3176(0, arg5, arg4, GameShell.signLink);
+		if (newMode == 3 && GameShell.fullScreenFrame == null) {
+			GameShell.fullScreenFrame = createFullScreenFrame(0, height, width, GameShell.signLink);
 			if (GameShell.fullScreenFrame != null) {
-				Preferences.fullScreenHeight = arg5;
-				Preferences.fullScreenWidth = arg4;
+				Preferences.fullScreenHeight = height;
+				Preferences.fullScreenWidth = width;
 				Preferences.write(GameShell.signLink);
 			}
 		}
-		if (arg1 == 3 && GameShell.fullScreenFrame == null) {
-			setWindowMode(true, Preferences.favoriteWorlds, true, mode, -1, -1);
+		if (newMode == 3 && GameShell.fullScreenFrame == null) {
+			setWindowMode(true, Preferences.favoriteWorlds, true, currentMode, -1, -1);
 			return;
 		}
-		@Pc(85) Container local85;
+		@Pc(85) Container container;
 		if (GameShell.fullScreenFrame != null) {
-			local85 = GameShell.fullScreenFrame;
+			container = GameShell.fullScreenFrame;
 		} else if (GameShell.frame == null) {
-			local85 = GameShell.signLink.applet;
+			container = GameShell.signLink.applet;
 		} else {
-			local85 = GameShell.frame;
+			container = GameShell.frame;
 		}
-		GameShell.frameWidth = local85.getSize().width;
-		GameShell.frameHeight = local85.getSize().height;
-		@Pc(109) Insets local109;
-		if (GameShell.frame == local85) {
-			local109 = GameShell.frame.getInsets();
-			GameShell.frameWidth -= local109.right + local109.left;
-			GameShell.frameHeight -= local109.bottom + local109.top;
+		GameShell.frameWidth = container.getSize().width;
+		GameShell.frameHeight = container.getSize().height;
+		@Pc(109) Insets insets;
+		if (GameShell.frame == container) {
+			insets = GameShell.frame.getInsets();
+			GameShell.frameWidth -= insets.right + insets.left;
+			GameShell.frameHeight -= insets.bottom + insets.top;
 		}
-		if (arg1 >= 2) {
+		if (newMode >= 2 || resizableSD) {
 			GameShell.canvasWidth = GameShell.frameWidth;
 			GameShell.canvasHeight = GameShell.frameHeight;
 			GameShell.leftMargin = 0;
@@ -123,7 +125,7 @@ public final class DisplayMode {
 			GameShell.canvasWidth = 765;
 			GameShell.canvasHeight = 503;
 		}
-		if (arg0) {
+		if (replaceCanvas) {
 			Keyboard.stop(GameShell.canvas);
 			Mouse.stop(GameShell.canvas);
 			if (client.mouseWheel != null) {
@@ -140,17 +142,17 @@ public final class DisplayMode {
 				GlRenderer.setCanvasSize(GameShell.canvasWidth, GameShell.canvasHeight);
 			}
 			GameShell.canvas.setSize(GameShell.canvasWidth, GameShell.canvasHeight);
-			if (GameShell.frame == local85) {
-				local109 = GameShell.frame.getInsets();
-				GameShell.canvas.setLocation(local109.left + GameShell.leftMargin, local109.top + GameShell.topMargin);
+			if (GameShell.frame == container) {
+				insets = GameShell.frame.getInsets();
+				GameShell.canvas.setLocation(insets.left + GameShell.leftMargin, insets.top + GameShell.topMargin);
 			} else {
 				GameShell.canvas.setLocation(GameShell.leftMargin, GameShell.topMargin);
 			}
 		}
-		if (arg1 == 0 && mode > 0) {
+		if (newMode == 0 && currentMode > 0) {
 			GlRenderer.createAndDestroyContext(GameShell.canvas);
 		}
-		if (arg2 && arg1 > 0) {
+		if (useHD && newMode > 0) {
 			GameShell.canvas.setIgnoreRepaint(true);
 			if (!aBoolean73) {
 				SceneGraph.clear();
@@ -163,13 +165,16 @@ public final class DisplayMode {
 					Fonts.drawTextOnScreen(false, LocalizedText.LOADING);
 				}
 				try {
-					@Pc(269) Graphics local269 = GameShell.canvas.getGraphics();
-					SoftwareRaster.frameBuffer.draw(local269);
+					@Pc(269) Graphics graphics = GameShell.canvas.getGraphics();
+					SoftwareRaster.frameBuffer.draw(graphics);
 				} catch (@Pc(277) Exception local277) {
 				}
 				GameShell.method2704();
-				if (mode == 0) {
-					SoftwareRaster.frameBuffer = FrameBuffer.create(503, 765, GameShell.canvas);
+				if (currentMode == 0) {
+					if(resizableSD)
+						SoftwareRaster.frameBuffer = FrameBuffer.create(GameShell.frameHeight, GameShell.frameWidth, GameShell.canvas);
+					else
+						SoftwareRaster.frameBuffer = FrameBuffer.create(503, 765, GameShell.canvas);
 				} else {
 					SoftwareRaster.frameBuffer = null;
 				}
@@ -185,11 +190,11 @@ public final class DisplayMode {
 				GlRenderer.init(GameShell.canvas, Preferences.antiAliasingMode * 2);
 			}
 		}
-		if (!GlRenderer.enabled && arg1 > 0) {
-			setWindowMode(true, 0, true, mode, -1, -1);
+		if (!GlRenderer.enabled && newMode > 0) {
+			setWindowMode(true, 0, true, currentMode, -1, -1);
 			return;
 		}
-		if (arg1 > 0 && mode == 0) {
+		if (newMode > 0 && currentMode == 0) {
 			GameShell.thread.setPriority(5);
 			SoftwareRaster.frameBuffer = null;
 			SoftwareModel.method4580();
@@ -198,9 +203,12 @@ public final class DisplayMode {
 				Rasteriser.setBrightness(0.7F);
 			}
 			LoginManager.method4637();
-		} else if (arg1 == 0 && mode > 0) {
+		} else if (newMode == 0 && currentMode > 0) {
 			GameShell.thread.setPriority(1);
-			SoftwareRaster.frameBuffer = FrameBuffer.create(503, 765, GameShell.canvas);
+			if(resizableSD)
+				SoftwareRaster.frameBuffer = FrameBuffer.create(GameShell.frameHeight, GameShell.frameWidth, GameShell.canvas);
+			else
+				SoftwareRaster.frameBuffer = FrameBuffer.create(503, 765, GameShell.canvas);
 			SoftwareModel.method4583();
 			ParticleSystem.quit();
 			((Js5GlTextureProvider) Rasteriser.textureProvider).method3248(20);
@@ -222,10 +230,10 @@ public final class DisplayMode {
 			LoginManager.method4637();
 		}
 		SceneGraph.aBoolean130 = !SceneGraph.allLevelsAreVisible();
-		if (arg2) {
+		if (useHD) {
 			client.method2721();
 		}
-		aBoolean156 = arg1 >= 2;
+		resizable = newMode >= 2;
 		if (InterfaceList.topLevelInterface != -1) {
 			InterfaceList.method3712(true);
 		}
@@ -300,36 +308,36 @@ public final class DisplayMode {
 	}
 
 	@OriginalMember(owner = "client!nf", name = "a", descriptor = "(IIIIILsignlink!ll;)Ljava/awt/Frame;")
-	public static Frame method3176(@OriginalArg(2) int arg0, @OriginalArg(3) int arg1, @OriginalArg(4) int arg2, @OriginalArg(5) SignLink arg3) {
-		if (!arg3.isFullScreenSupported()) {
+	public static Frame createFullScreenFrame(@OriginalArg(2) int bitDepth, @OriginalArg(3) int height, @OriginalArg(4) int width, @OriginalArg(5) SignLink signLink) {
+		if (!signLink.isFullScreenSupported()) {
 			return null;
 		}
-		@Pc(20) DisplayMode[] local20 = method3558(arg3);
-		if (local20 == null) {
+		@Pc(20) DisplayMode[] displayModes = method3558(signLink);
+		if (displayModes == null) {
 			return null;
 		}
 		@Pc(27) boolean local27 = false;
-		for (@Pc(29) int local29 = 0; local29 < local20.length; local29++) {
-			if (arg2 == local20[local29].width && arg1 == local20[local29].height && (!local27 || local20[local29].bitDepth > arg0)) {
-				arg0 = local20[local29].bitDepth;
+		for (@Pc(29) int local29 = 0; local29 < displayModes.length; local29++) {
+			if (width == displayModes[local29].width && height == displayModes[local29].height && (!local27 || displayModes[local29].bitDepth > bitDepth)) {
+				bitDepth = displayModes[local29].bitDepth;
 				local27 = true;
 			}
 		}
 		if (!local27) {
 			return null;
 		}
-		@Pc(90) PrivilegedRequest local90 = arg3.enterFullScreen(arg0, arg1, arg2);
-		while (local90.status == 0) {
+		@Pc(90) PrivilegedRequest request = signLink.enterFullScreen(bitDepth, height, width);
+		while (request.status == 0) {
 			ThreadUtils.sleep(10L);
 		}
-		@Pc(103) Frame local103 = (Frame) local90.result;
-		if (local103 == null) {
+		@Pc(103) Frame frame = (Frame) request.result;
+		if (frame == null) {
 			return null;
-		} else if (local90.status == 2) {
-			exitFullScreen(local103, arg3);
+		} else if (request.status == 2) {
+			exitFullScreen(frame, signLink);
 			return null;
 		} else {
-			return local103;
+			return frame;
 		}
 	}
 
