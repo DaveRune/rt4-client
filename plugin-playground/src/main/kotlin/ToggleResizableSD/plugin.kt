@@ -39,14 +39,20 @@ class plugin : Plugin() {
         if (!osNameLowerCase.startsWith("mac")) {
             wantHd = true
         }
-        //Alternatively, we could just force HD off here, if we want:
-        //wantHd = false
+        if (API.GetData("want-hd") == false) {
+            wantHd = false
+        }
     }
     
     override fun ProcessCommand(commandStr: String, args: Array<out String>?) {
         when(commandStr.toLowerCase()) {
-            "::resizablesd" -> {
+            "::toggleresizablesd", "::resizablesd", "::togglersd", "::rsd" -> {
                 toggleResize = true //We could call toggleResizableSd() directly here, but it's not necessary.
+            }
+            "::toggleresizablesdhd", "::resizablesdhd", "::togglersdhd", "::rsdhd", -> {
+                wantHd = !wantHd
+                API.StoreData("want-hd", wantHd)
+                API.SendMessage("You have turned login screen HD " + (if (wantHd) "on" else "off"))
             }
         }
     }
