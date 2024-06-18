@@ -3,10 +3,7 @@ package ToggleResizableSD
 import plugin.Plugin
 import plugin.annotations.PluginMeta
 import plugin.api.API
-import rt4.DisplayMode
-import rt4.GameShell
-import rt4.InterfaceList
-import rt4.client
+import rt4.*
 import java.awt.event.KeyAdapter
 import java.awt.event.KeyEvent
 
@@ -58,6 +55,14 @@ class plugin : Plugin() {
     override fun Draw(timeDelta: Long) {
         if (toggleResize) {
             toggleResizableSd()
+        }
+    }
+    
+    override fun OnLogout() {
+        if (DisplayMode.resizableSD) {
+            DisplayMode.resizableSD = false
+            //Because resizable SD always uses the "HD" size canvas/window mode (check the in-game Graphics Options with resizeable SD enabled if you don't believe me!), useHD becomes true when logging out, so logging out with resizeSD enabled means "HD" will always be enabled on the login screen after logging out, so we might as well fix the HD flyover by replacing the canvas and setting newMode to 2.
+            DisplayMode.setWindowMode(true, 2, GameShell.frameWidth, GameShell.frameHeight)
         }
     }
 }

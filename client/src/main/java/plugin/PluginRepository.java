@@ -162,7 +162,8 @@ public class PluginRepository {
     }
 
     public static void OnLogout() {
-        loadedPlugins.values().forEach(Plugin::OnLogout);
+        List<Plugin> pluginsSnapshot = new ArrayList<>(loadedPlugins.values());
+        pluginsSnapshot.forEach(Plugin::OnLogout);
     }
 
     public static void DrawMiniMenu(MiniMenuEntry entry) {
