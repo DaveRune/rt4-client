@@ -14,6 +14,7 @@ import java.awt.event.KeyEvent
 )
 class plugin : Plugin() {
     var toggleResize = false
+    var wantHd = false //Setting wantHd to true hides the black screen on logout (when resize SD is enabled), by enabling HD on logout 
     override fun Init() {
         API.AddKeyboardListener(object : KeyAdapter() {
             override fun keyPressed(e: KeyEvent) {
@@ -25,6 +26,21 @@ class plugin : Plugin() {
         if (!DisplayMode.resizableSD && API.GetData("use-resizable-sd") == true) {
             toggleResize = true
         }
+        var osNameLowerCase: String = ""
+        var osName: String
+    
+        try {
+            osName = System.getProperty("os.name")
+        } catch (e: Exception) {
+            osName = "Unknown"
+        }
+    
+        osNameLowerCase = osName.toLowerCase()
+        if (!osNameLowerCase.startsWith("mac")) {
+            wantHd = true
+        }
+        //Alternatively, we could just force HD off here, if we want:
+        //wantHd = false
     }
     
     override fun ProcessCommand(commandStr: String, args: Array<out String>?) {
@@ -36,6 +52,7 @@ class plugin : Plugin() {
     }
     
     fun toggleResizableSd() {
+        //We only want to toggle resizable SD when we are logged in and the lobby/welcome interface is not open.
         if (InterfaceList.aClass13_26 == null || client.gameState != 30) {
             return
         }
@@ -59,7 +76,7 @@ class plugin : Plugin() {
     }
     
     override fun OnLogout() {
-        if (DisplayMode.resizableSD) {
+        if (DisplayMode.resizableSD && wantHd) {
             //Because resizable SD always uses the "HD" size canvas/window mode (check the in-game Graphics Options with resizeable SD enabled if you don't believe me!), useHD becomes true when logging out, so logging out with resizeSD enabled means "HD" will always be enabled on the login screen after logging out, so we might as well fix the HD flyover by setting resizableSD to false first, and then calling setWindowMode to replace the canvas and set newMode to 2.
             DisplayMode.resizableSD = false
             DisplayMode.setWindowMode(true, 2, GameShell.frameWidth, GameShell.frameHeight)
