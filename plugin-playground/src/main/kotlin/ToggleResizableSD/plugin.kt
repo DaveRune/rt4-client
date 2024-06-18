@@ -60,8 +60,8 @@ class plugin : Plugin() {
     
     override fun OnLogout() {
         if (DisplayMode.resizableSD) {
+            //Because resizable SD always uses the "HD" size canvas/window mode (check the in-game Graphics Options with resizeable SD enabled if you don't believe me!), useHD becomes true when logging out, so logging out with resizeSD enabled means "HD" will always be enabled on the login screen after logging out, so we might as well fix the HD flyover by setting resizableSD to false first, and calling setWindowMode to replace the canvas and set newMode to 2.
             DisplayMode.resizableSD = false
-            //Because resizable SD always uses the "HD" size canvas/window mode (check the in-game Graphics Options with resizeable SD enabled if you don't believe me!), useHD becomes true when logging out, so logging out with resizeSD enabled means "HD" will always be enabled on the login screen after logging out, so we might as well fix the HD flyover by replacing the canvas and setting newMode to 2.
             DisplayMode.setWindowMode(true, 2, GameShell.frameWidth, GameShell.frameHeight)
         }
     }
