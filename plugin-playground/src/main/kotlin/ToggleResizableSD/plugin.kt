@@ -5,6 +5,8 @@ import plugin.annotations.PluginMeta
 import plugin.api.API
 import rt4.DisplayMode
 import rt4.GameShell
+import rt4.InterfaceList
+import rt4.client
 import java.awt.event.KeyAdapter
 import java.awt.event.KeyEvent
 
@@ -23,6 +25,9 @@ class plugin : Plugin() {
                 }
             }
         })
+        if (!DisplayMode.resizableSD && API.GetData("use-resizable-sd") == true) {
+            toggleResize = true
+        }
     }
     
     override fun ProcessCommand(commandStr: String, args: Array<out String>?) {
@@ -34,12 +39,20 @@ class plugin : Plugin() {
     }
     
     fun toggleResizableSd() {
+        if (InterfaceList.aClass13_26 == null || client.gameState != 30) {
+            println("Cannot toggle resize, InterfaceList.aClass13_26 is null")
+            return
+        }
+        println("getWindowMode() is " + DisplayMode.getWindowMode());
+        toggleResize = false
         DisplayMode.resizableSD = !DisplayMode.resizableSD;
         if(!DisplayMode.resizableSD){
             //Revert to fixed
+            API.StoreData("use-resizable-sd", false) //Note: It is important to call StoreData before setWindowMode because setWindowMode causes all plugins to reload.
             DisplayMode.setWindowMode(true, 0, -1, -1)
         } else {
             //Use resizable
+            API.StoreData("use-resizable-sd", true) //Note: It is important to call StoreData before setWindowMode because setWindowMode causes all plugins to reload.
             DisplayMode.setWindowMode(true, 0, GameShell.frameWidth, GameShell.frameHeight)
         }
     }
@@ -47,7 +60,6 @@ class plugin : Plugin() {
     override fun Draw(timeDelta: Long) {
         if (toggleResize) {
             toggleResizableSd()
-            toggleResize = false
         }
     }
 }
