@@ -12,10 +12,7 @@ import java.awt.event.MouseWheelListener;
 import java.io.*;
 import java.net.URL;
 import java.net.URLClassLoader;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -133,7 +130,8 @@ public class PluginRepository {
     }
 
     public static void Draw() {
-        loadedPlugins.values().forEach(Plugin::_draw);
+         List<Plugin> pluginsSnapshot = new ArrayList<>(loadedPlugins.values());
+        pluginsSnapshot.forEach(Plugin::_draw);
     }
 
     public static void NPCOverheadDraw(Npc npc, int screenX, int screenY) {
@@ -147,7 +145,9 @@ public class PluginRepository {
     public static void ProcessCommand(JagString commandStr) {
         String[] tokens = commandStr.toString().split(" ");
         String[] args = Arrays.copyOfRange(tokens, 1, tokens.length);
-        loadedPlugins.values().forEach((plugin) -> plugin.ProcessCommand(tokens[0], args));
+        List<Plugin> pluginsSnapshot = new ArrayList<>(loadedPlugins.values());
+        
+        pluginsSnapshot.forEach((plugin) -> plugin.ProcessCommand(tokens[0], args));
     }
 
     public static void ComponentDraw(int componentIndex, Component component, int screenX, int screenY) {
