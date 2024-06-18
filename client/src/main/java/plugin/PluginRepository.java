@@ -130,7 +130,7 @@ public class PluginRepository {
     }
 
     public static void Draw() {
-         List<Plugin> pluginsSnapshot = new ArrayList<>(loadedPlugins.values());
+        List<Plugin> pluginsSnapshot = new ArrayList<>(loadedPlugins.values());
         pluginsSnapshot.forEach(Plugin::_draw);
     }
 
@@ -146,7 +146,6 @@ public class PluginRepository {
         String[] tokens = commandStr.toString().split(" ");
         String[] args = Arrays.copyOfRange(tokens, 1, tokens.length);
         List<Plugin> pluginsSnapshot = new ArrayList<>(loadedPlugins.values());
-        
         pluginsSnapshot.forEach((plugin) -> plugin.ProcessCommand(tokens[0], args));
     }
 
