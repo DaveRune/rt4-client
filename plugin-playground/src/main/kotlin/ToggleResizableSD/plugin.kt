@@ -40,10 +40,8 @@ class plugin : Plugin() {
     
     fun toggleResizableSd() {
         if (InterfaceList.aClass13_26 == null || client.gameState != 30) {
-            println("Cannot toggle resize, InterfaceList.aClass13_26 is null")
             return
         }
-        println("getWindowMode() is " + DisplayMode.getWindowMode());
         toggleResize = false
         DisplayMode.resizableSD = !DisplayMode.resizableSD;
         if(!DisplayMode.resizableSD){
