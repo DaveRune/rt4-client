@@ -92,10 +92,31 @@ public abstract class Plugin {
      */
     public void OnLogin() {}
 
+
+    /**
+     * Called when an NPC is killed.
+     *
+     * @param npcID the unique identifier of the NPC
+     * @param x the x-coordinate where the NPC died
+     * @param z the z-coordinate where the NPC died
+     */
+    public void OnKillingBlowNPC(int npcID, int x, int z) {}
+
     /**
      * OnLogout is called when the client logs out. This should be used to clear player-relevant plugin state.
      */
     public void OnLogout() {}
+
+    /**
+     * Called when the client attempts to reload plugins.
+     * Implement this method to control the behavior of the plugin during a reload.
+     *
+     * @return {@code false} to allow the plugin to be reloaded.
+     *         {@code true}  to prevent the plugin from being reloaded and stay loaded,
+     */
+    public boolean OnPluginsReloaded() {
+        return false;
+    }
 
     /**
      * DrawMiniMenu is called when a MiniMenu entry has been created.

@@ -43,7 +43,23 @@ public class PluginRepository {
         API.registeredWheelListeners.clear();
         API.registeredMouseListeners.clear();
         API.registeredKeyListeners.clear();
+
+        HashMap<PluginInfo, Plugin> pluginsToKeep = new HashMap<>();
+
+        // Check and store plugins with OnPluginsReloaded method
+        loadedPlugins.forEach((info, plugin) -> {
+            try {
+                boolean keep = plugin.OnPluginsReloaded();
+                if (keep) {
+                    pluginsToKeep.put(info, plugin);
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        });
+
         loadedPlugins.clear();
+        loadedPlugins.putAll(pluginsToKeep);
         SaveStorage();
         Init();
     }
@@ -95,6 +111,11 @@ public class PluginRepository {
 
                 if (info == null) {
                     System.err.println("Unable to load plugin " + file.getName() + " because it contains no information about author, version, etc!");
+                    continue;
+                }
+
+                if (loadedPlugins.containsKey(info)) {
+                    System.out.println("Skipping reloading of plugin " + file.getName() + " as it already exists and has OnPluginsReloaded.");
                     continue;
                 }
 
@@ -177,6 +198,10 @@ public class PluginRepository {
 
     public static void OnLogin() {
         loadedPlugins.values().forEach((plugin) -> plugin.OnLogin());
+    }
+
+    public static void OnKillingBlowNPC(int npcId, int x, int z) {
+        loadedPlugins.values().forEach((plugin) -> plugin.OnKillingBlowNPC(npcId, x, z));
     }
 
     public static void SaveStorage() {
