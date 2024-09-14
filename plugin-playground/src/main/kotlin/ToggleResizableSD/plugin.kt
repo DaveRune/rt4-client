@@ -7,11 +7,6 @@ import rt4.*
 import java.awt.event.KeyAdapter
 import java.awt.event.KeyEvent
 
-@PluginMeta (
-    author = "ipkpjersi",
-    description = "Allows you to use F12 to toggle resizable SD.",
-    version = 1.0
-)
 class plugin : Plugin() {
     var toggleResize = false
     var wantHd = false //Setting wantHd to true hides the black screen on logout (when resize SD is enabled), by enabling HD on logout 

@@ -7,11 +7,6 @@ import rt4.Inv
 import rt4.ObjTypeList
 import kotlin.math.round
 
-@PluginMeta (
-    author = "bushtail",
-    description = "Quickly tally the value of your inventory with a command.",
-    version = 1.0
-)
 class plugin : Plugin() {
     override fun ProcessCommand(commandStr: String, args: Array<out String>?) {
         when(commandStr.toLowerCase()) {

@@ -11,11 +11,6 @@ import java.time.LocalDate
 import java.time.Month
 
 
-@PluginMeta(
-    author = "Zerken",
-    description = "Plays specific music during holidays and skill release anniversaries at the login screen.",
-    version = 1.0
-)
 open class plugin : Plugin() {
     val halloweenStartDate = LocalDate.of(LocalDate.now().year, Month.OCTOBER, 17)
     val halloweenEndDate = LocalDate.of(LocalDate.now().year, Month.NOVEMBER, 7)

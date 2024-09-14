@@ -1,6 +1,5 @@
 package XPGlobesPlugin
 
-
 import rt4.Sprite
 import plugin.Plugin
 import plugin.annotations.PluginMeta
@@ -15,14 +14,6 @@ import java.awt.Graphics2D
 import java.awt.BasicStroke
 import kotlin.math.cos
 import kotlin.math.PI
-
-
-@PluginMeta(
-    author = "Pyrethus",
-    description = "Draws experience globes (level progress) on experience gains.",
-    version = 0.9
-)
-
 
 class plugin : Plugin() {
     private var xpGlobes = Array(Constants.SKILL_COUNT) { skillId -> XPGlobe(skillId, Constants.INVALID_XP, 0L, null, null ) }

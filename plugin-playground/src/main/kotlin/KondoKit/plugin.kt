@@ -39,12 +39,6 @@ import java.awt.event.MouseAdapter
 import java.awt.event.MouseEvent
 import javax.swing.*
 
-@PluginMeta(
-    author = "downthecrop",
-    description = "A plugin that adds a right-side panel with custom widgets and navigation.",
-    version = 1.0
-)
-
 class plugin : Plugin() {
     companion object {
         val WIDGET_SIZE = Dimension(270, 55)
