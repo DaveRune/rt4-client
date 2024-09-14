@@ -32,6 +32,10 @@ public final class GlIndexedSprite extends IndexedSprite {
 	@OriginalMember(owner = "client!oh", name = "q", descriptor = "I")
 	private int anInt4284 = 0;
 
+	public byte[] pixels;
+
+	public int[] pallet;
+
 	@OriginalMember(owner = "client!oh", name = "<init>", descriptor = "(IIIIII[B[I)V")
 	public GlIndexedSprite(@OriginalArg(0) int arg0, @OriginalArg(1) int arg1, @OriginalArg(2) int arg2, @OriginalArg(3) int arg3, @OriginalArg(4) int arg4, @OriginalArg(5) int arg5, @OriginalArg(6) byte[] arg6, @OriginalArg(7) int[] arg7) {
 		this.innerWidth = arg0;
@@ -40,6 +44,8 @@ public final class GlIndexedSprite extends IndexedSprite {
 		this.yOffset = arg3;
 		this.width = arg4;
 		this.height = arg5;
+		this.pixels = arg6;
+		this.pallet = arg7;
 		this.method3337(arg6, arg7);
 		this.method3339();
 	}

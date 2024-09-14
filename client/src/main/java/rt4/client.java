@@ -350,14 +350,14 @@ public final class client extends GameShell {
 
 	@OriginalMember(owner = "client!pl", name = "a", descriptor = "(II)V")
 	public static void setGameState(@OriginalArg(0) int arg0) {
+		if(arg0 == 30) {
+			PluginRepository.OnLogin();
+		}
 		if (gameState == arg0) {
 			return;
 		}
 		if (gameState == 0) {
 			LoadingBarAwt.clear();
-		}
-		if (gameState == 30) {
-			PluginRepository.OnLogin();
 		}
 		if (arg0 == 40) {
 			LoginManager.clear();

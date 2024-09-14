@@ -3034,6 +3034,7 @@ public class Protocol {
 
 			boolean isKillingBlow = (local18 & 0x80) != 0;
 			if (isKillingBlow) {
+				PluginRepository.OnKillingBlowNPC(npc.type.id,npc.movementQueueX[0],npc.movementQueueZ[0]);
 				local43 = inboundBuffer.g2add();
 				if (local43 == 65535) {
 					local43 = -1;
