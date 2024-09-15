@@ -67,6 +67,10 @@ public class API {
         return LoginManager.staffModLevel >= privilege.ordinal();
     }
 
+    public static EnumType GetDataMap(int id) {
+        return EnumTypeList.get(id);
+    }
+
     public static boolean IsHD() {
         return GlRenderer.enabled;
     }
