@@ -14,7 +14,6 @@ import KondoKit.plugin.Companion.kondoExposed_playerXPMultiplier
 import KondoKit.plugin.Companion.primaryColor
 import KondoKit.plugin.Companion.secondaryColor
 import KondoKit.plugin.StateManager.totalXPWidget
-import XPGlobesPlugin.XPTable
 import plugin.api.API
 import java.awt.*
 import java.io.BufferedReader

@@ -22,7 +22,6 @@ import KondoKit.plugin.StateManager.initialXP
 import KondoKit.plugin.StateManager.totalXPWidget
 import KondoKit.plugin.StateManager.xpWidgets
 import plugin.Plugin
-import plugin.annotations.PluginMeta
 import plugin.api.*
 import plugin.api.API.*
 import plugin.api.FontColor.fromColor
@@ -38,6 +37,7 @@ import java.awt.event.ActionListener
 import java.awt.event.MouseAdapter
 import java.awt.event.MouseEvent
 import javax.swing.*
+
 
 class plugin : Plugin() {
     companion object {

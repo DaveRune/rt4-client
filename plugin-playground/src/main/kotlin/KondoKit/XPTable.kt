@@ -1,4 +1,4 @@
-package XPGlobesPlugin
+package KondoKit
 
 import plugin.api.API
 import rt4.IntNode
@@ -6,11 +6,13 @@ import rt4.Node
 
 object XPTable {
 
+    const val MAX_LEVEL = 99
+    const val INVALID_LEVEL = -1
     const val SKILLS_XP_TABLE = 716
 
     private var xpTable: MutableList<Int> = mutableListOf()
 
-    // Function to lazily load the XP table from the API if it's not already populated
+    // Lazily load the XP table from the API if it's empty
     private fun loadXpTable() {
         if (xpTable.isEmpty()) {
             // Add the initial entry for key 1 = 0
@@ -43,7 +45,7 @@ object XPTable {
         var highIndex = xpTable.size - 1
 
         if (xp >= xpTable[highIndex]) {
-            return Pair(Constants.MAX_LEVEL, xp - xpTable[highIndex]) // Level is max or above, return the highest level
+            return Pair(MAX_LEVEL, xp - xpTable[highIndex]) // Level is max or above, return the highest level
         }
 
         while (lowIndex <= highIndex) {
@@ -59,6 +61,6 @@ object XPTable {
             }
         }
 
-        return Pair(Constants.INVALID_LEVEL, 0) // If xp is below all defined levels
+        return Pair(INVALID_LEVEL, 0) // If xp is below all defined levels
     }
 }
