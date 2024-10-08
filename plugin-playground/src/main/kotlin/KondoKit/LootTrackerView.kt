@@ -1,5 +1,6 @@
 package KondoKit
 
+import KondoKit.Helpers.addMouseListenerToAll
 import KondoKit.Helpers.formatHtmlLabelText
 import KondoKit.SpriteToBufferedImage.getBufferedImageFromSprite
 import KondoKit.XPTrackerView.wrappedWidget
@@ -9,11 +10,11 @@ import KondoKit.plugin.Companion.WIDGET_COLOR
 import KondoKit.plugin.Companion.primaryColor
 import KondoKit.plugin.Companion.secondaryColor
 import plugin.api.API
-import rt4.NpcTypeList
-import rt4.ObjStackNode
-import rt4.Player
-import rt4.SceneGraph
+import rt4.*
 import java.awt.*
+import java.awt.Font
+import java.awt.event.MouseAdapter
+import java.awt.event.MouseEvent
 import java.awt.image.BufferedImage
 import java.io.BufferedReader
 import java.io.InputStreamReader
@@ -22,6 +23,7 @@ import java.net.URL
 import java.nio.charset.StandardCharsets
 import java.text.DecimalFormat
 import javax.swing.*
+import kotlin.math.ceil
 
 object LootTrackerView {
     private const val SNAPSHOT_LIFESPAN = 10
@@ -31,10 +33,12 @@ object LootTrackerView {
     private val lootItemPanels = mutableMapOf<String, MutableMap<Int, Int>>()
     private val npcKillCounts = mutableMapOf<String, Int>()
     private var totalTrackerWidget: XPWidget? = null
-    var lastConfirmedKillNpcId = -1;
+    var lastConfirmedKillNpcId = -1
+    var customToolTipWindow: JWindow? = null
+    var lootTrackerView: JPanel? = null
 
      fun loadGEPrices(): Map<String, String> {
-        return if (plugin.kondoExposed_useLiveGEPrices) {
+        return if (plugin.useLiveGEPrices) {
             try {
                 println("LootTracker: Loading Remote GE Prices")
                 val url = URL("https://cdn.2009scape.org/gedata/latest.json")
@@ -69,7 +73,7 @@ object LootTrackerView {
         } else {
             try {
                 println("LootTracker: Loading Local GE Prices")
-                BufferedReader(InputStreamReader(plugin::class.java.getResourceAsStream("item_configs.json"), StandardCharsets.UTF_8))
+                BufferedReader(InputStreamReader(plugin::class.java.getResourceAsStream("res/item_configs.json"), StandardCharsets.UTF_8))
                     .useLines { lines ->
                         val json = lines.joinToString("\n")
                         val items = json.trim().removeSurrounding("[", "]").split("},").map { it.trim() + "}" }
@@ -94,17 +98,34 @@ object LootTrackerView {
 
 
 
-    fun createLootTrackerView(): JPanel {
-        return JPanel().apply {
-            layout = FlowLayout(FlowLayout.CENTER, 0, 5)
+    fun createLootTrackerView() {
+        lootTrackerView = JPanel().apply {
+            layout = BoxLayout(this, BoxLayout.Y_AXIS) // Use BoxLayout on Y axis to stack widgets vertically
             background = VIEW_BACKGROUND_COLOR
-            preferredSize = Dimension(270, 700)
-            maximumSize = Dimension(270, 700)
-            minimumSize = Dimension(270, 700)
             add(Box.createVerticalStrut(5))
             totalTrackerWidget = createTotalLootWidget()
-            add(wrappedWidget(totalTrackerWidget!!.panel))
-            add(Helpers.Spacer(height = 15))
+
+            val wrapped = wrappedWidget(totalTrackerWidget!!.container)
+            val popupMenu = resetLootTrackerMenu()
+
+            // Create a custom MouseListener
+            val rightClickListener = object : MouseAdapter() {
+                override fun mousePressed(e: MouseEvent) {
+                    if (e.isPopupTrigger) {
+                        popupMenu.show(e.component, e.x, e.y)
+                    }
+                }
+
+                override fun mouseReleased(e: MouseEvent) {
+                    if (e.isPopupTrigger) {
+                        popupMenu.show(e.component, e.x, e.y)
+                    }
+                }
+            }
+            addMouseListenerToAll(wrapped,rightClickListener)
+            wrapped.addMouseListener(rightClickListener)
+            add(wrapped)
+            add(Box.createVerticalStrut(10))
             revalidate()
             repaint()
         }
@@ -122,7 +143,7 @@ object LootTrackerView {
         totalTrackerWidget?.let {
             it.previousXp += newVal
             it.xpPerHourLabel.text = formatHtmlLabelText("Total Value: ", primaryColor, formatValue(it.previousXp) + " gp", secondaryColor)
-            it.panel.repaint()
+            it.container.repaint()
         }
     }
 
@@ -132,7 +153,7 @@ object LootTrackerView {
         val l2 = createLabel(formatHtmlLabelText("Total Count: ", primaryColor, "0", secondaryColor))
         return XPWidget(
             skillId = -1,
-            panel = createWidgetPanel(bufferedImageSprite,l2,l1),
+            container = createWidgetPanel(bufferedImageSprite,l2,l1),
             xpGainedLabel = l2,
             xpLeftLabel = JLabel(),
             actionsRemainingLabel = JLabel(),
@@ -173,7 +194,7 @@ object LootTrackerView {
 
     private fun createLabel(text: String): JLabel {
         return JLabel(text).apply {
-            font = Font("Arial", Font.PLAIN, 11)
+            font = Font("RuneScape Small", Font.TRUETYPE_FONT, 16)
             horizontalAlignment = JLabel.LEFT
         }
     }
@@ -189,9 +210,15 @@ object LootTrackerView {
 
             // Recalculate lootPanel size based on the number of unique items.
             val totalItems = lootItemPanels[npcName]?.size ?: 0
-            val rowsNeeded = Math.ceil(totalItems / 6.0).toInt()
-            val lootPanelHeight = rowsNeeded * 36 + (rowsNeeded - 1)
-            lootPanel.preferredSize = Dimension(270, lootPanelHeight+10)
+            val rowsNeeded = ceil(totalItems / 6.0).toInt()
+            val lootPanelHeight = rowsNeeded * (40)
+
+            val size = Dimension(lootPanel.width,lootPanelHeight+32)
+            lootPanel.parent.preferredSize = size
+            lootPanel.parent.minimumSize = size
+            lootPanel.parent.maximumSize = size
+            lootPanel.parent.revalidate()
+            lootPanel.parent.repaint()
 
             lootPanel.revalidate()
             lootPanel.repaint()
@@ -205,20 +232,85 @@ object LootTrackerView {
 
     private fun createItemPanel(itemId: Int, quantity: Int): JPanel {
         val bufferedImageSprite = getBufferedImageFromSprite(API.GetObjSprite(itemId, quantity, true, 0, 0))
-        return FixedSizePanel(Dimension(36, 32)).apply {
+
+        // Create the panel for the item
+        val itemPanel = FixedSizePanel(Dimension(36, 32)).apply {
             preferredSize = Dimension(36, 32)
             background = WIDGET_COLOR
             minimumSize = preferredSize
             maximumSize = preferredSize
-            add(ImageCanvas(bufferedImageSprite).apply {
+
+            val imageCanvas = ImageCanvas(bufferedImageSprite).apply {
                 preferredSize = Dimension(36, 32)
                 background = WIDGET_COLOR
                 minimumSize = preferredSize
                 maximumSize = preferredSize
-           }, BorderLayout.CENTER)
+            }
+
+            // Add the imageCanvas to the panel
+            add(imageCanvas, BorderLayout.CENTER)
+
+            // Put the itemId as a property for reference
             putClientProperty("itemId", itemId)
+
+            // Add mouse listener for custom hover text
+            imageCanvas.addMouseListener(object : MouseAdapter() {
+                override fun mouseEntered(e: MouseEvent) {
+                    // Show custom tooltip when the mouse enters the component
+                    showCustomToolTip(e.point, itemId,quantity,imageCanvas)
+                }
+
+                override fun mouseExited(e: MouseEvent) {
+                    // Hide tooltip when mouse exits
+                    hideCustomToolTip()
+                }
+            })
         }
+
+        return itemPanel
     }
+
+    // Function to show the custom tooltip
+    fun showCustomToolTip(location: Point, itemId: Int, quantity: Int, parentComponent: ImageCanvas) {
+        var itemDef = ObjTypeList.get(itemId)
+        val gePricePerItem = gePriceMap[itemDef.id.toString()]?.toInt() ?: 0
+        val totalGePrice = gePricePerItem * quantity
+        val totalHaPrice = itemDef.cost * quantity
+        val geText = if (quantity > 1) " (${gePricePerItem} ea)" else ""
+        val haText = if (quantity > 1) " (${itemDef.cost} ea)" else ""
+
+        val text = "<html><div style='color: white; background-color: #323232; padding: 3px;'>" +
+                "${itemDef.name} x $quantity<br>" +
+                "GE: $totalGePrice ${geText}<br>" +
+                "HA: $totalHaPrice ${haText}</div></html>"
+
+        val _font = Font("RuneScape Small", Font.TRUETYPE_FONT, 16)
+        val c = Color(50,50,50)
+        if (customToolTipWindow == null) {
+            customToolTipWindow = JWindow().apply {
+                contentPane = JLabel(text).apply {
+                    border = BorderFactory.createLineBorder(Color.BLACK)
+                    isOpaque = true
+                    background = c
+                    foreground = Color.WHITE
+                    font = _font
+                }
+                pack()
+            }
+        }
+
+        // Calculate the tooltip location relative to the parent component
+        val screenLocation = parentComponent.locationOnScreen
+        customToolTipWindow!!.setLocation(screenLocation.x + location.x, screenLocation.y + location.y + 20)
+        customToolTipWindow!!.isVisible = true
+    }
+
+    // Function to hide the custom tooltip
+    fun hideCustomToolTip() {
+        customToolTipWindow?.isVisible = false
+        customToolTipWindow = null  // Nullify the global instance
+    }
+
 
     private fun updateItemPanelIcon(panel: JPanel, itemId: Int, quantity: Int) {
         panel.removeAll()
@@ -308,9 +400,8 @@ object LootTrackerView {
     private fun handleNewDrops(npcName: String, newDrops: Set<Item>, lootTrackerView: JPanel) {
         findLootItemsPanel(lootTrackerView, npcName)?.let {
         } ?: run {
-            // Panel doesn't exist, so create and add it
             lootTrackerView.add(createLootFrame(npcName))
-            lootTrackerView.add(Helpers.Spacer(height = 15))
+            lootTrackerView.add(Box.createVerticalStrut(10))
             lootTrackerView.revalidate()
             lootTrackerView.repaint()
         }
@@ -330,14 +421,15 @@ object LootTrackerView {
         val childFramePanel = JPanel().apply {
             layout = BoxLayout(this, BoxLayout.Y_AXIS)
             background = WIDGET_COLOR
-            minimumSize = Dimension(270, 0)
-            maximumSize = Dimension(270, 700)
+            minimumSize = Dimension(230, 0)
+            maximumSize = Dimension(230, 700)
+            name = "HELLO_WORLD"
         }
 
         val labelPanel = JPanel(BorderLayout()).apply {
             background = Color(21, 21, 21)
             border = BorderFactory.createEmptyBorder(5, 5, 5, 5)
-            maximumSize = Dimension(270, 24)
+            maximumSize = Dimension(230, 24)
             minimumSize = maximumSize
             preferredSize = maximumSize
         }
@@ -345,14 +437,14 @@ object LootTrackerView {
         val killCount = npcKillCounts.getOrPut(npcName) { 0 }
         val countLabel = JLabel(formatHtmlLabelText(npcName, secondaryColor, " x $killCount", primaryColor)).apply {
             foreground = Color(200, 200, 200)
-            font = Font("Arial", Font.PLAIN, 12)
+            font = Font("RuneScape Small", Font.TRUETYPE_FONT, 16)
             horizontalAlignment = JLabel.LEFT
             name = "killCountLabel_$npcName"
         }
 
         val valueLabel = JLabel("0 gp").apply {
             foreground = Color(200, 200, 200)
-            font = Font("Arial", Font.PLAIN, 12)
+            font = Font("RuneScape Small", Font.TRUETYPE_FONT, 16)
             horizontalAlignment = JLabel.RIGHT
             name = "valueLabel_$npcName"
         }
@@ -370,17 +462,113 @@ object LootTrackerView {
 
         lootItemPanels[npcName] = mutableMapOf()
 
-        // Determine number of items and adjust size of lootPanel
-        val totalItems = lootItemPanels[npcName]?.size ?: 0
-        val rowsNeeded = Math.ceil(totalItems / 6.0).toInt()
-        val lootPanelHeight = rowsNeeded * 36 + (rowsNeeded - 1) // Height per row = 36 + spacing
-        lootPanel.preferredSize = Dimension(270, lootPanelHeight+10)
-
         childFramePanel.add(labelPanel)
         childFramePanel.add(lootPanel)
-        childFramePanel.add(lootPanel)
 
+        val popupMenu = removeLootFrameMenu(childFramePanel, npcName)
+
+        // Create a custom MouseListener
+        val rightClickListener = object : MouseAdapter() {
+            override fun mousePressed(e: MouseEvent) {
+                if (e.isPopupTrigger) {
+                    popupMenu.show(e.component, e.x, e.y)
+                }
+            }
+
+            override fun mouseReleased(e: MouseEvent) {
+                if (e.isPopupTrigger) {
+                    popupMenu.show(e.component, e.x, e.y)
+                }
+            }
+        }
+
+        labelPanel.addMouseListener(rightClickListener)
         return childFramePanel
+    }
+
+    fun removeLootFrameMenu(toRemove: JPanel, npcName: String): JPopupMenu {
+        // Create a popup menu
+        val popupMenu = JPopupMenu()
+        val rFont = Font("RuneScape Small", Font.TRUETYPE_FONT, 16)
+
+        popupMenu.background = Color(45, 45, 45)
+
+        // Create menu items with custom font and colors
+        val menuItem1 = JMenuItem("Remove").apply {
+            font = rFont  // Set custom font
+            background = Color(45, 45, 45)  // Dark background for item
+            foreground = Color(220, 220, 220) // Light text color for item
+        }
+        popupMenu.add(menuItem1)
+        menuItem1.addActionListener {
+            lootItemPanels[npcName]?.clear()
+            npcKillCounts[npcName] = 0
+            lootTrackerView?.let { parent ->
+                val components = parent.components
+                val toRemoveIndex = components.indexOf(toRemove)
+                if (toRemoveIndex >= 0 && toRemoveIndex < components.size - 1) {
+                    val nextComponent = components[toRemoveIndex + 1]
+                    if (nextComponent is Box.Filler) {
+                        // Nasty way to remove the Box.createVerticalStrut(10) after
+                        // the lootpanel.
+                        parent.remove(nextComponent)
+                    }
+                }
+                parent.remove(toRemove)
+                parent.revalidate()
+                parent.repaint()
+            }
+        }
+        return popupMenu
+    }
+
+
+    fun resetLootTrackerMenu(): JPopupMenu {
+        // Create a popup menu
+        val popupMenu = JPopupMenu()
+        val rFont = Font("RuneScape Small", Font.TRUETYPE_FONT, 16)
+
+        popupMenu.background = Color(45, 45, 45)
+
+        // Create menu items with custom font and colors
+        val menuItem1 = JMenuItem("Reset Loot Tracker").apply {
+            font = rFont  // Set custom font
+            background = Color(45, 45, 45)  // Dark background for item
+            foreground = Color(220, 220, 220) // Light text color for item
+        }
+        popupMenu.add(menuItem1)
+        menuItem1.addActionListener {
+            lootTrackerView?.removeAll()
+            npcKillCounts.clear()
+            lootItemPanels.clear()
+            totalTrackerWidget = createTotalLootWidget()
+
+            val wrapped = wrappedWidget(totalTrackerWidget!!.container)
+            val _popupMenu = resetLootTrackerMenu()
+
+            // Create a custom MouseListener
+            val rightClickListener = object : MouseAdapter() {
+                override fun mousePressed(e: MouseEvent) {
+                    if (e.isPopupTrigger) {
+                        _popupMenu.show(e.component, e.x, e.y)
+                    }
+                }
+
+                override fun mouseReleased(e: MouseEvent) {
+                    if (e.isPopupTrigger) {
+                        _popupMenu.show(e.component, e.x, e.y)
+                    }
+                }
+            }
+            addMouseListenerToAll(wrapped,rightClickListener)
+            wrapped.addMouseListener(rightClickListener)
+            lootTrackerView?.add(Box.createVerticalStrut(5))
+            lootTrackerView?.add(wrapped)
+            lootTrackerView?.add(Box.createVerticalStrut(10))
+            lootTrackerView?.revalidate()
+            lootTrackerView?.repaint()
+        }
+        return popupMenu
     }
 
 

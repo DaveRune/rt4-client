@@ -4,32 +4,36 @@ import KondoKit.Helpers.formatHtmlLabelText
 import KondoKit.Helpers.formatNumber
 import KondoKit.Helpers.getProgressBarColor
 import KondoKit.Helpers.getSpriteId
+import KondoKit.Helpers.addMouseListenerToAll
 import KondoKit.SpriteToBufferedImage.getBufferedImageFromSprite
 import KondoKit.plugin.Companion.IMAGE_SIZE
+import KondoKit.plugin.Companion.LVL_ICON
 import KondoKit.plugin.Companion.TOTAL_XP_WIDGET_SIZE
 import KondoKit.plugin.Companion.VIEW_BACKGROUND_COLOR
 import KondoKit.plugin.Companion.WIDGET_COLOR
 import KondoKit.plugin.Companion.WIDGET_SIZE
-import KondoKit.plugin.Companion.kondoExposed_playerXPMultiplier
+import KondoKit.plugin.Companion.playerXPMultiplier
 import KondoKit.plugin.Companion.primaryColor
 import KondoKit.plugin.Companion.secondaryColor
-import KondoKit.plugin.StateManager.totalXPWidget
 import plugin.api.API
 import java.awt.*
+import java.awt.event.MouseAdapter
+import java.awt.event.MouseEvent
 import java.io.BufferedReader
 import java.io.InputStreamReader
 import java.nio.charset.StandardCharsets
-import javax.swing.Box
-import javax.swing.BoxLayout
-import javax.swing.JLabel
-import javax.swing.JPanel
+import javax.swing.*
 
 object XPTrackerView {
-
     private val COMBAT_SKILLS = intArrayOf(0,1,2,3,4)
+    val xpWidgets: MutableMap<Int, XPWidget> = HashMap()
+    var totalXPWidget: XPWidget? = null
+    val initialXP: MutableMap<Int, Int> = HashMap()
+    var xpTrackerView: JPanel? = null
+
 
     val npcHitpointsMap: Map<Int, Int> = try {
-        BufferedReader(InputStreamReader(plugin::class.java.getResourceAsStream("npc_hitpoints_map.json"), StandardCharsets.UTF_8))
+        BufferedReader(InputStreamReader(plugin::class.java.getResourceAsStream("res/npc_hitpoints_map.json"), StandardCharsets.UTF_8))
             .useLines { lines ->
                 val json = lines.joinToString("\n")
                 val pairs = json.trim().removeSurrounding("{", "}").split(",")
@@ -74,8 +78,8 @@ object XPTrackerView {
                 if(LootTrackerView.lastConfirmedKillNpcId != -1 && npcHitpointsMap.isNotEmpty()) {
                     val npcHP = npcHitpointsMap[LootTrackerView.lastConfirmedKillNpcId]
                     val xpPerKill = when (xpWidget.skillId) {
-                        3 -> kondoExposed_playerXPMultiplier * (npcHP ?: 1) // Hitpoints
-                        else -> kondoExposed_playerXPMultiplier * (npcHP ?: 1) * 4 // Combat XP for other skills
+                        3 -> playerXPMultiplier * (npcHP ?: 1) // Hitpoints
+                        else -> playerXPMultiplier * (npcHP ?: 1) * 4 // Combat XP for other skills
                     }
                     val remainingKills = xpLeft / xpPerKill
                     xpWidget.actionsRemainingLabel.text = formatHtmlLabelText("Kills: ", primaryColor, remainingKills.toString(), secondaryColor)
@@ -96,20 +100,57 @@ object XPTrackerView {
 
         xpWidget.previousXp = xp
         if (plugin.StateManager.focusedView == "XP_TRACKER_VIEW")
-            xpWidget.panel.repaint()
+            xpWidget.container.repaint()
     }
 
 
     private fun updateTotalXPWidget(xpGainedSinceLastUpdate: Int) {
-        val totalXPWidget = plugin.StateManager.totalXPWidget ?: return
+        val totalXPWidget = totalXPWidget ?: return
         totalXPWidget.totalXpGained += xpGainedSinceLastUpdate
         val formattedXp = formatNumber(totalXPWidget.totalXpGained)
         totalXPWidget.xpGainedLabel.text = formatHtmlLabelText("Gained: ", primaryColor, formattedXp, secondaryColor)
         if (plugin.StateManager.focusedView == "XP_TRACKER_VIEW")
-            totalXPWidget.panel.repaint()
+            totalXPWidget.container.repaint()
     }
 
 
+    fun resetXPTracker(xpTrackerView : JPanel){
+
+        // Redo logic here
+        xpTrackerView.removeAll()
+        val popupMenu = createResetMenu()
+
+        // Create a custom MouseListener
+        val rightClickListener = object : MouseAdapter() {
+            override fun mousePressed(e: MouseEvent) {
+                if (e.isPopupTrigger) {
+                    popupMenu.show(e.component, e.x, e.y)
+                }
+            }
+
+            override fun mouseReleased(e: MouseEvent) {
+                if (e.isPopupTrigger) {
+                    popupMenu.show(e.component, e.x, e.y)
+                }
+            }
+        }
+
+        // Create the XP widget
+        totalXPWidget = createTotalXPWidget()
+        val wrapped = wrappedWidget(totalXPWidget!!.container)
+        addMouseListenerToAll(wrapped,rightClickListener)
+        wrapped.addMouseListener(rightClickListener)
+        xpTrackerView.add(Box.createVerticalStrut(5))
+        xpTrackerView.add(wrapped)
+        xpTrackerView.add(Box.createVerticalStrut(5))
+
+        initialXP.clear()
+        xpWidgets.clear()
+
+        xpTrackerView.revalidate()
+        if (plugin.StateManager.focusedView == "XP_TRACKER_VIEW")
+            xpTrackerView.repaint()
+    }
 
      fun createTotalXPWidget(): XPWidget {
         val widgetPanel = Panel().apply {
@@ -120,11 +161,9 @@ object XPTrackerView {
             minimumSize = TOTAL_XP_WIDGET_SIZE
         }
 
-        val bufferedImageSprite = getBufferedImageFromSprite(API.GetSprite(898))
-
+        val bufferedImageSprite = getBufferedImageFromSprite(API.GetSprite(LVL_ICON))
 
         val imageContainer = Panel(FlowLayout()).apply {
-            background = WIDGET_COLOR
             preferredSize = IMAGE_SIZE
             maximumSize = IMAGE_SIZE
             minimumSize = IMAGE_SIZE
@@ -133,15 +172,14 @@ object XPTrackerView {
 
         bufferedImageSprite.let { image ->
             val imageCanvas = ImageCanvas(image).apply {
-                background = WIDGET_COLOR
-                preferredSize = Dimension(image.width, image.height)
-                maximumSize = Dimension(image.width, image.height)
-                minimumSize = Dimension(image.width, image.height)
-                size = Dimension(image.width, image.height)
+                preferredSize = Dimension(bufferedImageSprite.width, bufferedImageSprite.height)
+                maximumSize = preferredSize
+                minimumSize = preferredSize
+                size = preferredSize
             }
 
             imageContainer.add(imageCanvas)
-            imageContainer.size = Dimension(image.width, image.height)
+            imageContainer.size = Dimension(bufferedImageSprite.width, bufferedImageSprite.height)
 
             imageContainer.revalidate()
             if(plugin.StateManager.focusedView == "XP_TRACKER_VIEW")
@@ -149,14 +187,13 @@ object XPTrackerView {
         }
 
         val textPanel = Panel().apply {
-            layout = GridLayout(2, 1, 5, 5)
-            background = WIDGET_COLOR
+            layout = GridLayout(2, 1, 5, 0)
         }
 
-        val font = Font("Arial", Font.PLAIN, 11)
+        val font = Font("RuneScape Small", Font.TRUETYPE_FONT, 16)
 
         val xpGainedLabel = JLabel(
-            formatHtmlLabelText("XP Gained: ", primaryColor, "0", secondaryColor)
+            formatHtmlLabelText("Gained: ", primaryColor, "0", secondaryColor)
         ).apply {
             this.horizontalAlignment = JLabel.LEFT
             this.font = font
@@ -177,7 +214,7 @@ object XPTrackerView {
 
         return XPWidget(
             skillId = -1,
-            panel = widgetPanel,
+            container = widgetPanel,
             xpGainedLabel = xpGainedLabel,
             xpLeftLabel = JLabel(formatHtmlLabelText("XP Left: ", primaryColor, "0", secondaryColor)).apply {
                 this.horizontalAlignment = JLabel.LEFT
@@ -193,18 +230,82 @@ object XPTrackerView {
     }
 
 
-    fun createXPTrackerView(): JPanel? {
-        val widgetViewPanel = JPanel()
-        widgetViewPanel.layout = BoxLayout(widgetViewPanel, BoxLayout.Y_AXIS)
-        widgetViewPanel.background = VIEW_BACKGROUND_COLOR
-        widgetViewPanel.add(Box.createVerticalStrut(5))
+    fun createXPTrackerView(){
+        val widgetViewPanel = JPanel().apply {
+            layout = BoxLayout(this, BoxLayout.Y_AXIS)
+            background = VIEW_BACKGROUND_COLOR
+        }
 
+        val popupMenu = createResetMenu()
+
+        // Create a custom MouseListener
+        val rightClickListener = object : MouseAdapter() {
+            override fun mousePressed(e: MouseEvent) {
+                if (e.isPopupTrigger) {
+                    popupMenu.show(e.component, e.x, e.y)
+                }
+            }
+
+            override fun mouseReleased(e: MouseEvent) {
+                if (e.isPopupTrigger) {
+                    popupMenu.show(e.component, e.x, e.y)
+                }
+            }
+        }
+
+        // Create the XP widget
         totalXPWidget = createTotalXPWidget()
-        widgetViewPanel.add(wrappedWidget(totalXPWidget!!.panel))
+        val wrapped = wrappedWidget(totalXPWidget!!.container)
+        addMouseListenerToAll(wrapped,rightClickListener)
+        wrapped.addMouseListener(rightClickListener)
+        widgetViewPanel.add(Box.createVerticalStrut(5))
+        widgetViewPanel.add(wrapped)
         widgetViewPanel.add(Box.createVerticalStrut(5))
 
-        return widgetViewPanel
+        xpTrackerView = widgetViewPanel
     }
+
+
+    fun createResetMenu(): JPopupMenu {
+        // Create a popup menu
+        val popupMenu = JPopupMenu()
+
+        val rFont = Font("RuneScape Small", Font.TRUETYPE_FONT, 16)
+
+        popupMenu.background = Color(45, 45, 45)
+
+        // Create menu items with custom font and colors
+        val menuItem1 = JMenuItem("Reset Tracker").apply {
+            font = rFont  // Set custom font
+            background = Color(45, 45, 45)  // Dark background for item
+            foreground = Color(220, 220, 220) // Light text color for item
+        }
+
+        val menuItem2 = JMenuItem("Option 2").apply {
+            font = rFont
+            background = Color(45, 45, 45)
+            foreground = Color(220, 220, 220)
+        }
+
+        val menuItem3 = JMenuItem("Option 3").apply {
+            font = rFont
+            background = Color(45, 45, 45)
+            foreground = Color(220, 220, 220)
+        }
+
+        // Add menu items to the popup menu
+        popupMenu.add(menuItem1)
+        //popupMenu.add(menuItem2)
+        //popupMenu.add(menuItem3)
+
+        // Add action listeners to each menu item (optional)
+        menuItem1.addActionListener { resetXPTracker(xpTrackerView!!) }
+        //menuItem2.addActionListener { println("Option 2 selected") }
+        //menuItem3.addActionListener { println("Option 3 selected") }
+
+        return popupMenu
+    }
+
 
     fun createXPWidget(skillId: Int, previousXp: Int): XPWidget {
         val widgetPanel = Panel().apply {
@@ -242,14 +343,14 @@ object XPTrackerView {
         }
 
         val textPanel = Panel().apply {
-            layout = GridLayout(2, 2, 5, 5)
+            layout = GridLayout(2, 2, 5, 0)
             background = WIDGET_COLOR
         }
 
-        val font = Font("Arial", Font.PLAIN, 11)
+        val font = Font("RuneScape Small", Font.TRUETYPE_FONT, 16)
 
         val xpGainedLabel = JLabel(
-            formatHtmlLabelText("XP Gained: ", primaryColor, "0", secondaryColor)
+                formatHtmlLabelText("XP Gained: ", primaryColor, "0", secondaryColor)
         ).apply {
             this.horizontalAlignment = JLabel.LEFT
             this.font = font
@@ -302,7 +403,7 @@ object XPTrackerView {
 
         return XPWidget(
             skillId = skillId,
-            panel = widgetPanel,
+            container = widgetPanel,
             xpGainedLabel = xpGainedLabel,
             xpLeftLabel = xpLeftLabel,
             xpPerHourLabel = xpPerHourLabel,
@@ -314,18 +415,18 @@ object XPTrackerView {
         )
     }
 
-    fun wrappedWidget(component: Component, padding: Int = 7): Panel {
+    fun wrappedWidget(component: Component, padding: Int = 7): Container {
         val outerPanelSize = Dimension(
-            component.preferredSize.width + 2 * padding,
-            component.preferredSize.height + 2 * padding
+                component.preferredSize.width + 2 * padding,
+                component.preferredSize.height + 2 * padding
         )
-        val outerPanel = Panel(GridBagLayout()).apply {
+        val outerPanel = JPanel(GridBagLayout()).apply {
             background = WIDGET_COLOR
             preferredSize = outerPanelSize
             maximumSize = outerPanelSize
             minimumSize = outerPanelSize
         }
-        val innerPanel = Panel(BorderLayout()).apply {
+        val innerPanel = JPanel(BorderLayout()).apply {
             background = WIDGET_COLOR
             preferredSize = component.preferredSize
             maximumSize = component.preferredSize
@@ -343,14 +444,14 @@ object XPTrackerView {
 
 
 data class XPWidget(
-    val panel: Panel,
-    val skillId: Int,
-    val xpGainedLabel: JLabel,
-    val xpLeftLabel: JLabel,
-    val xpPerHourLabel: JLabel,
-    val actionsRemainingLabel: JLabel,
-    val progressBar: ProgressBar,
-    var totalXpGained: Int = 0,
-    var startTime: Long = System.currentTimeMillis(),
-    var previousXp: Int = 0
+        val container: Container,
+        val skillId: Int,
+        val xpGainedLabel: JLabel,
+        val xpLeftLabel: JLabel,
+        val xpPerHourLabel: JLabel,
+        val actionsRemainingLabel: JLabel,
+        val progressBar: ProgressBar,
+        var totalXpGained: Int = 0,
+        var startTime: Long = System.currentTimeMillis(),
+        var previousXp: Int = 0
 )

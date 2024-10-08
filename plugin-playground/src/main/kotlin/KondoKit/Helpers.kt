@@ -1,10 +1,165 @@
 package KondoKit
 
-import java.awt.Color
-import java.awt.Dimension
-import javax.swing.JPanel
+import rt4.GameShell
+import java.awt.*
+import java.awt.event.MouseListener
+import java.lang.reflect.Field
+import java.lang.reflect.ParameterizedType
+import java.lang.reflect.Type
+import java.util.*
+import java.util.Timer
+import javax.swing.*
 
 object Helpers {
+
+    fun convertValue(type: Class<*>, genericType: Type?, value: String): Any {
+        return when {
+            type == Int::class.java -> value.toInt()
+            type == Double::class.java -> value.toDouble()
+            type == Boolean::class.java -> value.toBoolean()
+            type == Color::class.java -> convertToColor(value)
+            type == List::class.java && genericType is ParameterizedType -> {
+                val actualTypeArgument = genericType.actualTypeArguments.firstOrNull()
+                when {
+                    value.isBlank() -> emptyList<Any>() // Handle empty string by returning an empty list
+                    actualTypeArgument == Int::class.javaObjectType -> value.trim('[', ']').split(",").filter { it.isNotBlank() }.map { it.trim().toInt() }
+                    actualTypeArgument == String::class.java -> value.trim('[', ']').split(",").filter { it.isNotBlank() }.map { it.trim() }
+                    else -> throw IllegalArgumentException("Unsupported List type: $actualTypeArgument")
+                }
+            }
+            else -> value // Default to String
+        }
+    }
+
+    fun showToast(
+        parentComponent: Component?,
+        message: String,
+        messageType: Int = JOptionPane.INFORMATION_MESSAGE
+    ) {
+        SwingUtilities.invokeLater {
+            val toast = JWindow()
+            toast.type = Window.Type.POPUP
+            toast.background = Color(0, 0, 0, 0)
+
+            val panel = JPanel()
+            panel.isOpaque = false
+            panel.layout = BoxLayout(panel, BoxLayout.Y_AXIS)
+
+            val label = JLabel(message)
+            label.foreground = Color.WHITE
+
+            label.background = when (messageType) {
+                JOptionPane.ERROR_MESSAGE -> Color(220, 20, 60, 230) // Crimson for errors
+                JOptionPane.INFORMATION_MESSAGE -> Color(0, 128, 0, 230) // Green for success
+                JOptionPane.WARNING_MESSAGE -> Color(255, 165, 0, 230) // Orange for warnings
+                else -> Color(0, 0, 0, 170) // Default semi-transparent black
+            }
+
+            label.isOpaque = true
+            label.border = BorderFactory.createEmptyBorder(10, 20, 10, 20)
+            label.maximumSize = Dimension(242, 50)
+            label.preferredSize = Dimension(242, 50)
+            panel.add(label)
+
+
+
+            toast.contentPane.add(panel)
+            toast.pack()
+
+
+            // Adjust for parent component location if it exists
+            if (parentComponent != null) {
+                val parentLocation = parentComponent.locationOnScreen
+                val x = parentLocation.x
+                val y = GameShell.canvas.locationOnScreen.y
+                toast.setLocation(x, y)
+            } else {
+                // Fallback to screen center if no parent is provided
+                val screenSize = Toolkit.getDefaultToolkit().screenSize
+                val x = (screenSize.width - toast.width) / 2
+                val y = screenSize.height - toast.height - 50
+                toast.setLocation(x, y)
+            }
+
+            toast.isVisible = true
+
+            Timer().schedule(object : TimerTask() {
+                override fun run() {
+                    SwingUtilities.invokeLater {
+                        toast.isVisible = false
+                        toast.dispose()
+                    }
+                }
+            }, 2000)
+        }
+    }
+
+
+
+    fun convertToColor(value: String): Color {
+        val color = Color.decode(value) // Assumes value is in format "#RRGGBB" or "0xRRGGBB"
+        return color
+    }
+
+    fun colorToHex(color: Color): String {
+        return "#%02x%02x%02x".format(color.red, color.green, color.blue)
+    }
+
+    fun colorToIntArray(color: Color): IntArray {
+        return intArrayOf(color.red, color.green, color.blue)
+    }
+
+    interface FieldObserver {
+        fun onFieldChange(field: Field, newValue: Any?)
+    }
+
+    fun addMouseListenerToAll(container: Container, listener: MouseListener) {
+        // Recursively go through all components within the container
+        for (component in container.components) {
+            // Add the passed MouseListener to the component
+            if (component is JComponent || component is Canvas) {
+                component.addMouseListener(listener)
+            }
+
+            // If the component is a container, recursively call this function
+            if (component is Container) {
+                addMouseListenerToAll(component, listener)
+            }
+        }
+    }
+
+
+
+
+    class FieldNotifier(private val plugin: Any) {
+        private val observers = mutableListOf<FieldObserver>()
+
+        fun addObserver(observer: FieldObserver) {
+            observers.add(observer)
+        }
+
+        fun notifyFieldChange(field: Field, newValue: Any?) {
+            for (observer in observers) {
+                observer.onFieldChange(field, newValue)
+            }
+        }
+
+        fun setFieldValue(field: Field, value: Any?) {
+            field.isAccessible = true
+            field.set(plugin, value)
+            notifyFieldChange(field, value)
+
+            try {
+                val onUpdateMethod = plugin::class.java.getMethod("OnKondoValueUpdated")
+                onUpdateMethod.invoke(plugin)
+            } catch (e: NoSuchMethodException) {
+                // The method doesn't exist
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+        }
+    }
+
     fun getSpriteId(skillId: Int) : Int {
         return when (skillId) {
             0 -> 197
@@ -76,15 +231,6 @@ object Helpers {
             22 -> Color(130, 116, 95)  // CONSTRUCTION
             23 -> Color(150, 50, 50)  // Placeholder for any additional skill
             else -> Color(128, 128, 128) // Default grey for unhandled skill IDs
-        }
-    }
-
-    class Spacer(width: Int = 0, height: Int = 0) : JPanel() {
-        init {
-            preferredSize = Dimension(width, height)
-            maximumSize = preferredSize
-            minimumSize = preferredSize
-            isOpaque = false
         }
     }
 }
