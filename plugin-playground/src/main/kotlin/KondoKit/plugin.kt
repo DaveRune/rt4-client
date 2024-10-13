@@ -66,7 +66,7 @@ class plugin : Plugin() {
         @Exposed(description = "Start minimized/collapsed by default")
         var launchMinimized = false
 
-        private const val FIXED_WIDTH = 782
+        private const val FIXED_WIDTH = 765
         private const val NAVBAR_WIDTH = 30
         private const val MAIN_CONTENT_WIDTH = 242
         private const val WRENCH_ICON = 907
@@ -118,16 +118,19 @@ class plugin : Plugin() {
     private fun UpdateDisplaySettings() {
         val mode = GetWindowMode()
         val currentScrollPaneWidth = if (mainContentPanel.isVisible) NAVBAR_WIDTH + MAIN_CONTENT_WIDTH else NAVBAR_WIDTH
+        val osName = System.getProperty("os.name").toLowerCase()
+        val offset = if (osName == "win") 16 else 0
         when (mode) {
             WindowMode.FIXED -> {
-                if (frame.width < FIXED_WIDTH + currentScrollPaneWidth) {
-                    frame.setSize(FIXED_WIDTH + currentScrollPaneWidth, frame.height)
+                if (frame.width < FIXED_WIDTH + currentScrollPaneWidth + offset) {
+                    frame.setSize(FIXED_WIDTH + currentScrollPaneWidth + offset, frame.height)
                 }
-                val difference = frame.width - (FIXED_WIDTH + currentScrollPaneWidth)
+
+                val difference = frame.width - (FIXED_WIDTH + offset + currentScrollPaneWidth)
                 GameShell.leftMargin = difference / 2
             }
             WindowMode.RESIZABLE -> {
-                GameShell.canvasWidth = frame.width - (currentScrollPaneWidth + 16)
+                GameShell.canvasWidth = frame.width - (currentScrollPaneWidth + offset)
             }
         }
         rightPanelWrapper?.preferredSize = Dimension(currentScrollPaneWidth, frame.height)
