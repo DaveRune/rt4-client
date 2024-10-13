@@ -119,7 +119,7 @@ class plugin : Plugin() {
         val mode = GetWindowMode()
         val currentScrollPaneWidth = if (mainContentPanel.isVisible) NAVBAR_WIDTH + MAIN_CONTENT_WIDTH else NAVBAR_WIDTH
         val osName = System.getProperty("os.name").toLowerCase()
-        val offset = if (osName == "win") 16 else 0
+        val offset = if (osName.contains("win")) 16 else 0
         when (mode) {
             WindowMode.FIXED -> {
                 if (frame.width < FIXED_WIDTH + currentScrollPaneWidth + offset) {
