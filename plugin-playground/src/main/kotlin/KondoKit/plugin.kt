@@ -57,14 +57,18 @@ class plugin : Plugin() {
         val primaryColor = Color(165, 165, 165) // Color for "XP Gained:"
         val secondaryColor = Color(255, 255, 255)   // Color for "0"
 
-        @Exposed(description = "Default: true, Use Local JSON or the prices from the Live/Stable server API")
+        @Exposed("Default: true, Use Local JSON or the prices from the Live/Stable server API")
         var useLiveGEPrices = true
 
-        @Exposed(description = "Used to calculate Combat Actions until next level.")
+        @Exposed("Used to calculate Combat Actions until next level.")
         var playerXPMultiplier = 5
 
-        @Exposed(description = "Start minimized/collapsed by default")
+        @Exposed("Start minimized/collapsed by default")
         var launchMinimized = false
+
+        @Exposed("Default 16 on Windows, 0 Linux/macOS. If Kondo is not " +
+                "perfectly snapped to the edge of the game due to window chrome you can update this to fix it")
+        var uiOffset = 0
 
         private const val FIXED_WIDTH = 765
         private const val NAVBAR_WIDTH = 30
@@ -84,6 +88,7 @@ class plugin : Plugin() {
         private var lastLogin = ""
         private var initialized = false;
         private var lastClickTime = 0L
+        private var lastUIOffset = 0
     }
 
     fun allSpritesLoaded() : Boolean {
@@ -118,19 +123,18 @@ class plugin : Plugin() {
     private fun UpdateDisplaySettings() {
         val mode = GetWindowMode()
         val currentScrollPaneWidth = if (mainContentPanel.isVisible) NAVBAR_WIDTH + MAIN_CONTENT_WIDTH else NAVBAR_WIDTH
-        val osName = System.getProperty("os.name").toLowerCase()
-        val offset = if (osName.contains("win")) 16 else 0
+        lastUIOffset = uiOffset
         when (mode) {
             WindowMode.FIXED -> {
-                if (frame.width < FIXED_WIDTH + currentScrollPaneWidth + offset) {
-                    frame.setSize(FIXED_WIDTH + currentScrollPaneWidth + offset, frame.height)
+                if (frame.width < FIXED_WIDTH + currentScrollPaneWidth + uiOffset) {
+                    frame.setSize(FIXED_WIDTH + currentScrollPaneWidth + uiOffset, frame.height)
                 }
 
-                val difference = frame.width - (FIXED_WIDTH + offset + currentScrollPaneWidth)
+                val difference = frame.width - (FIXED_WIDTH + uiOffset + currentScrollPaneWidth)
                 GameShell.leftMargin = difference / 2
             }
             WindowMode.RESIZABLE -> {
-                GameShell.canvasWidth = frame.width - (currentScrollPaneWidth + offset)
+                GameShell.canvasWidth = frame.width - (currentScrollPaneWidth + uiOffset)
             }
         }
         rightPanelWrapper?.preferredSize = Dimension(currentScrollPaneWidth, frame.height)
@@ -143,6 +147,11 @@ class plugin : Plugin() {
         StoreData("kondoPlayerXPMultiplier", playerXPMultiplier)
         LootTrackerView.gePriceMap = LootTrackerView.loadGEPrices()
         StoreData("kondoLaunchMinimized", launchMinimized)
+        StoreData("kondoUIOffset", uiOffset)
+        if(lastUIOffset != uiOffset){
+            UpdateDisplaySettings()
+            reloadInterfaces = true
+        }
     }
 
     override fun OnMiniMenuCreate(currentEntries: Array<out MiniMenuEntry>?) {
@@ -288,6 +297,8 @@ class plugin : Plugin() {
             // Restore saved values
             useLiveGEPrices = (GetData("kondoUseRemoteGE") as? Boolean) ?: true
             playerXPMultiplier = (GetData("kondoPlayerXPMultiplier") as? Int) ?: 5
+            val osName = System.getProperty("os.name").toLowerCase()
+            uiOffset = (GetData("kondoUIOffset") as? Int) ?: if (osName.contains("win")) 16 else 0
             launchMinimized = (GetData("kondoLaunchMinimized") as? Boolean) ?: false
 
             cardLayout = CardLayout()
