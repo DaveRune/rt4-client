@@ -35,6 +35,10 @@ class plugin : Plugin() {
         displayMessageCounter = 0
     }
 
+    override fun OnPluginsReloaded(): Boolean {
+        return true
+    }
+
     override fun Draw(timeDelta: Long) {
         if (component == null)
             return

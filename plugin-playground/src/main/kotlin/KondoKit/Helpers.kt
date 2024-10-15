@@ -191,8 +191,10 @@ object Helpers {
     }
 
     fun formatHtmlLabelText(text1: String, color1: Color, text2: String, color2: Color): String {
-        return "<html><span style='color:rgb(${color1.red},${color1.green},${color1.blue});'>$text1</span>" +
-                "<span style='color:rgb(${color2.red},${color2.green},${color2.blue});'>$text2</span></html>"
+        return "<html><div style='white-space:nowrap;'>" +
+                "<span style='color:rgb(${color1.red},${color1.green},${color1.blue});'>$text1</span>" +
+                "<span style='color:rgb(${color2.red},${color2.green},${color2.blue});'>$text2</span>" +
+                "</div></html>"
     }
 
     fun formatNumber(value: Int): String {
