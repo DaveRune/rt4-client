@@ -39,6 +39,10 @@ class plugin : Plugin() {
         return true
     }
 
+    override fun OnLogin() {
+        initTime = System.currentTimeMillis()
+    }
+
     override fun Draw(timeDelta: Long) {
         if (component == null)
             return
@@ -137,6 +141,9 @@ class plugin : Plugin() {
             }
             API.InsertMiniMenuEntry("Disable Timer", "") {
                 timeMode = DEFAULT_TIME_MODE
+            }
+            API.InsertMiniMenuEntry("Reset Play Time", "") {
+                initTime = System.currentTimeMillis()
             }
         }
     }
