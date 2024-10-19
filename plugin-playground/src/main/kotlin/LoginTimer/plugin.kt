@@ -25,6 +25,7 @@ class plugin : Plugin() {
 
     private var timeMode = TIME_MODE_INITIALIZATION
     private var initTime: Long = 0
+    private var logoutFlag = true
     private var displayMessageCounter = 0
 
     private var component: Component? = null
@@ -40,7 +41,13 @@ class plugin : Plugin() {
     }
 
     override fun OnLogin() {
-        initTime = System.currentTimeMillis()
+        if(logoutFlag)
+            initTime = System.currentTimeMillis()
+        logoutFlag = false
+    }
+
+    override fun OnLogout() {
+        logoutFlag = true
     }
 
     override fun Draw(timeDelta: Long) {
