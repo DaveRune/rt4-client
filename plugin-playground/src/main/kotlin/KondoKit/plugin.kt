@@ -43,6 +43,7 @@ import java.awt.event.MouseAdapter
 import java.awt.event.MouseEvent
 import javax.swing.*
 
+
 @Target(AnnotationTarget.FIELD)
 @Retention(AnnotationRetention.RUNTIME)
 annotation class Exposed(val description: String = "")
@@ -118,6 +119,13 @@ class plugin : Plugin() {
             xpTrackerView?.let { resetXPTracker(it) }
         }
         lastLogin = Player.usernameInput.toString()
+    }
+
+    override fun Init() {
+        // Disable Font AA
+        System.setProperty("sun.java2d.opengl", "false");
+        System.setProperty("awt.useSystemAAFontSettings", "off");
+        System.setProperty("swing.aatext", "false");
     }
 
     private fun UpdateDisplaySettings() {
@@ -262,10 +270,6 @@ class plugin : Plugin() {
         if(!allSpritesLoaded()) return;
         val frame: Frame? = GameShell.frame
         if (frame != null) {
-
-            // Disable Font AA
-            System.setProperty("awt.useSystemAAFontSettings", "off")
-            System.setProperty("swing.aatext", "false")
 
             loadFont()
 
