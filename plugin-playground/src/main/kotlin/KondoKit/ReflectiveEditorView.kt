@@ -27,6 +27,7 @@ import kotlin.math.ceil
 
 object ReflectiveEditorView {
     var reflectiveEditorView: JPanel? = null
+    val loadedPlugins: MutableList<String> = mutableListOf()
     fun createReflectiveEditorView() {
         val reflectiveEditorPanel = JPanel(BorderLayout())
         reflectiveEditorPanel.background = VIEW_BACKGROUND_COLOR
@@ -38,6 +39,7 @@ object ReflectiveEditorView {
 
     fun addPlugins(reflectiveEditorView: JPanel) {
         reflectiveEditorView.removeAll() // clear previous
+        loadedPlugins.clear()
         try {
             val loadedPluginsField = PluginRepository::class.java.getDeclaredField("loadedPlugins")
             loadedPluginsField.isAccessible = true
@@ -49,8 +51,57 @@ object ReflectiveEditorView {
         } catch (e: Exception) {
             e.printStackTrace()
         }
+
+        // Add a centered box for plugins that have no exposed fields
+        if (loadedPlugins.isNotEmpty()) {
+            val noExposedPanel = JPanel(BorderLayout())
+            noExposedPanel.background = VIEW_BACKGROUND_COLOR
+            noExposedPanel.border = BorderFactory.createEmptyBorder(10, 10, 10, 10)
+
+            val label = JLabel("Loaded Plugins without Exposed Fields", SwingConstants.CENTER)
+            label.font = Font("RuneScape Small", Font.PLAIN, 16)
+            label.foreground = primaryColor
+            noExposedPanel.add(label, BorderLayout.NORTH)
+
+            val pluginsList = JList(loadedPlugins.toTypedArray())
+            pluginsList.background = WIDGET_COLOR
+            pluginsList.foreground = secondaryColor
+            pluginsList.font = Font("RuneScape Small", Font.PLAIN, 16)
+
+            // Wrap the JList in a JScrollPane with a fixed height
+            val maxScrollPaneHeight = 200
+            val scrollPane = JScrollPane(pluginsList).apply {
+                verticalScrollBarPolicy = JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED
+                horizontalScrollBarPolicy = JScrollPane.HORIZONTAL_SCROLLBAR_NEVER
+            }
+
+            // Create a wrapper panel with BoxLayout to constrain the scroll pane
+            val scrollPaneWrapper = JPanel().apply {
+                layout = BoxLayout(this, BoxLayout.Y_AXIS)
+                add(scrollPane)
+            }
+
+            noExposedPanel.add(scrollPaneWrapper, BorderLayout.CENTER)
+
+            // Center the panel within the reflectiveEditorView
+            val centeredPanel = JPanel().apply {
+                preferredSize = Dimension(240, maxScrollPaneHeight)
+                maximumSize = preferredSize
+                minimumSize = preferredSize
+            }
+            centeredPanel.layout = BoxLayout(centeredPanel, BoxLayout.Y_AXIS)
+            centeredPanel.add(Box.createVerticalGlue())
+            centeredPanel.add(noExposedPanel)
+            centeredPanel.add(Box.createVerticalGlue())
+
+            reflectiveEditorView.add(Box.createVerticalStrut(10))
+            reflectiveEditorView.add(centeredPanel)
+        }
+
+
         reflectiveEditorView.revalidate()
-        reflectiveEditorView.repaint()
+        if(plugin.StateManager.focusedView == "REFLECTIVE_EDITOR_VIEW")
+            reflectiveEditorView.repaint()
     }
 
     private fun addPluginToEditor(reflectiveEditorView: JPanel, pluginInfo : PluginInfo, plugin: Plugin) {
@@ -210,9 +261,9 @@ object ReflectiveEditorView {
                 reflectiveEditorView.add(Box.createVerticalStrut(5))
             }
         }
-        reflectiveEditorView.revalidate()
-        if(KondoKit.plugin.StateManager.focusedView == "REFLECTIVE_EDITOR_VIEW")
-            reflectiveEditorView.repaint()
+        else {
+            loadedPlugins.add(plugin.javaClass.`package`.name);
+        }
     }
 
     var customToolTipWindow: JWindow? = null
