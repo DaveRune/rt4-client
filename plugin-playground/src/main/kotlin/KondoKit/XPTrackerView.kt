@@ -1,10 +1,10 @@
 package KondoKit
 
+import KondoKit.Helpers.addMouseListenerToAll
 import KondoKit.Helpers.formatHtmlLabelText
 import KondoKit.Helpers.formatNumber
 import KondoKit.Helpers.getProgressBarColor
 import KondoKit.Helpers.getSpriteId
-import KondoKit.Helpers.addMouseListenerToAll
 import KondoKit.SpriteToBufferedImage.getBufferedImageFromSprite
 import KondoKit.plugin.Companion.IMAGE_SIZE
 import KondoKit.plugin.Companion.LVL_ICON
@@ -295,14 +295,9 @@ object XPTrackerView {
 
         // Add menu items to the popup menu
         popupMenu.add(menuItem1)
-        //popupMenu.add(menuItem2)
-        //popupMenu.add(menuItem3)
 
         // Add action listeners to each menu item (optional)
-        menuItem1.addActionListener { resetXPTracker(xpTrackerView!!) }
-        //menuItem2.addActionListener { println("Option 2 selected") }
-        //menuItem3.addActionListener { println("Option 3 selected") }
-
+        menuItem1.addActionListener { plugin.registerDrawAction { resetXPTracker(xpTrackerView!!) } }
         return popupMenu
     }
 

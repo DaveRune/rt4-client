@@ -538,39 +538,44 @@ object LootTrackerView {
         }
         popupMenu.add(menuItem1)
         menuItem1.addActionListener {
-            lootTrackerView?.removeAll()
-            npcKillCounts.clear()
-            lootItemPanels.clear()
-            totalTrackerWidget = createTotalLootWidget()
-
-            val wrapped = wrappedWidget(totalTrackerWidget!!.container)
-            val _popupMenu = resetLootTrackerMenu()
-
-            // Create a custom MouseListener
-            val rightClickListener = object : MouseAdapter() {
-                override fun mousePressed(e: MouseEvent) {
-                    if (e.isPopupTrigger) {
-                        _popupMenu.show(e.component, e.x, e.y)
-                    }
-                }
-
-                override fun mouseReleased(e: MouseEvent) {
-                    if (e.isPopupTrigger) {
-                        _popupMenu.show(e.component, e.x, e.y)
-                    }
-                }
+            plugin.registerDrawAction {
+                resetLootTracker()
             }
-            addMouseListenerToAll(wrapped,rightClickListener)
-            wrapped.addMouseListener(rightClickListener)
-            lootTrackerView?.add(Box.createVerticalStrut(5))
-            lootTrackerView?.add(wrapped)
-            lootTrackerView?.add(Box.createVerticalStrut(10))
-            lootTrackerView?.revalidate()
-            lootTrackerView?.repaint()
         }
         return popupMenu
     }
 
+    private fun resetLootTracker(){
+        lootTrackerView?.removeAll()
+        npcKillCounts.clear()
+        lootItemPanels.clear()
+        totalTrackerWidget = createTotalLootWidget()
+
+        val wrapped = wrappedWidget(totalTrackerWidget!!.container)
+        val _popupMenu = resetLootTrackerMenu()
+
+        // Create a custom MouseListener
+        val rightClickListener = object : MouseAdapter() {
+            override fun mousePressed(e: MouseEvent) {
+                if (e.isPopupTrigger) {
+                    _popupMenu.show(e.component, e.x, e.y)
+                }
+            }
+
+            override fun mouseReleased(e: MouseEvent) {
+                if (e.isPopupTrigger) {
+                    _popupMenu.show(e.component, e.x, e.y)
+                }
+            }
+        }
+        addMouseListenerToAll(wrapped,rightClickListener)
+        wrapped.addMouseListener(rightClickListener)
+        lootTrackerView?.add(Box.createVerticalStrut(5))
+        lootTrackerView?.add(wrapped)
+        lootTrackerView?.add(Box.createVerticalStrut(10))
+        lootTrackerView?.revalidate()
+        lootTrackerView?.repaint()
+    }
 
     class FixedSizePanel(private val fixedSize: Dimension) : JPanel() {
         override fun getPreferredSize(): Dimension {

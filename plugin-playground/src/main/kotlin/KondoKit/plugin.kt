@@ -90,6 +90,13 @@ class plugin : Plugin() {
         private var initialized = false;
         private var lastClickTime = 0L
         private var lastUIOffset = 0
+        private val drawActions = mutableListOf<() -> Unit>()
+
+        fun registerDrawAction(action: () -> Unit) {
+            synchronized(drawActions) {
+                drawActions.add(action)
+            }
+        }
     }
 
     fun allSpritesLoaded() : Boolean {
@@ -257,6 +264,17 @@ class plugin : Plugin() {
         if (accumulatedTime >= tickInterval) {
             lootTrackerView?.let { onPostClientTick(it) }
             accumulatedTime = 0L
+        }
+
+        // Draw synced actions (that require to be done between glBegin and glEnd)
+        if (drawActions.isNotEmpty()) {
+            synchronized(drawActions) {
+                val actionsCopy = drawActions.toList()
+                drawActions.clear()
+                for (action in actionsCopy) {
+                    action()
+                }
+            }
         }
 
         // Init in the draw call so we know we are between glBegin and glEnd for HD
