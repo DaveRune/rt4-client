@@ -412,7 +412,7 @@ object LootTrackerView {
         newDrops.forEach { drop ->
             val geValue = (gePriceMap[drop.id.toString()]?.toInt() ?: 0) * drop.quantity
             updateValueLabel(lootTrackerView, geValue.toString(), npcName)
-            addItemToLootPanel(lootTrackerView, drop, npcName)
+            plugin.registerDrawAction {  addItemToLootPanel(lootTrackerView, drop, npcName) }
             updateTotalValue(geValue)
         }
     }
