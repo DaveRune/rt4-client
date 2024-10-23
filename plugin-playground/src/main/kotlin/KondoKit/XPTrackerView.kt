@@ -8,6 +8,8 @@ import KondoKit.Helpers.getSpriteId
 import KondoKit.SpriteToBufferedImage.getBufferedImageFromSprite
 import KondoKit.plugin.Companion.IMAGE_SIZE
 import KondoKit.plugin.Companion.LVL_ICON
+import KondoKit.plugin.Companion.POPUP_BACKGROUND
+import KondoKit.plugin.Companion.POPUP_FOREGROUND
 import KondoKit.plugin.Companion.TOTAL_XP_WIDGET_SIZE
 import KondoKit.plugin.Companion.VIEW_BACKGROUND_COLOR
 import KondoKit.plugin.Companion.WIDGET_COLOR
@@ -15,6 +17,7 @@ import KondoKit.plugin.Companion.WIDGET_SIZE
 import KondoKit.plugin.Companion.playerXPMultiplier
 import KondoKit.plugin.Companion.primaryColor
 import KondoKit.plugin.Companion.secondaryColor
+import KondoKit.plugin.StateManager.focusedView
 import plugin.api.API
 import java.awt.*
 import java.awt.event.MouseAdapter
@@ -30,6 +33,7 @@ object XPTrackerView {
     var totalXPWidget: XPWidget? = null
     val initialXP: MutableMap<Int, Int> = HashMap()
     var xpTrackerView: JPanel? = null
+    const val VIEW_NAME = "XP_TRACKER_VIEW"
 
 
     val npcHitpointsMap: Map<Int, Int> = try {
@@ -96,10 +100,10 @@ object XPTrackerView {
         xpWidget.xpGainedLabel.text = formatHtmlLabelText("XP Gained: ", primaryColor, formattedXp, secondaryColor)
 
         // Update the progress bar with current level, progress, and next level
-        xpWidget.progressBar.updateProgress(progress, currentLevel, if (currentLevel < 99) currentLevel + 1 else 99, plugin.StateManager.focusedView == "XP_TRACKER_VIEW")
+        xpWidget.progressBar.updateProgress(progress, currentLevel, if (currentLevel < 99) currentLevel + 1 else 99, focusedView == VIEW_NAME)
 
         xpWidget.previousXp = xp
-        if (plugin.StateManager.focusedView == "XP_TRACKER_VIEW")
+        if (focusedView == VIEW_NAME)
             xpWidget.container.repaint()
     }
 
@@ -109,7 +113,7 @@ object XPTrackerView {
         totalXPWidget.totalXpGained += xpGainedSinceLastUpdate
         val formattedXp = formatNumber(totalXPWidget.totalXpGained)
         totalXPWidget.xpGainedLabel.text = formatHtmlLabelText("Gained: ", primaryColor, formattedXp, secondaryColor)
-        if (plugin.StateManager.focusedView == "XP_TRACKER_VIEW")
+        if (focusedView == VIEW_NAME)
             totalXPWidget.container.repaint()
     }
 
@@ -148,7 +152,7 @@ object XPTrackerView {
         xpWidgets.clear()
 
         xpTrackerView.revalidate()
-        if (plugin.StateManager.focusedView == "XP_TRACKER_VIEW")
+        if (focusedView == VIEW_NAME)
             xpTrackerView.repaint()
     }
 
@@ -164,10 +168,10 @@ object XPTrackerView {
         val bufferedImageSprite = getBufferedImageFromSprite(API.GetSprite(LVL_ICON))
 
         val imageContainer = Panel(FlowLayout()).apply {
-            preferredSize = IMAGE_SIZE
-            maximumSize = IMAGE_SIZE
-            minimumSize = IMAGE_SIZE
-            size = IMAGE_SIZE
+            preferredSize = Dimension(bufferedImageSprite.width, bufferedImageSprite.height)
+            maximumSize = preferredSize
+            minimumSize = preferredSize
+            size = preferredSize
         }
 
         bufferedImageSprite.let { image ->
@@ -182,7 +186,7 @@ object XPTrackerView {
             imageContainer.size = Dimension(bufferedImageSprite.width, bufferedImageSprite.height)
 
             imageContainer.revalidate()
-            if(plugin.StateManager.focusedView == "XP_TRACKER_VIEW")
+            if(focusedView == VIEW_NAME)
                 imageContainer.repaint()
         }
 
@@ -221,7 +225,7 @@ object XPTrackerView {
                 this.font = font
             },
             xpPerHourLabel = xpPerHourLabel,
-            progressBar = ProgressBar(0.0, Color(150, 50, 50)),
+            progressBar = ProgressBar(0.0, Color.BLACK), // Unused
             totalXpGained = 0,
             startTime = System.currentTimeMillis(),
             previousXp = 0,
@@ -272,25 +276,13 @@ object XPTrackerView {
 
         val rFont = Font("RuneScape Small", Font.TRUETYPE_FONT, 16)
 
-        popupMenu.background = Color(45, 45, 45)
+        popupMenu.background = POPUP_BACKGROUND
 
         // Create menu items with custom font and colors
         val menuItem1 = JMenuItem("Reset Tracker").apply {
             font = rFont  // Set custom font
-            background = Color(45, 45, 45)  // Dark background for item
-            foreground = Color(220, 220, 220) // Light text color for item
-        }
-
-        val menuItem2 = JMenuItem("Option 2").apply {
-            font = rFont
-            background = Color(45, 45, 45)
-            foreground = Color(220, 220, 220)
-        }
-
-        val menuItem3 = JMenuItem("Option 3").apply {
-            font = rFont
-            background = Color(45, 45, 45)
-            foreground = Color(220, 220, 220)
+            background = POPUP_BACKGROUND // Dark background for item
+            foreground = POPUP_FOREGROUND // Light text color for item
         }
 
         // Add menu items to the popup menu
@@ -333,7 +325,7 @@ object XPTrackerView {
             imageContainer.size = Dimension(image.width, image.height) // Ensure container respects the image size
 
             imageContainer.revalidate()
-            if(plugin.StateManager.focusedView == "XP_TRACKER_VIEW")
+            if(focusedView == VIEW_NAME)
                 imageContainer.repaint()
         }
 
@@ -374,7 +366,7 @@ object XPTrackerView {
 
         val levelPanel = Panel().apply {
             layout = BorderLayout(5, 0)
-            background = Color(43, 43, 43)
+            background = WIDGET_COLOR
         }
 
         val progressBarPanel = ProgressBar(0.0, getProgressBarColor(skillId)).apply {
@@ -393,7 +385,7 @@ object XPTrackerView {
         widgetPanel.add(levelPanel, BorderLayout.SOUTH)
 
         widgetPanel.revalidate()
-        if(plugin.StateManager.focusedView == "XP_TRACKER_VIEW")
+        if(focusedView == VIEW_NAME)
             widgetPanel.repaint()
 
         return XPWidget(

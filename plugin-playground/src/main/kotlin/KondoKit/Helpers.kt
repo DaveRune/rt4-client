@@ -190,6 +190,10 @@ object Helpers {
         }
     }
 
+    fun showAlert(message: String, title: String, type: Int){
+        JOptionPane.showMessageDialog(null, message, title, type)
+    }
+
     fun formatHtmlLabelText(text1: String, color1: Color, text2: String, color2: Color): String {
         return "<html><div style='white-space:nowrap;'>" +
                 "<span style='color:rgb(${color1.red},${color1.green},${color1.blue});'>$text1</span>" +

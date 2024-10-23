@@ -2,10 +2,13 @@ package KondoKit
 
 import KondoKit.Helpers.convertValue
 import KondoKit.Helpers.showToast
+import KondoKit.plugin.Companion.TITLE_BAR_COLOR
+import KondoKit.plugin.Companion.TOOLTIP_BACKGROUND
 import KondoKit.plugin.Companion.VIEW_BACKGROUND_COLOR
 import KondoKit.plugin.Companion.WIDGET_COLOR
 import KondoKit.plugin.Companion.primaryColor
 import KondoKit.plugin.Companion.secondaryColor
+import KondoKit.plugin.StateManager.focusedView
 import plugin.Plugin
 import plugin.PluginInfo
 import plugin.PluginRepository
@@ -28,6 +31,7 @@ import kotlin.math.ceil
 object ReflectiveEditorView {
     var reflectiveEditorView: JPanel? = null
     val loadedPlugins: MutableList<String> = mutableListOf()
+    const val VIEW_NAME = "REFLECTIVE_EDITOR_VIEW"
     fun createReflectiveEditorView() {
         val reflectiveEditorPanel = JPanel(BorderLayout())
         reflectiveEditorPanel.background = VIEW_BACKGROUND_COLOR
@@ -100,7 +104,7 @@ object ReflectiveEditorView {
 
 
         reflectiveEditorView.revalidate()
-        if(plugin.StateManager.focusedView == "REFLECTIVE_EDITOR_VIEW")
+        if(focusedView == VIEW_NAME)
             reflectiveEditorView.repaint()
     }
 
@@ -128,7 +132,7 @@ object ReflectiveEditorView {
             label.font = Font("RuneScape Small", Font.TRUETYPE_FONT, 16)
             labelPanel.add(label, BorderLayout.CENTER)
             label.isOpaque = true
-            label.background = Color(21, 21, 21)
+            label.background = TITLE_BAR_COLOR
             reflectiveEditorView.add(labelPanel)
 
             for (field in exposedFields) {
@@ -270,7 +274,6 @@ object ReflectiveEditorView {
 
     fun showCustomToolTip(text: String, component: JComponent) {
         val _font = Font("RuneScape Small", Font.PLAIN, 16)
-        val backgroundColor = Color(50, 50, 50)
         val maxWidth = 150
         val lineHeight = 16
 
@@ -290,10 +293,12 @@ object ReflectiveEditorView {
 
         if (customToolTipWindow == null) {
             customToolTipWindow = JWindow().apply {
-                contentPane = JLabel("<html><div style='color: white; background-color: #323232; padding: 3px; word-break: break-all;'>$text</div></html>").apply {
+                val bgColor = Helpers.colorToHex(TOOLTIP_BACKGROUND)
+                val textColor = Helpers.colorToHex(secondaryColor)
+                contentPane = JLabel("<html><div style='color: $textColor; background-color: $bgColor; padding: 3px; word-break: break-all;'>$text</div></html>").apply {
                     border = BorderFactory.createLineBorder(Color.BLACK)
                     isOpaque = true
-                    background = backgroundColor
+                    background = TOOLTIP_BACKGROUND
                     foreground = Color.WHITE
                     font = _font
                     maximumSize = Dimension(maxWidth, Int.MAX_VALUE)
@@ -304,7 +309,9 @@ object ReflectiveEditorView {
         } else {
             // Update the tooltip text
             val label = customToolTipWindow!!.contentPane as JLabel
-            label.text = "<html><div style='color: white; background-color: #323232; padding: 3px; word-break: break-all;'>$text</div></html>"
+            val bgColor = Helpers.colorToHex(TOOLTIP_BACKGROUND)
+            val textColor = Helpers.colorToHex(secondaryColor)
+            label.text = "<html><div style='color: $textColor; background-color: $bgColor; padding: 3px; word-break: break-all;'>$text</div></html>"
             label.preferredSize = Dimension(maxWidth, requiredHeight)
             customToolTipWindow!!.pack()
         }

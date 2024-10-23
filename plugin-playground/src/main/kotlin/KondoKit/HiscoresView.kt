@@ -7,10 +7,15 @@ import KondoKit.Helpers.formatHtmlLabelText
 import KondoKit.Helpers.getSpriteId
 import KondoKit.Helpers.showToast
 import KondoKit.SpriteToBufferedImage.getBufferedImageFromSprite
+import KondoKit.plugin.Companion.POPUP_BACKGROUND
+import KondoKit.plugin.Companion.POPUP_FOREGROUND
+import KondoKit.plugin.Companion.TITLE_BAR_COLOR
+import KondoKit.plugin.Companion.TOOLTIP_BACKGROUND
 import KondoKit.plugin.Companion.VIEW_BACKGROUND_COLOR
 import KondoKit.plugin.Companion.WIDGET_COLOR
 import KondoKit.plugin.Companion.primaryColor
 import KondoKit.plugin.Companion.secondaryColor
+import KondoKit.plugin.StateManager.focusedView
 import com.google.gson.Gson
 import plugin.api.API
 import rt4.Sprites
@@ -27,6 +32,7 @@ import java.net.SocketTimeoutException
 import java.net.URL
 import javax.swing.*
 import javax.swing.border.MatteBorder
+import kotlin.math.floor
 
 object Constants {
     // Sprite IDs
@@ -38,7 +44,6 @@ object Constants {
     // Dimensions
     val SEARCH_FIELD_DIMENSION = Dimension(230, 30)
     val ICON_DIMENSION_SMALL = Dimension(12, 12)
-    val ICON_DIMENSION_MEDIUM = Dimension(18, 20)
     val ICON_DIMENSION_LARGE = Dimension(30, 30)
     val HISCORE_PANEL_DIMENSION = Dimension(230, 500)
     val FILTER_PANEL_DIMENSION = Dimension(230, 30)
@@ -50,11 +55,9 @@ object Constants {
     val NUMBER_LABEL_DIMENSION = Dimension(20, 20)
 
     // Colors
-    val COLOR_BACKGROUND_DARK = Color(27, 27, 27)
+    val COLOR_BACKGROUND_DARK = WIDGET_COLOR
     val COLOR_BACKGROUND_MEDIUM = VIEW_BACKGROUND_COLOR
-    val COLOR_FOREGROUND_LIGHT = Color(200, 200, 200)
-    val COLOR_RED = Color.RED
-    val COLOR_SKILL_PANEL = Color(60, 60, 60)
+    val COLOR_FOREGROUND_LIGHT = POPUP_FOREGROUND
 
     // Fonts
     val FONT_ARIAL_PLAIN_14 = Font("Arial", Font.PLAIN, 14)
@@ -67,6 +70,7 @@ var text: String = ""
 
 object HiscoresView {
 
+    const val VIEW_NAME = "HISCORE_SEARCH_VIEW"
     var hiScoreView: JPanel? = null
     class CustomSearchField(private val hiscoresPanel: JPanel) : Canvas() {
 
@@ -137,9 +141,9 @@ object HiscoresView {
                 }
             })
 
-            Timer(1000) {
+            Timer(500) {
                 cursorVisible = !cursorVisible
-                if(plugin.StateManager.focusedView == "HISCORE_SEARCH_VIEW")
+                if(focusedView == VIEW_NAME)
                     repaint()
             }.start()
         }
@@ -165,7 +169,7 @@ object HiscoresView {
             }
 
             if (text.isNotEmpty()) {
-                g.color = Constants.COLOR_RED
+                g.color = Color.RED
                 g.drawString("x", width - 20, 20)
             }
         }
@@ -305,13 +309,13 @@ object HiscoresView {
             summoning: Int,
             isMemberWorld: Boolean
         ): Double {
-            val base = (defence + hitpoints + Math.floor(prayer.toDouble() / 2)) * 0.25
+            val base = (defence + hitpoints + floor(prayer.toDouble() / 2)) * 0.25
             val melee = (attack + strength) * 0.325
-            val range = Math.floor(ranged * 1.5) * 0.325
-            val mage = Math.floor(magic * 1.5) * 0.325
+            val range = floor(ranged * 1.5) * 0.325
+            val mage = floor(magic * 1.5) * 0.325
             val maxCombatType = maxOf(melee, range, mage)
 
-            val summoningFactor = if (isMemberWorld) Math.floor(summoning.toDouble() / 8) else 0.0
+            val summoningFactor = if (isMemberWorld) floor(summoning.toDouble() / 8) else 0.0
             return Math.round((base + maxCombatType + summoningFactor) * 1000.0) / 1000.0
         }
 
@@ -338,7 +342,7 @@ object HiscoresView {
     fun createHiscoreSearchView() {
         val hiscorePanel = JPanel().apply {
             layout = BoxLayout(this, BoxLayout.Y_AXIS)
-            name = "HISCORE_SEARCH_VIEW"
+            name = VIEW_NAME
             background = Constants.COLOR_BACKGROUND_MEDIUM
             preferredSize = Constants.HISCORE_PANEL_DIMENSION
             maximumSize = preferredSize
@@ -369,7 +373,7 @@ object HiscoresView {
 
         val playerNamePanel = JPanel().apply {
             layout = GridBagLayout() // This will center the JLabel both vertically and horizontally
-            background = WIDGET_COLOR
+            background = TOOLTIP_BACKGROUND.darker()
             preferredSize = Constants.FILTER_PANEL_DIMENSION
             maximumSize = preferredSize
             minimumSize = preferredSize
@@ -436,6 +440,7 @@ object HiscoresView {
         val bufferedImageSprite = getBufferedImageFromSprite(API.GetSprite(Constants.LVL_BAR_SPRITE));
 
         val totalLevelIcon = ImageCanvas(bufferedImageSprite).apply {
+            fillColor = COLOR_BACKGROUND_DARK
             preferredSize = Constants.ICON_DIMENSION_LARGE
             size = Constants.ICON_DIMENSION_LARGE
         }
@@ -457,6 +462,7 @@ object HiscoresView {
         val bufferedImageSprite2 = getBufferedImageFromSprite(API.GetSprite(Constants.COMBAT_LVL_SPRITE))
 
         val combatLevelIcon = ImageCanvas(bufferedImageSprite2).apply {
+            fillColor = COLOR_BACKGROUND_DARK
             preferredSize = Constants.ICON_DIMENSION_LARGE
             size = Constants.ICON_DIMENSION_LARGE
         }

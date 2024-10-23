@@ -1,5 +1,7 @@
 package KondoKit
 
+import KondoKit.plugin.Companion.PROGRESS_BAR_FILL
+import KondoKit.plugin.Companion.secondaryColor
 import java.awt.Canvas
 import java.awt.Color
 import java.awt.Dimension
@@ -26,24 +28,24 @@ class ProgressBar(
         g.fillRect(0, 0, width, this.height)
 
         // Draw the unfilled part of the progress bar
-        g.color = Color(61, 56, 49) // from Runelite
+        g.color = PROGRESS_BAR_FILL
         g.fillRect(width, 0, this.width - width, this.height)
 
         // Variables for text position
         val textY = this.height / 2 + 6
 
         // Draw the current level on the far left
-        drawTextWithShadow(g, "Lvl. $currentLevel", 5, textY, Color(255, 255, 255))
+        drawTextWithShadow(g, "Lvl. $currentLevel", 5, textY, secondaryColor)
 
         // Draw the percentage in the middle
         val percentageText = String.format("%.2f%%", progress)
         val percentageWidth = g.fontMetrics.stringWidth(percentageText)
-        drawTextWithShadow(g, percentageText, (this.width - percentageWidth) / 2, textY, Color(255, 255, 255))
+        drawTextWithShadow(g, percentageText, (this.width - percentageWidth) / 2, textY, secondaryColor)
 
         // Draw the next level on the far right
         val nextLevelText = "Lvl. $nextLevel"
         val nextLevelWidth = g.fontMetrics.stringWidth(nextLevelText)
-        drawTextWithShadow(g, nextLevelText, this.width - nextLevelWidth - 5, textY, Color(255, 255, 255))
+        drawTextWithShadow(g, nextLevelText, this.width - nextLevelWidth - 5, textY, secondaryColor)
     }
 
     override fun getPreferredSize(): Dimension {

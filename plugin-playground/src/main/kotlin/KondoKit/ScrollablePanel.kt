@@ -1,8 +1,8 @@
 package KondoKit
 
+import KondoKit.plugin.Companion.SCROLL_BAR_COLOR
 import KondoKit.plugin.Companion.VIEW_BACKGROUND_COLOR
 import rt4.GameShell.frame
-import java.awt.Color
 import java.awt.Graphics
 import java.awt.Graphics2D
 import java.awt.Rectangle
@@ -147,7 +147,7 @@ class ScrollablePanel(private val content: JPanel) : JPanel() {
         if (showScrollbar) {
             val g2 = g as Graphics2D
             val scrollbarX = 238
-            g2.color = Color(64, 64, 64)
+            g2.color = SCROLL_BAR_COLOR
             g2.fillRect(scrollbarX, scrollbarY, 2, scrollbarHeight)
         }
     }
