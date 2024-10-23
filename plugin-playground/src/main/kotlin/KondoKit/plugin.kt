@@ -46,6 +46,7 @@ import java.awt.event.ActionListener
 import java.awt.event.MouseAdapter
 import java.awt.event.MouseEvent
 import javax.swing.*
+import javax.swing.plaf.nimbus.AbstractRegionPainter
 
 
 @Target(AnnotationTarget.FIELD)
@@ -327,21 +328,54 @@ class plugin : Plugin() {
             try {
                 UIManager.setLookAndFeel("javax.swing.plaf.nimbus.NimbusLookAndFeel")
 
-                // Modify the UI properties for a dark theme
-                UIManager.put("control", Color(50, 50, 50)) // Default background for most controls
-                UIManager.put("info", Color(50, 50, 50))
-                UIManager.put("nimbusBase", Color(35, 35, 35)) // Base color for Nimbus L&F
-                UIManager.put("nimbusAlertYellow", Color(255, 220, 35))
-                UIManager.put("nimbusDisabledText", Color(100, 100, 100))
-                UIManager.put("nimbusFocus", Color(115, 164, 209))
-                UIManager.put("nimbusGreen", Color(176, 179, 50))
-                UIManager.put("nimbusInfoBlue", Color(66, 139, 221))
-                UIManager.put("nimbusLightBackground", Color(35, 35, 35)) // Background of text fields, etc.
-                UIManager.put("nimbusOrange", Color(191, 98, 4))
-                UIManager.put("nimbusRed", Color(169, 46, 34))
-                UIManager.put("nimbusSelectedText", Color(255, 255, 255))
-                UIManager.put("nimbusSelectionBackground", Color(75, 110, 175)) // Selection background
-                UIManager.put("text", Color(230, 230, 230)) // General text color
+                // Modify the UI properties to match theme
+                UIManager.put("control", VIEW_BACKGROUND_COLOR)
+                UIManager.put("info", VIEW_BACKGROUND_COLOR)
+                UIManager.put("nimbusBase", WIDGET_COLOR)
+                UIManager.put("nimbusBlueGrey", TITLE_BAR_COLOR)
+
+                UIManager.put("nimbusDisabledText", primaryColor)
+                UIManager.put("nimbusSelectedText", secondaryColor)
+                UIManager.put("text", secondaryColor)
+
+                UIManager.put("nimbusFocus", TITLE_BAR_COLOR)
+                UIManager.put("nimbusInfoBlue", POPUP_BACKGROUND)
+                UIManager.put("nimbusLightBackground", WIDGET_COLOR)
+                UIManager.put("nimbusSelectionBackground", PROGRESS_BAR_FILL)
+
+                UIManager.put("Button.background", WIDGET_COLOR)
+                UIManager.put("Button.foreground", secondaryColor)
+
+                UIManager.put("CheckBox.background", VIEW_BACKGROUND_COLOR)
+                UIManager.put("CheckBox.foreground", secondaryColor)
+                UIManager.put("CheckBox.icon", UIManager.getIcon("CheckBox.icon"))
+
+                UIManager.put("ComboBox.background", WIDGET_COLOR)
+                UIManager.put("ComboBox.foreground", secondaryColor)
+                UIManager.put("ComboBox.selectionBackground", PROGRESS_BAR_FILL)
+                UIManager.put("ComboBox.selectionForeground", primaryColor)
+                UIManager.put("ComboBox.buttonBackground", WIDGET_COLOR)
+
+                UIManager.put("Spinner.background", WIDGET_COLOR)
+                UIManager.put("Spinner.foreground", secondaryColor)
+                UIManager.put("Spinner.border", BorderFactory.createLineBorder(TITLE_BAR_COLOR))
+
+                UIManager.put("TextField.background", WIDGET_COLOR)
+                UIManager.put("TextField.foreground", secondaryColor)
+                UIManager.put("TextField.caretForeground", secondaryColor)
+                UIManager.put("TextField.border", BorderFactory.createLineBorder(TITLE_BAR_COLOR))
+
+                UIManager.put("ScrollBar.thumb", WIDGET_COLOR)
+                UIManager.put("ScrollBar.track", VIEW_BACKGROUND_COLOR)
+                UIManager.put("ScrollBar.thumbHighlight", TITLE_BAR_COLOR)
+
+                UIManager.put("ProgressBar.foreground", PROGRESS_BAR_FILL)
+                UIManager.put("ProgressBar.background", WIDGET_COLOR)
+                UIManager.put("ProgressBar.border", BorderFactory.createLineBorder(TITLE_BAR_COLOR))
+
+                UIManager.put("ToolTip.background", VIEW_BACKGROUND_COLOR)
+                UIManager.put("ToolTip.foreground", secondaryColor)
+                UIManager.put("ToolTip.border", BorderFactory.createLineBorder(TITLE_BAR_COLOR))
 
                 // Update component tree UI to apply the new theme
                 SwingUtilities.updateComponentTreeUI(GameShell.frame)

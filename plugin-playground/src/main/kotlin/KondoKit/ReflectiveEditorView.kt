@@ -207,7 +207,7 @@ object ReflectiveEditorView {
                 fieldPanel.add(inputComponent, gbc)
 
                 val applyButton = JButton("\u2714").apply {
-                    maximumSize = Dimension(Int.MAX_VALUE, 10)
+                    maximumSize = Dimension(Int.MAX_VALUE, 8)
                 }
                 gbc.gridx = 2
                 gbc.gridy = 0
