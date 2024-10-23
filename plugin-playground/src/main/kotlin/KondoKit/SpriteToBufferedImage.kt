@@ -66,9 +66,15 @@ object SpriteToBufferedImage {
      * @param sprite The sprite to be converted.
      * @param tint An optional Color to tint the image.
      * @param grayscale If true, converts the image to grayscale.
+     * @param brightnessBoost A multiplier to boost the brightness of the image.
      * @return The BufferedImage created from the sprite.
      */
-    fun convertToBufferedImage(sprite: BaseSprite, tint: Color? = null, grayscale: Boolean = false): BufferedImage {
+    fun convertToBufferedImage(
+        sprite: BaseSprite,
+        tint: Color? = null,
+        grayscale: Boolean = false,
+        brightnessBoost: Float = 1.0f
+    ): BufferedImage {
         val width = sprite.width
         val height = sprite.height
         val image = BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB)
@@ -86,11 +92,11 @@ object SpriteToBufferedImage {
 
                         // Apply grayscale or tint if provided
                         val finalColor = if (grayscale) {
-                            applyGrayscale(Color(color, true))
+                            applyGrayscale(Color(color, true), brightnessBoost)
                         } else if (tint != null) {
-                            applyTint(Color(color, true), tint)
+                            applyTint(Color(color, true), tint, brightnessBoost)
                         } else {
-                            Color(color, true)
+                            applyBrightness(Color(color, true), brightnessBoost)
                         }
 
                         image.setRGB(x, y, finalColor.rgb)
@@ -107,11 +113,11 @@ object SpriteToBufferedImage {
 
                         // Apply grayscale or tint if provided
                         val finalColor = if (grayscale) {
-                            applyGrayscale(Color(color, true))
+                            applyGrayscale(Color(color, true), brightnessBoost)
                         } else if (tint != null) {
-                            applyTint(Color(color, true), tint)
+                            applyTint(Color(color, true), tint, brightnessBoost)
                         } else {
-                            Color(color, true)
+                            applyBrightness(Color(color, true), brightnessBoost)
                         }
 
                         image.setRGB(x, y, finalColor.rgb)
@@ -127,32 +133,44 @@ object SpriteToBufferedImage {
      * Applies a tint to a given color using the tint's alpha value to control the intensity.
      *
      * @param original The original color.
-     * @param tint The tint color to be applied, with alpha controlling the intensity.
+     * @param tint The tint color to be applied.
+     * @param brightnessBoost A multiplier to boost the brightness of the image.
      * @return The tinted color.
      */
-    fun applyTint(original: Color, tint: Color): Color {
-        val alpha = tint.alpha / 255.0 // Normalize alpha to range [0, 1]
-        val invAlpha = 1.0 - alpha
+    fun applyTint(original: Color, tint: Color, brightnessBoost: Float): Color {
+        val boostedColor = applyBrightness(original, brightnessBoost)
+        val r = (boostedColor.red * tint.red / 255).coerceIn(0, 255)
+        val g = (boostedColor.green * tint.green / 255).coerceIn(0, 255)
+        val b = (boostedColor.blue * tint.blue / 255).coerceIn(0, 255)
+        return Color(r, g, b, boostedColor.alpha)
+    }
 
-        // Blend the tint with the original color based on the alpha
-        val r = (original.red * invAlpha + tint.red * alpha).toInt().coerceIn(0, 255)
-        val g = (original.green * invAlpha + tint.green * alpha).toInt().coerceIn(0, 255)
-        val b = (original.blue * invAlpha + tint.blue * alpha).toInt().coerceIn(0, 255)
-
+    /**
+     * Boosts the brightness of a given color.
+     *
+     * @param original The original color.
+     * @param factor The multiplier to boost the brightness.
+     * @return The color with boosted brightness.
+     */
+    fun applyBrightness(original: Color, factor: Float): Color {
+        val r = (original.red * factor).coerceIn(0.0f, 255.0f).toInt()
+        val g = (original.green * factor).coerceIn(0.0f, 255.0f).toInt()
+        val b = (original.blue * factor).coerceIn(0.0f, 255.0f).toInt()
         return Color(r, g, b, original.alpha)
     }
 
-
     /**
-     * Converts a color to grayscale.
+     * Converts a color to grayscale and applies a brightness boost.
      *
      * @param original The original color.
-     * @return The grayscale version of the color.
+     * @param brightnessBoost A multiplier to boost the brightness.
+     * @return The grayscale version of the color with boosted brightness.
      */
-    fun applyGrayscale(original: Color): Color {
+    fun applyGrayscale(original: Color, brightnessBoost: Float): Color {
         // Calculate the grayscale value using the luminosity method
         val grayValue = (0.3 * original.red + 0.59 * original.green + 0.11 * original.blue).toInt()
-        return Color(grayValue, grayValue, grayValue, original.alpha)
+        val boostedGray = (grayValue * brightnessBoost).coerceIn(0.0f, 255.0f).toInt()
+        return Color(boostedGray, boostedGray, boostedGray, original.alpha)
     }
 
     /**
@@ -161,14 +179,20 @@ object SpriteToBufferedImage {
      * @param sprite The sprite object to be converted.
      * @param tint An optional Color to tint the image.
      * @param grayscale If true, converts the image to grayscale.
+     * @param brightnessBoost A multiplier to boost the brightness of the image.
      * @return The BufferedImage created from the sprite or a default image if unsupported.
      */
-    fun getBufferedImageFromSprite(sprite: Any?, tint: Color? = null, grayscale: Boolean = false): BufferedImage {
+    fun getBufferedImageFromSprite(
+        sprite: Any?,
+        tint: Color? = null,
+        grayscale: Boolean = false,
+        brightnessBoost: Float = 1.0f
+    ): BufferedImage {
         return when (sprite) {
-            is SoftwareSprite -> convertToBufferedImage(adaptSoftwareSprite(sprite), tint, grayscale)
-            is SoftwareIndexedSprite -> convertToBufferedImage(adaptSoftwareIndexedSprite(sprite), tint, grayscale)
-            is GlSprite -> convertToBufferedImage(adaptGlSprite(sprite), tint, grayscale)
-            is GlIndexedSprite -> convertToBufferedImage(adaptGlIndexedSprite(sprite), tint, grayscale)
+            is SoftwareSprite -> convertToBufferedImage(adaptSoftwareSprite(sprite), tint, grayscale, brightnessBoost)
+            is SoftwareIndexedSprite -> convertToBufferedImage(adaptSoftwareIndexedSprite(sprite), tint, grayscale, brightnessBoost)
+            is GlSprite -> convertToBufferedImage(adaptGlSprite(sprite), tint, grayscale, brightnessBoost)
+            is GlIndexedSprite -> convertToBufferedImage(adaptGlIndexedSprite(sprite), tint, grayscale, brightnessBoost)
             else -> BufferedImage(1, 1, BufferedImage.TYPE_INT_ARGB) // Default empty image for unsupported types
         }
     }

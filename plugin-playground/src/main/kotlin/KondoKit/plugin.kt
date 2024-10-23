@@ -5,7 +5,6 @@ import KondoKit.Helpers.formatHtmlLabelText
 import KondoKit.Helpers.formatNumber
 import KondoKit.Helpers.getSpriteId
 import KondoKit.Helpers.showAlert
-import KondoKit.Helpers.showToast
 import KondoKit.HiscoresView.createHiscoreSearchView
 import KondoKit.HiscoresView.hiScoreView
 import KondoKit.LootTrackerView.BAG_ICON
@@ -18,6 +17,9 @@ import KondoKit.ReflectiveEditorView.addPlugins
 import KondoKit.ReflectiveEditorView.createReflectiveEditorView
 import KondoKit.ReflectiveEditorView.reflectiveEditorView
 import KondoKit.SpriteToBufferedImage.getBufferedImageFromSprite
+import KondoKit.Themes.Theme
+import KondoKit.Themes.ThemeType
+import KondoKit.Themes.getTheme
 import KondoKit.XPTrackerView.createXPTrackerView
 import KondoKit.XPTrackerView.createXPWidget
 import KondoKit.XPTrackerView.initialXP
@@ -28,7 +30,6 @@ import KondoKit.XPTrackerView.wrappedWidget
 import KondoKit.XPTrackerView.xpTrackerView
 import KondoKit.XPTrackerView.xpWidgets
 import KondoKit.plugin.StateManager.focusedView
-import com.sun.org.apache.xpath.internal.operations.Bool
 import plugin.Plugin
 import plugin.api.*
 import plugin.api.API.*
@@ -70,6 +71,7 @@ class plugin : Plugin() {
         var PROGRESS_BAR_FILL = Color(61, 56, 49)
         var NAV_TINT: Color? = null
         var NAV_GREYSCALE = false
+        var BOOST = 1f
 
         var appliedTheme = ThemeType.RUNELITE
 
@@ -105,10 +107,10 @@ class plugin : Plugin() {
         private var pluginsReloaded = false
         private var loginScreen = 160
         private var lastLogin = ""
-        private var initialized = false;
+        private var initialized = false
         private var lastClickTime = 0L
         private var lastUIOffset = 0
-        private const val HIDDEN_VIEW = "HIDDEN";
+        private const val HIDDEN_VIEW = "HIDDEN"
         private val drawActions = mutableListOf<() -> Unit>()
 
         fun registerDrawAction(action: () -> Unit) {
@@ -123,19 +125,19 @@ class plugin : Plugin() {
         try{
             for (i in 0 until 24) {
                 if(!js5Archive8.isFileReady(getSpriteId(i))){
-                    return false;
+                    return false
                 }
             }
-            val otherIcons = arrayOf(LVL_ICON, MAG_SPRITE, LOOT_ICON, WRENCH_ICON, COMBAT_LVL_SPRITE, BAG_ICON);
+            val otherIcons = arrayOf(LVL_ICON, MAG_SPRITE, LOOT_ICON, WRENCH_ICON, COMBAT_LVL_SPRITE, BAG_ICON)
             for (icon in otherIcons) {
                 if(!js5Archive8.isFileReady(icon)){
-                    return false;
+                    return false
                 }
             }
         } catch (e : Exception){
-            return false;
+            return false
         }
-        return true;
+        return true
     }
 
     override fun OnLogin() {
@@ -149,9 +151,9 @@ class plugin : Plugin() {
 
     override fun Init() {
         // Disable Font AA
-        System.setProperty("sun.java2d.opengl", "false");
-        System.setProperty("awt.useSystemAAFontSettings", "off");
-        System.setProperty("swing.aatext", "false");
+        System.setProperty("sun.java2d.opengl", "false")
+        System.setProperty("awt.useSystemAAFontSettings", "off")
+        System.setProperty("swing.aatext", "false")
     }
 
     private fun UpdateDisplaySettings() {
@@ -465,7 +467,7 @@ class plugin : Plugin() {
     }
 
     private fun createNavButton(spriteId: Int, viewName: String): JPanel {
-        val bufferedImageSprite = getBufferedImageFromSprite(GetSprite(spriteId), NAV_TINT, NAV_GREYSCALE)
+        val bufferedImageSprite = getBufferedImageFromSprite(GetSprite(spriteId), NAV_TINT, NAV_GREYSCALE, BOOST)
         val buttonSize = Dimension(NAVBAR_WIDTH, 32)
         val imageSize = Dimension((bufferedImageSprite.width / 1.2f).toInt(), (bufferedImageSprite.height / 1.2f).toInt())
         val cooldownDuration = 100L
@@ -581,89 +583,6 @@ class plugin : Plugin() {
         PROGRESS_BAR_FILL = theme.progressBarFill
         NAV_TINT = theme.navTint
         NAV_GREYSCALE = theme.navGreyScale
+        BOOST = theme.boost
     }
-
-    enum class ThemeType {
-        RUNELITE,
-        DARKER_RUNELITE,
-        SARADOMIN,
-        ORION,
-    }
-
-    fun getTheme(themeType: ThemeType): Theme {
-        return when (themeType) {
-            ThemeType.RUNELITE -> Theme(
-                widgetColor = Color(30, 30, 30),
-                titleBarColor = Color(21, 21, 21),
-                viewBackgroundColor = Color(40, 40, 40),
-                primaryColor = Color(165, 165, 165),
-                secondaryColor = Color(255, 255, 255),
-                popupBackground = Color(45, 45, 45),
-                popupForeground = Color(220, 220, 220),
-                tooltipBackground = Color(50, 50, 50),
-                scrollBarColor = Color(64, 64, 64),
-                progressBarFill = Color(61, 56, 49),
-                navTint = null,
-                navGreyScale = false
-            )
-            ThemeType.DARKER_RUNELITE -> Theme(
-                widgetColor = Color(15, 15, 15),           // Darker widget backgrounds
-                titleBarColor = Color(10, 10, 10),         // Even darker title bar
-                viewBackgroundColor = Color(20, 20, 20),   // Very dark background for the view
-                primaryColor = Color(140, 140, 140),       // Darker shade for primary text
-                secondaryColor = Color(210, 210, 210),     // Slightly muted white for secondary text
-                popupBackground = Color(25, 25, 25),       // Very dark popup backgrounds
-                popupForeground = Color(200, 200, 200),    // Slightly muted light gray for popup text
-                tooltipBackground = Color(30, 30, 30),     // Darker tooltips background
-                scrollBarColor = Color(40, 40, 40),        // Darker scroll bar
-                progressBarFill = Color(45, 40, 35),       // Darker progress bar fill
-                navTint = null, //Color(20, 20, 20, 60),                            // No specific tint applied
-                navGreyScale = false                       // Navigation retains color (if applicable)
-            )
-            ThemeType.ORION -> Theme(
-                widgetColor = Color(50, 50, 50),           // Darker gray for widget backgrounds
-                titleBarColor = Color(35, 35, 35),         // Very dark gray for the title bar
-                viewBackgroundColor = Color(60, 60, 60),   // Medium-dark gray for view background
-                primaryColor = Color(180, 180, 180),       // Lighter gray for primary text or highlights
-                secondaryColor = Color(210, 210, 210),     // Light gray for secondary text
-                popupBackground = Color(45, 45, 45),       // Dark gray for popup backgrounds
-                popupForeground = Color(230, 230, 230),    // Light gray for popup text
-                tooltipBackground = Color(55, 55, 55),     // Slightly darker gray for tooltips
-                scrollBarColor = Color(75, 75, 75),        // Dark gray for scroll bars
-                progressBarFill = Color(100, 100, 100),    // Medium gray for progress bar fill
-                navTint = null,
-                navGreyScale = true
-            )
-            ThemeType.SARADOMIN -> Theme(
-                widgetColor = Color(75, 60, 45),
-                titleBarColor = Color(60, 48, 36),
-                viewBackgroundColor = Color(95, 76, 58),
-                primaryColor = Color(180, 150, 120),
-                secondaryColor = Color(230, 210, 190),
-                popupBackground = Color(70, 56, 42),
-                popupForeground = Color(220, 200, 180),
-                tooltipBackground = Color(80, 65, 50),
-                scrollBarColor = Color(100, 85, 70),
-                progressBarFill = Color(130, 110, 90),
-                navTint = null,
-                navGreyScale = false
-            )
-        }
-    }
-
-
-    data class Theme(
-            val widgetColor: Color,
-            val titleBarColor: Color,
-            val viewBackgroundColor: Color,
-            val primaryColor: Color,
-            val secondaryColor: Color,
-            val popupBackground: Color,
-            val popupForeground: Color,
-            val tooltipBackground: Color,
-            val scrollBarColor: Color,
-            val progressBarFill: Color,
-            val navTint: Color?,
-            val navGreyScale: Boolean
-    )
 }
