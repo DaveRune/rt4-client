@@ -17,6 +17,7 @@ class ScrollablePanel(private val content: JPanel) : JPanel() {
     private var scrollbarY = 0
     private var showScrollbar = false
     private var draggingScrollPill = false
+    private var lastSize = 0
 
     // Define a buffer for the view height (extra space for smoother scrolling)
     private val viewBuffer = -30
@@ -68,6 +69,8 @@ class ScrollablePanel(private val content: JPanel) : JPanel() {
         Timer().schedule(object : TimerTask() {
             override fun run() {
                 updateScrollbar()
+                if(lastSize != content.preferredSize.height.coerceAtLeast(frame.height + viewBuffer))
+                    handleResize()
             }
         }, 0, 1000)
 
@@ -84,7 +87,8 @@ class ScrollablePanel(private val content: JPanel) : JPanel() {
         bounds = Rectangle(0, 0, 242, frame.height)
 
         // Dynamically update content bounds and scrollbar on frame resize with buffer
-        content.bounds = Rectangle(0, 0, 242, content.preferredSize.height.coerceAtLeast(frame.height + viewBuffer))
+        lastSize = content.preferredSize.height.coerceAtLeast(frame.height + viewBuffer)
+        content.bounds = Rectangle(0, 0, 242, lastSize)
         showScrollbar = content.height > frame.height
 
         currentOffsetY = 0
