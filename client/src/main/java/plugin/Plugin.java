@@ -13,6 +13,7 @@ import rt4.Tile;
  */
 public abstract class Plugin {
     long timeOfLastDraw;
+    long timeOfLastLateDraw;
 
     void _init() {
         Init();
@@ -24,12 +25,26 @@ public abstract class Plugin {
         timeOfLastDraw = nowTime;
     }
 
+    void _lateDraw() {
+        long nowTime = System.currentTimeMillis();
+        LateDraw(nowTime - timeOfLastLateDraw);
+        timeOfLastLateDraw = nowTime;
+    }
+
     /**
      * Draw() is called by the client rendering loop so that plugins can draw information onto the screen.
      * This will be called once per frame, meaning it is framerate bound.
      * @param timeDelta the time (ms) elapsed since the last draw call.
      */
     public void Draw(long timeDelta) {}
+
+
+    /**
+     * LateDraw() is called at the end of a finalized frame
+     * This will be called once per frame, meaning it is framerate bound.
+     * @param timeDelta the time (ms) elapsed since the last draw call.
+     */
+    public void LateDraw(long timeDelta) {}
 
     /**
      * Init() is called when the plugin is first loaded

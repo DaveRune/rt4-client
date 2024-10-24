@@ -35,16 +35,17 @@ import plugin.api.*
 import plugin.api.API.*
 import plugin.api.FontColor.fromColor
 import rt4.GameShell
+import rt4.GameShell.canvas
 import rt4.GameShell.frame
 import rt4.GlRenderer
 import rt4.InterfaceList
 import rt4.Player
+import rt4.SoftwareRaster
 import rt4.client.js5Archive8
 import rt4.client.mainLoadState
 import java.awt.*
-import java.awt.event.ActionListener
-import java.awt.event.MouseAdapter
-import java.awt.event.MouseEvent
+import java.awt.event.*
+import java.awt.image.BufferedImage
 import javax.swing.*
 import javax.swing.plaf.nimbus.AbstractRegionPainter
 
@@ -149,12 +150,157 @@ class plugin : Plugin() {
         }
         lastLogin = Player.usernameInput.toString()
     }
+    class AltCanvas(private val mainCanvas: Canvas) : JPanel() {
+        private var gameImage: BufferedImage? = null
+        private var scaleX = 1.0
+        private var scaleY = 1.0
+        private var offsetX = 0
+        private var offsetY = 0
 
+        init {
+            gameImage = BufferedImage(765, 503, BufferedImage.TYPE_INT_ARGB)
+            val g = gameImage!!.createGraphics()
+            g.color = Color.RED
+            g.fillRect(0, 0, gameImage!!.width, gameImage!!.height)
+            g.color = Color.BLACK
+            g.drawString("Game Frame", 20, 20)
+            g.dispose()
+
+            addMouseListener(object : MouseAdapter() {
+                override fun mousePressed(e: MouseEvent) {
+                    relayMouseEvent(e)
+                }
+
+                override fun mouseReleased(e: MouseEvent) {
+                    relayMouseEvent(e)
+                }
+
+                override fun mouseClicked(e: MouseEvent) {
+                    relayMouseEvent(e)
+                }
+            })
+
+            addMouseMotionListener(object : MouseMotionAdapter() {
+                override fun mouseMoved(e: MouseEvent) {
+                    relayMouseEvent(e)
+                }
+
+                override fun mouseDragged(e: MouseEvent) {
+                    relayMouseEvent(e)
+                }
+            })
+
+            // Register a KeyAdapter for handling key events
+            addKeyListener(object : KeyAdapter() {
+                override fun keyPressed(e: KeyEvent) {
+                    for(listener in canvas.keyListeners){
+                        listener.keyPressed(e)
+                    }
+                }
+
+                override fun keyReleased(e: KeyEvent) {
+                    for(listener in canvas.keyListeners){
+                        listener.keyReleased(e)
+                    }
+                }
+
+                override fun keyTyped(e: KeyEvent) {
+                    for(listener in canvas.keyListeners){
+                        listener.keyTyped(e)
+                    }
+                }
+            })
+
+            isFocusable = true
+            requestFocusInWindow()
+        }
+
+        override fun paintComponent(g: Graphics) {
+            super.paintComponent(g)
+            val g2d = g as Graphics2D
+
+            // Set the desired background fill color here
+            g2d.color = Color(30, 30, 30) // Replace with your preferred fill color
+            g2d.fillRect(0, 0, width, height)
+            gameImage?.let { image ->
+                g2d.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR)
+
+                // Calculate aspect-ratio-preserving scale
+                val imageAspect = image.width.toDouble() / image.height.toDouble()
+                val panelAspect = width.toDouble() / height.toDouble()
+
+                val (drawWidth, drawHeight) = if (imageAspect > panelAspect) {
+                    val newWidth = width
+                    val newHeight = (width / imageAspect).toInt()
+                    newWidth to newHeight
+                } else {
+                    val newHeight = height
+                    val newWidth = (height * imageAspect).toInt()
+                    newWidth to newHeight
+                }
+
+                // Store scale factors and offsets for event adjustment
+                scaleX = drawWidth.toDouble() / image.width
+                scaleY = drawHeight.toDouble() / image.height
+                offsetX = (width - drawWidth) / 2
+                offsetY = (height - drawHeight) / 2
+
+                // Draw the scaled image centered in the panel
+                val x = offsetX
+                val y = offsetY
+                g2d.drawImage(image, x, y, drawWidth, drawHeight, null)
+            }
+        }
+
+        private fun relayMouseEvent(e: MouseEvent) {
+            val adjustedX = (e.x - offsetX) / scaleX
+            val adjustedY = (e.y - offsetY) / scaleY
+
+            val originalX = adjustedX.toInt().coerceIn(0, gameImage!!.width - 1)
+            val originalY = adjustedY.toInt().coerceIn(0, gameImage!!.height - 1)
+
+            val newEvent = MouseEvent(
+                    mainCanvas, e.id, e.`when`, e.modifiersEx,
+                    originalX, originalY, e.clickCount, e.isPopupTrigger, e.button
+            )
+
+            mainCanvas.dispatchEvent(newEvent)
+        }
+
+        fun updateGameImage(newImage: BufferedImage) {
+            gameImage = newImage
+            repaint()
+        }
+    }
+
+
+
+    fun createAltCanvas(mainCanvas: Canvas): AltCanvas {
+        return AltCanvas(mainCanvas).apply {
+            preferredSize = Dimension(FIXED_WIDTH, 503)
+        }
+    }
+
+    private var altCanvas: AltCanvas? = null
     override fun Init() {
         // Disable Font AA
         System.setProperty("sun.java2d.opengl", "false")
         System.setProperty("awt.useSystemAAFontSettings", "off")
         System.setProperty("swing.aatext", "false")
+        val frame: Frame? = GameShell.frame
+        if (frame != null) {
+            // Create the AltCanvas and add it to the main frame
+            altCanvas = createAltCanvas(canvas)
+
+            // Use BorderLayout for better layout control
+            frame.layout = BorderLayout()
+
+            // Add the AltCanvas in the center to ensure it scales properly with the window size
+            frame.add(altCanvas, BorderLayout.NORTH)
+            frame.remove(canvas)
+            //frame.defaultCloseOperation = JFrame.EXIT_ON_CLOSE
+            frame.isVisible = true
+        }
     }
 
     private fun UpdateDisplaySettings() {
@@ -166,9 +312,8 @@ class plugin : Plugin() {
                 if (frame.width < FIXED_WIDTH + currentScrollPaneWidth + uiOffset) {
                     frame.setSize(FIXED_WIDTH + currentScrollPaneWidth + uiOffset, frame.height)
                 }
-
-                val difference = frame.width - (FIXED_WIDTH + uiOffset + currentScrollPaneWidth)
-                GameShell.leftMargin = difference / 2
+                val difference = frame.width - (uiOffset + currentScrollPaneWidth)
+                altCanvas?.size = Dimension(difference, frame.height - 30)
             }
             WindowMode.RESIZABLE -> {
                 GameShell.canvasWidth = frame.width - (currentScrollPaneWidth + uiOffset)
@@ -274,7 +419,7 @@ class plugin : Plugin() {
         }
     }
 
-    override fun Draw(timeDelta: Long) {
+    override fun LateDraw(timeDelta: Long) {
         if (GlRenderer.enabled && GlRenderer.canvasWidth != GameShell.canvasWidth) {
             GlRenderer.canvasWidth = GameShell.canvasWidth
             GlRenderer.setViewportBounds(0, 0, GameShell.canvasWidth, GameShell.canvasHeight)
@@ -296,6 +441,10 @@ class plugin : Plugin() {
             accumulatedTime = 0L
         }
 
+        // Update game image here
+        val rasterImage = getRasterImageFromGameShell() // Replace this with the actual method to fetch the BufferedImage from GameShell.canvas.
+        altCanvas?.updateGameImage(rasterImage)
+
         // Draw synced actions (that require to be done between glBegin and glEnd)
         if (drawActions.isNotEmpty()) {
             synchronized(drawActions) {
@@ -312,6 +461,18 @@ class plugin : Plugin() {
             initKondoUI()
         }
     }
+
+    // Placeholder method to get the game image from GameShell
+    fun getRasterImageFromGameShell(): BufferedImage {
+        // Assuming SoftwareRaster.pixels is an IntArray containing ARGB values of the game image.
+        val gameImage = BufferedImage(765, 503, BufferedImage.TYPE_INT_ARGB)
+
+        val g = gameImage.createGraphics()
+
+        SoftwareRaster.frameBuffer.draw(g)
+        return gameImage
+    }
+
 
     private fun initKondoUI(){
         DrawText(FontType.LARGE, fromColor(Color(16777215)), TextModifier.CENTER, "KondoKit Loading Sprites...", GameShell.canvasWidth/2, GameShell.canvasHeight/2)
@@ -379,6 +540,7 @@ class plugin : Plugin() {
 
                 // Update component tree UI to apply the new theme
                 SwingUtilities.updateComponentTreeUI(GameShell.frame)
+                GameShell.frame.background = Color.BLACK
             } catch (e : Exception) {
                 e.printStackTrace()
             }
