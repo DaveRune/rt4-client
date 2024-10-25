@@ -68,7 +68,7 @@ object Helpers {
 
 
             // Adjust for parent component location if it exists
-            if (parentComponent != null) {
+            if (parentComponent != null && GameShell.canvas.isShowing) {
                 val parentLocation = parentComponent.locationOnScreen
                 val x = parentLocation.x
                 val y = GameShell.canvas.locationOnScreen.y

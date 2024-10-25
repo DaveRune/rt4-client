@@ -324,7 +324,7 @@ class plugin : Plugin() {
         if (frame != null) {
             // Create the AltCanvas and add it to the main frame
             altCanvas = createAltCanvas(canvas)
-
+            canvas.isVisible = false
             // Use BorderLayout for better layout control
             frame.layout = BorderLayout()
 
