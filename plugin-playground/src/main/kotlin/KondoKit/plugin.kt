@@ -45,7 +45,7 @@ import rt4.client.js5Archive8
 import rt4.client.mainLoadState
 import java.awt.*
 import java.awt.event.*
-import java.awt.image.BufferedImage
+import java.awt.image.VolatileImage
 import javax.swing.*
 import javax.swing.plaf.nimbus.AbstractRegionPainter
 
@@ -151,20 +151,15 @@ class plugin : Plugin() {
         lastLogin = Player.usernameInput.toString()
     }
     class AltCanvas(private val mainCanvas: Canvas) : JPanel() {
-        private var gameImage: BufferedImage? = null
+        private var gameImage: VolatileImage? = null
         private var scaleX = 1.0
         private var scaleY = 1.0
         private var offsetX = 0
         private var offsetY = 0
 
+
         init {
-            gameImage = BufferedImage(765, 503, BufferedImage.TYPE_INT_ARGB)
-            val g = gameImage!!.createGraphics()
-            g.color = Color.RED
-            g.fillRect(0, 0, gameImage!!.width, gameImage!!.height)
-            g.color = Color.BLACK
-            g.drawString("Game Frame", 20, 20)
-            g.dispose()
+            validateGameImage()
 
             addMouseListener(object : MouseAdapter() {
                 override fun mousePressed(e: MouseEvent) {
@@ -193,26 +188,55 @@ class plugin : Plugin() {
             // Register a KeyAdapter for handling key events
             addKeyListener(object : KeyAdapter() {
                 override fun keyPressed(e: KeyEvent) {
-                    for(listener in canvas.keyListeners){
+                    for (listener in mainCanvas.keyListeners) {
                         listener.keyPressed(e)
                     }
                 }
 
                 override fun keyReleased(e: KeyEvent) {
-                    for(listener in canvas.keyListeners){
+                    for (listener in mainCanvas.keyListeners) {
                         listener.keyReleased(e)
                     }
                 }
 
                 override fun keyTyped(e: KeyEvent) {
-                    for(listener in canvas.keyListeners){
+                    for (listener in mainCanvas.keyListeners) {
                         listener.keyTyped(e)
                     }
                 }
             })
 
             isFocusable = true
-            requestFocusInWindow()
+        }
+
+        private fun validateGameImage() {
+            val gc = GraphicsEnvironment.getLocalGraphicsEnvironment().defaultScreenDevice.defaultConfiguration
+            if (gameImage == null) {
+                gameImage = gc.createCompatibleVolatileImage(765, 503, Transparency.TRANSLUCENT)
+                renderGameImage()
+            } else {
+                val status = gameImage!!.validate(gc)
+                if (status == VolatileImage.IMAGE_INCOMPATIBLE) {
+                    gameImage = gc.createCompatibleVolatileImage(765, 503, Transparency.TRANSLUCENT)
+                    renderGameImage()
+                } else if (status == VolatileImage.IMAGE_RESTORED) {
+                    renderGameImage()
+                }
+            }
+        }
+
+        private fun renderGameImage() {
+            val g = gameImage!!.createGraphics()
+            try {
+                // Initial drawing code
+                g.color = Color.RED
+                g.fillRect(0, 0, gameImage!!.width, gameImage!!.height)
+                g.color = Color.BLACK
+                g.drawString("Game Frame", 20, 20)
+                // Add any additional rendering here
+            } finally {
+                g.dispose()
+            }
         }
 
         override fun paintComponent(g: Graphics) {
@@ -222,6 +246,9 @@ class plugin : Plugin() {
             // Set the desired background fill color here
             g2d.color = Color.BLACK
             g2d.fillRect(0, 0, width, height)
+
+            validateGameImage()
+
             gameImage?.let { image ->
                 g2d.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR)
 
@@ -267,8 +294,14 @@ class plugin : Plugin() {
             mainCanvas.dispatchEvent(newEvent)
         }
 
-        fun updateGameImage(newImage: BufferedImage) {
-            gameImage = newImage
+        fun updateGameImage() {
+            validateGameImage()
+            val g = gameImage!!.createGraphics()
+            try {
+                SoftwareRaster.frameBuffer.draw(g)
+            } finally {
+                g.dispose()
+            }
             repaint()
         }
     }
@@ -277,16 +310,6 @@ class plugin : Plugin() {
         return AltCanvas(mainCanvas).apply {
             preferredSize = Dimension(FIXED_WIDTH, 503)
         }
-    }
-
-    fun getRasterImageFromGameShell(): BufferedImage {
-        // Assuming SoftwareRaster.pixels is an IntArray containing ARGB values of the game image.
-        val gameImage = BufferedImage(765, 503, BufferedImage.TYPE_INT_ARGB)
-
-        val g = gameImage.createGraphics()
-
-        SoftwareRaster.frameBuffer.draw(g)
-        return gameImage
     }
 
     private var altCanvas: AltCanvas? = null
@@ -427,7 +450,7 @@ class plugin : Plugin() {
         }
     }
 
-    override fun LateDraw(timeDelta: Long) {
+    override fun Draw(timeDelta: Long) {
         if (GlRenderer.enabled && GlRenderer.canvasWidth != GameShell.canvasWidth) {
             GlRenderer.canvasWidth = GameShell.canvasWidth
             GlRenderer.setViewportBounds(0, 0, GameShell.canvasWidth, GameShell.canvasHeight)
@@ -449,10 +472,6 @@ class plugin : Plugin() {
             accumulatedTime = 0L
         }
 
-        // Update game image here
-        val rasterImage = getRasterImageFromGameShell()
-        altCanvas?.updateGameImage(rasterImage)
-
         // Draw synced actions (that require to be done between glBegin and glEnd)
         if (drawActions.isNotEmpty()) {
             synchronized(drawActions) {
@@ -468,6 +487,11 @@ class plugin : Plugin() {
         if(!initialized && mainLoadState >= loginScreen) {
             initKondoUI()
         }
+    }
+
+    override fun LateDraw(timeDelta: Long){
+        // Update game image here
+        altCanvas?.updateGameImage()
     }
 
     private fun initKondoUI(){
