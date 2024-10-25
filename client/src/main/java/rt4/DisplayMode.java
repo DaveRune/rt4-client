@@ -79,6 +79,12 @@ public final class DisplayMode {
 
 	@OriginalMember(owner = "client!pm", name = "a", descriptor = "(ZIZIZII)V")
 	public static void setWindowMode(@OriginalArg(0) boolean replaceCanvas, @OriginalArg(1) int newMode, @OriginalArg(2) boolean useHD, @OriginalArg(3) int currentMode, @OriginalArg(5) int width, @OriginalArg(6) int height) {
+		if(!GameShell.canvas.isShowing()){
+			GameShell.frame.add(GameShell.canvas);
+			GameShell.canvas.revalidate();
+			GameShell.frame.revalidate();
+			GameShell.canvas.repaint();
+		}
 		if (useHD) {
 			GlRenderer.quit();
 		}

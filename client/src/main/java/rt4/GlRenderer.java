@@ -24,6 +24,8 @@ public final class GlRenderer {
 	public static float hFOV = 0;
 
 
+	public static int[] pixelData = null;
+
 	@OriginalMember(owner = "client!tf", name = "c", descriptor = "F")
 	private static float aFloat30;
 
@@ -67,7 +69,7 @@ public final class GlRenderer {
 	private static int maxTextureCoords;
 
 	@OriginalMember(owner = "client!tf", name = "E", descriptor = "Lgl!javax/media/opengl/GLDrawable;")
-	private static GLDrawable drawable;
+	public static GLDrawable drawable;
 
 	@OriginalMember(owner = "client!tf", name = "H", descriptor = "Z")
 	public static boolean arbVertexProgramSupported;
@@ -199,9 +201,18 @@ public final class GlRenderer {
 	@OriginalMember(owner = "client!tf", name = "d", descriptor = "()V")
 	public static void swapBuffers() {
 		try {
+			pixelData = readPixels();
 			drawable.swapBuffers();
-		} catch (@Pc(3) Exception local3) {
+		} catch (@Pc(3) Exception local3) {*,
 		}
+	}
+
+	@OriginalMember(owner = "client!tf", name = "readPixels", descriptor = "()int[]")
+	public static int[] readPixels() {
+		int[] pixels = new int[canvasWidth * canvasHeight];
+		IntBuffer buffer = IntBuffer.wrap(pixels);
+		gl.glReadPixels(0, 0, canvasWidth, canvasHeight, GL2.GL_BGRA, GlRenderer.bigEndian ? GL2.GL_UNSIGNED_INT_8_8_8_8_REV : GL2.GL_UNSIGNED_BYTE, buffer);
+		return pixels;
 	}
 
 	@OriginalMember(owner = "client!tf", name = "a", descriptor = "(Z)V")

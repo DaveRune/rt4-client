@@ -34,17 +34,18 @@ import plugin.Plugin
 import plugin.api.*
 import plugin.api.API.*
 import plugin.api.FontColor.fromColor
-import rt4.GameShell
+import rt4.*
 import rt4.GameShell.canvas
 import rt4.GameShell.frame
-import rt4.GlRenderer
-import rt4.InterfaceList
-import rt4.Player
-import rt4.SoftwareRaster
-import rt4.client.*
+import rt4.client.js5Archive8
+import rt4.client.mainLoadState
 import java.awt.*
+import java.awt.Font
 import java.awt.event.*
+import java.awt.image.BufferedImage
 import java.awt.image.VolatileImage
+import java.util.*
+import java.util.Timer
 import javax.swing.*
 
 
@@ -148,7 +149,7 @@ class plugin : Plugin() {
         }
         lastLogin = Player.usernameInput.toString()
     }
-    class AltCanvas(private val mainCanvas: Canvas) : JPanel() {
+    class AltCanvas() : JPanel() {
         private var gameImage: VolatileImage? = null
         private var scaleX = 1.0
         private var scaleY = 1.0
@@ -186,19 +187,19 @@ class plugin : Plugin() {
             // Register a KeyAdapter for handling key events
             addKeyListener(object : KeyAdapter() {
                 override fun keyPressed(e: KeyEvent) {
-                    for (listener in mainCanvas.keyListeners) {
+                    for (listener in canvas.keyListeners) {
                         listener.keyPressed(e)
                     }
                 }
 
                 override fun keyReleased(e: KeyEvent) {
-                    for (listener in mainCanvas.keyListeners) {
+                    for (listener in canvas.keyListeners) {
                         listener.keyReleased(e)
                     }
                 }
 
                 override fun keyTyped(e: KeyEvent) {
-                    for (listener in mainCanvas.keyListeners) {
+                    for (listener in canvas.keyListeners) {
                         listener.keyTyped(e)
                     }
                 }
@@ -287,27 +288,62 @@ class plugin : Plugin() {
             val originalY = adjustedY.toInt().coerceIn(0, gameImage!!.height - 1)
 
             val newEvent = MouseEvent(
-                    mainCanvas, e.id, e.`when`, e.modifiersEx,
+                canvas, e.id, e.`when`, e.modifiersEx,
                     originalX, originalY, e.clickCount, e.isPopupTrigger, e.button
             )
 
-            mainCanvas.dispatchEvent(newEvent)
+            canvas.dispatchEvent(newEvent)
         }
 
         fun updateGameImage() {
             validateGameImage()
+            if (IsHD()) {
+                renderGlRaster()
+            } else {
+                renderSoftwareRaster()
+            }
+            repaint()
+        }
+        private fun renderGlRaster() {
+            val pixels = GlRenderer.pixelData // Assuming this holds the int[] BGRA pixel data from GlRenderer.readPixels()
+            val width = gameImage!!.width
+            val height = gameImage!!.height
+
+            // Create a BufferedImage with the same dimensions as the gameImage
+            val bufferedImage = BufferedImage(width, height, BufferedImage.TYPE_INT_BGR)
+
+            // Flip the image vertically by reversing the rows
+            val flippedPixels = IntArray(width * height)
+            for (y in 0 until height) {
+                // Calculate the source row (bottom to top)
+                val srcY = height - 1 - y
+                System.arraycopy(pixels, srcY * width, flippedPixels, y * width, width)
+            }
+
+            // Set the flipped pixel data into the BufferedImage
+            bufferedImage.setRGB(0, 0, width, height, flippedPixels, 0, width)
+
+            // Draw the BufferedImage onto the VolatileImage
+            val g = gameImage!!.createGraphics()
+            try {
+                g.drawImage(bufferedImage, 0, 0, null)
+            } finally {
+                g.dispose()
+            }
+        }
+
+        private fun renderSoftwareRaster() {
             val g = gameImage!!.createGraphics()
             try {
                 SoftwareRaster.frameBuffer.draw(g)
             } finally {
                 g.dispose()
             }
-            repaint()
         }
     }
 
-    fun createAltCanvas(mainCanvas: Canvas): AltCanvas {
-        return AltCanvas(mainCanvas).apply {
+    fun createAltCanvas(): AltCanvas {
+        return AltCanvas().apply {
             preferredSize = Dimension(FIXED_WIDTH, 503)
         }
     }
@@ -323,14 +359,12 @@ class plugin : Plugin() {
         val frame: Frame? = GameShell.frame
         if (frame != null) {
             // Create the AltCanvas and add it to the main frame
-            altCanvas = createAltCanvas(canvas)
-            canvas.isVisible = false
+            altCanvas = createAltCanvas()
             // Use BorderLayout for better layout control
             frame.layout = BorderLayout()
 
             // Add the AltCanvas in the center to ensure it scales properly with the window size
             altCanvas?.let { frame.add(it, BorderLayout.NORTH) }
-            frame.remove(canvas)
         }
     }
 
@@ -415,6 +449,20 @@ class plugin : Plugin() {
         frame.layout = BorderLayout()
         frame.add(rightPanelWrapper, BorderLayout.EAST)
 
+        // Create a timer to delay execution by 2 seconds
+        Timer().schedule(object : TimerTask() {
+            override fun run() {
+                println("mode is: " + GetWindowMode().toString())
+                if (GetWindowMode() != WindowMode.FIXED) {
+                    // Perform any actions needed for non-fixed mode
+                } else {
+                    //if (canvas.isShowing) {
+                    //    frame.remove(canvas)
+                   // }
+                }
+            }
+        }, 2000) // 2000 milliseconds = 2 seconds
+
         frame.revalidate()
         frame.repaint()
         pluginsReloaded = true
@@ -490,7 +538,8 @@ class plugin : Plugin() {
     }
 
     override fun LateDraw(timeDelta: Long){
-        // Update game image here
+        // Clear original canvas for scaled
+        if(!initialized) return
         altCanvas?.updateGameImage()
     }
 

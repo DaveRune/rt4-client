@@ -323,6 +323,7 @@ public abstract class GameShell extends Applet implements Runnable, FocusListene
 	@OriginalMember(owner = "client!rc", name = "b", descriptor = "(B)V")
 	public final synchronized void addCanvas() {
 		if (canvas != null) {
+			// Remove the old canvas if it exists
 			canvas.removeFocusListener(this);
 			canvas.getParent().remove(canvas);
 		}
