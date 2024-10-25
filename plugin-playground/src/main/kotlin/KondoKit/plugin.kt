@@ -220,7 +220,7 @@ class plugin : Plugin() {
             val g2d = g as Graphics2D
 
             // Set the desired background fill color here
-            g2d.color = Color(30, 30, 30) // Replace with your preferred fill color
+            g2d.color = Color.BLACK
             g2d.fillRect(0, 0, width, height)
             gameImage?.let { image ->
                 g2d.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR)
@@ -273,15 +273,25 @@ class plugin : Plugin() {
         }
     }
 
-
-
     fun createAltCanvas(mainCanvas: Canvas): AltCanvas {
         return AltCanvas(mainCanvas).apply {
             preferredSize = Dimension(FIXED_WIDTH, 503)
         }
     }
 
+    fun getRasterImageFromGameShell(): BufferedImage {
+        // Assuming SoftwareRaster.pixels is an IntArray containing ARGB values of the game image.
+        val gameImage = BufferedImage(765, 503, BufferedImage.TYPE_INT_ARGB)
+
+        val g = gameImage.createGraphics()
+
+        SoftwareRaster.frameBuffer.draw(g)
+        return gameImage
+    }
+
     private var altCanvas: AltCanvas? = null
+
+
     override fun Init() {
         // Disable Font AA
         System.setProperty("sun.java2d.opengl", "false")
@@ -296,10 +306,8 @@ class plugin : Plugin() {
             frame.layout = BorderLayout()
 
             // Add the AltCanvas in the center to ensure it scales properly with the window size
-            frame.add(altCanvas, BorderLayout.NORTH)
+            altCanvas?.let { frame.add(it, BorderLayout.NORTH) }
             frame.remove(canvas)
-            //frame.defaultCloseOperation = JFrame.EXIT_ON_CLOSE
-            frame.isVisible = true
         }
     }
 
@@ -442,7 +450,7 @@ class plugin : Plugin() {
         }
 
         // Update game image here
-        val rasterImage = getRasterImageFromGameShell() // Replace this with the actual method to fetch the BufferedImage from GameShell.canvas.
+        val rasterImage = getRasterImageFromGameShell()
         altCanvas?.updateGameImage(rasterImage)
 
         // Draw synced actions (that require to be done between glBegin and glEnd)
@@ -461,18 +469,6 @@ class plugin : Plugin() {
             initKondoUI()
         }
     }
-
-    // Placeholder method to get the game image from GameShell
-    fun getRasterImageFromGameShell(): BufferedImage {
-        // Assuming SoftwareRaster.pixels is an IntArray containing ARGB values of the game image.
-        val gameImage = BufferedImage(765, 503, BufferedImage.TYPE_INT_ARGB)
-
-        val g = gameImage.createGraphics()
-
-        SoftwareRaster.frameBuffer.draw(g)
-        return gameImage
-    }
-
 
     private fun initKondoUI(){
         DrawText(FontType.LARGE, fromColor(Color(16777215)), TextModifier.CENTER, "KondoKit Loading Sprites...", GameShell.canvasWidth/2, GameShell.canvasHeight/2)
