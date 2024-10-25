@@ -41,13 +41,11 @@ import rt4.GlRenderer
 import rt4.InterfaceList
 import rt4.Player
 import rt4.SoftwareRaster
-import rt4.client.js5Archive8
-import rt4.client.mainLoadState
+import rt4.client.*
 import java.awt.*
 import java.awt.event.*
 import java.awt.image.VolatileImage
 import javax.swing.*
-import javax.swing.plaf.nimbus.AbstractRegionPainter
 
 
 @Target(AnnotationTarget.FIELD)
@@ -207,6 +205,7 @@ class plugin : Plugin() {
             })
 
             isFocusable = true
+            requestFocusInWindow()
         }
 
         private fun validateGameImage() {
@@ -280,6 +279,7 @@ class plugin : Plugin() {
         }
 
         private fun relayMouseEvent(e: MouseEvent) {
+            this.requestFocusInWindow()
             val adjustedX = (e.x - offsetX) / scaleX
             val adjustedY = (e.y - offsetY) / scaleY
 
