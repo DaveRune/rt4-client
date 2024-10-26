@@ -525,9 +525,11 @@ class plugin : Plugin() {
         // Clear original canvas for scaled
         if(!initialized) return
         SwingUtilities.invokeLater {
+            var p = Point(-1000,-1000)
             if (GetWindowMode() == WindowMode.FIXED) {
-                if (canvas.isShowing) {
-                    canvas.setLocation(-1000,-1000)
+                if (canvas.location != p) {
+                    println("Moving canvas offscreen");
+                    canvas.location = p;
                 }
             } else {
 
