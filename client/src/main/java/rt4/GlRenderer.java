@@ -9,6 +9,7 @@ import org.openrs2.deob.annotation.OriginalMember;
 import org.openrs2.deob.annotation.Pc;
 
 import java.awt.*;
+import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.IntBuffer;
 import java.nio.charset.StandardCharsets;
@@ -24,7 +25,10 @@ public final class GlRenderer {
 	public static float hFOV = 0;
 
 
-	public static int[] pixelData = null;
+
+	private static ByteBuffer pixelByteBuffer;
+	private static IntBuffer pixelIntBuffer;
+	public static int[] pixelData;
 
 	@OriginalMember(owner = "client!tf", name = "c", descriptor = "F")
 	private static float aFloat30;
@@ -201,18 +205,33 @@ public final class GlRenderer {
 	@OriginalMember(owner = "client!tf", name = "d", descriptor = "()V")
 	public static void swapBuffers() {
 		try {
-			pixelData = readPixels();
+			readPixels();
 			drawable.swapBuffers();
 		} catch (@Pc(3) Exception local3) {
 		}
 	}
 
-	@OriginalMember(owner = "client!tf", name = "readPixels", descriptor = "()int[]")
-	public static int[] readPixels() {
-		int[] pixels = new int[canvasWidth * canvasHeight];
-		IntBuffer buffer = IntBuffer.wrap(pixels);
-		gl.glReadPixels(0, 0, canvasWidth, canvasHeight, GL2.GL_BGRA, GlRenderer.bigEndian ? GL2.GL_UNSIGNED_INT_8_8_8_8_REV : GL2.GL_UNSIGNED_BYTE, buffer);
-		return pixels;
+	public static void initializePixelBuffer(int width, int height) {
+		// Allocate ByteBuffer for BGRA pixels (4 bytes per pixel)
+		pixelByteBuffer = ByteBuffer.allocateDirect(width * height * 4).order(ByteOrder.nativeOrder());
+		pixelIntBuffer = pixelByteBuffer.asIntBuffer();
+		pixelData = new int[width * height];
+	}
+
+	public static void readPixels() {
+		// Ensure the pixel buffer is initialized with the correct size
+		if (pixelByteBuffer == null || pixelIntBuffer.capacity() != canvasWidth * canvasHeight) {
+			initializePixelBuffer(canvasWidth, canvasHeight);
+		}
+
+		// Read pixels into the direct ByteBuffer
+		gl.glReadPixels(0, 0, canvasWidth, canvasHeight, GL2.GL_BGRA,
+				GlRenderer.bigEndian ? GL2.GL_UNSIGNED_INT_8_8_8_8_REV : GL2.GL_UNSIGNED_BYTE,
+				pixelByteBuffer);
+
+		// Convert to int array if needed
+		pixelIntBuffer.rewind(); // Prepare the IntBuffer for reading
+		pixelIntBuffer.get(pixelData, 0, pixelData.length); // Transfer to pixelData array if necessary
 	}
 
 	@OriginalMember(owner = "client!tf", name = "a", descriptor = "(Z)V")

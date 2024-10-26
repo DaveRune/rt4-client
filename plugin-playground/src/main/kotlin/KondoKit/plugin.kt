@@ -150,6 +150,8 @@ class plugin : Plugin() {
 
     class AltCanvas : Canvas() {
         private var gameImage: VolatileImage? = null
+        private var flippedPixels: IntArray? = null
+        private var bufferImage: BufferedImage? = null
         private var scaleX = 1.0
         private var scaleY = 1.0
         private var offsetX = 0
@@ -158,6 +160,8 @@ class plugin : Plugin() {
 
         init {
             validateGameImage()
+            isFocusable = true
+            requestFocusInWindow()
 
             addMouseListener(object : MouseAdapter() {
                 override fun mousePressed(e: MouseEvent) {
@@ -210,6 +214,11 @@ class plugin : Plugin() {
 
         override fun update(g: Graphics) {
             paint(g)
+        }
+
+        override fun addNotify() {
+            super.addNotify()
+            //createBufferStrategy(2) // Double buffering for V-Sync, called only after the peer is created
         }
 
         private fun validateGameImage() {
@@ -294,6 +303,9 @@ class plugin : Plugin() {
                 val x = offsetX
                 val y = offsetY
                 g2d.drawImage(image, x, y, drawWidth, drawHeight, null)
+                g2d.dispose()
+                //bufferStrategy.show() // Shows the buffer with V-Sync enabled
+                Toolkit.getDefaultToolkit().sync() // Ensures V-Sync on some systems
             }
         }
 
@@ -322,30 +334,27 @@ class plugin : Plugin() {
             repaint()
         }
         private fun renderGlRaster() {
-            val pixels = GlRenderer.pixelData // Assuming this holds the int[] BGRA pixel data from GlRenderer.readPixels()
-            val width = gameImage!!.width
-            val height = gameImage!!.height
-
-            // Create a BufferedImage with the same dimensions as the gameImage
-            val bufferedImage = BufferedImage(width, height, BufferedImage.TYPE_INT_BGR)
-
-            // Flip the image vertically by reversing the rows
-            val flippedPixels = IntArray(width * height)
-            for (y in 0 until height) {
-                // Calculate the source row (bottom to top)
-                val srcY = height - 1 - y
-                System.arraycopy(pixels, srcY * width, flippedPixels, y * width, width)
+            if (flippedPixels == null || flippedPixels!!.size != gameImage!!.width * gameImage!!.height) {
+                flippedPixels = IntArray(gameImage!!.width * gameImage!!.height)
             }
 
-            // Set the flipped pixel data into the BufferedImage
-            bufferedImage.setRGB(0, 0, width, height, flippedPixels, 0, width)
+            // Initialize bufferImage only once and reuse it
+            if (bufferImage == null || bufferImage!!.width != gameImage!!.width || bufferImage!!.height != gameImage!!.height) {
+                bufferImage = BufferedImage(gameImage!!.width, gameImage!!.height, BufferedImage.TYPE_INT_BGR)
+            }
 
-            // Draw the BufferedImage onto the VolatileImage
-            val g = gameImage!!.createGraphics()
-            try {
-                g.drawImage(bufferedImage, 0, 0, null)
-            } finally {
-                g.dispose()
+            val width = gameImage!!.width
+            val height = gameImage!!.height
+            val pixels = GlRenderer.pixelData // Retrieve BGRA pixel data
+            for (y in 0 until height) {
+                System.arraycopy(pixels, (height - 1 - y) * width, flippedPixels, y * width, width)
+            }
+
+            bufferImage!!.setRGB(0, 0, width, height, flippedPixels, 0, width)
+
+            gameImage?.createGraphics()?.apply {
+                drawImage(bufferImage, 0, 0, null)
+                dispose()
             }
         }
 
@@ -404,9 +413,7 @@ class plugin : Plugin() {
         rightPanelWrapper?.preferredSize = Dimension(currentScrollPaneWidth, frame.height)
         rightPanelWrapper?.let { it.isDoubleBuffered = true }
         rightPanelWrapper?.revalidate()
-        SwingUtilities.invokeLater {
-            rightPanelWrapper?.repaint()
-        }
+        rightPanelWrapper?.repaint()
     }
 
     fun OnKondoValueUpdated(){
@@ -462,9 +469,7 @@ class plugin : Plugin() {
 
     override fun OnPluginsReloaded(): Boolean {
         if (!initialized) return true
-
         UpdateDisplaySettings()
-
         frame.remove(rightPanelWrapper)
         frame.layout = BorderLayout()
         frame.add(rightPanelWrapper, BorderLayout.EAST)
@@ -475,32 +480,31 @@ class plugin : Plugin() {
     }
 
     override fun OnXPUpdate(skillId: Int, xp: Int) {
-        if (!initialXP.containsKey(skillId)) {
-            initialXP[skillId] = xp
-            return
-        }
+        SwingUtilities.invokeLater{
+            if (!initialXP.containsKey(skillId)) {
+                initialXP[skillId] = xp
+                return@invokeLater
+            }
+            var xpWidget = xpWidgets[skillId]
+            if (xpWidget != null) {
+                updateWidget(xpWidget, xp)
+            } else {
+                val previousXp = initialXP[skillId] ?: xp
+                if (xp == initialXP[skillId]) return@invokeLater
 
-        var xpWidget = xpWidgets[skillId]
+                xpWidget = createXPWidget(skillId, previousXp)
+                xpWidgets[skillId] = xpWidget
 
-        if (xpWidget != null) {
-            updateWidget(xpWidget, xp)
-        } else {
-            val previousXp = initialXP[skillId] ?: xp
-            if (xp == initialXP[skillId]) return
+                xpTrackerView?.add(wrappedWidget(xpWidget.container))
+                xpTrackerView?.add(Box.createVerticalStrut(5))
 
-            xpWidget = createXPWidget(skillId, previousXp)
-            xpWidgets[skillId] = xpWidget
-
-            xpTrackerView?.add(wrappedWidget(xpWidget.container))
-            xpTrackerView?.add(Box.createVerticalStrut(5))
-
-            xpTrackerView?.revalidate()
-            if(focusedView == XPTrackerView.VIEW_NAME)
-                SwingUtilities.invokeLater {
+                if(focusedView == XPTrackerView.VIEW_NAME) {
+                    xpTrackerView?.revalidate()
                     xpTrackerView?.repaint()
                 }
 
-            updateWidget(xpWidget, xp)
+                updateWidget(xpWidget, xp)
+            }
         }
     }
 
@@ -545,16 +549,19 @@ class plugin : Plugin() {
 
     override fun LateDraw(timeDelta: Long){
         if(!initialized) return
-        SwingUtilities.invokeLater {
-            if (GetWindowMode() == WindowMode.FIXED) {
-                if (canvas.parent !== hiddenFrame?.contentPane) {
-                    println("Moving canvas to hidden frame")
-                    initializeHiddenFrame()
-                    frame.remove(canvas) // Remove from main frame if necessary
-                    hiddenFrame?.contentPane?.add(canvas)
-                    hiddenFrame?.pack()
+        if (GetWindowMode() == WindowMode.FIXED) {
+            if (canvas.parent !== hiddenFrame?.contentPane) {
+                if(altCanvas?.parent != frame) {
+                    frame.add(altCanvas)
                 }
+                println("Moving canvas to hidden frame")
+                initializeHiddenFrame()
+                frame.remove(canvas) // Remove from main frame if necessary
+                hiddenFrame?.contentPane?.add(canvas)
+                hiddenFrame?.pack()
             }
+        } else {
+            frame.remove(altCanvas)
         }
         altCanvas?.updateGameImage() // Update the game image as needed
     }
@@ -716,9 +723,9 @@ class plugin : Plugin() {
             val elapsedTime = (System.currentTimeMillis() - xpWidget.startTime) / 1000.0 / 60.0 / 60.0
             val xpPerHour = if (elapsedTime > 0) (xpWidget.totalXpGained / elapsedTime).toInt() else 0
             val formattedXpPerHour = formatNumber(xpPerHour)
-            xpWidget.xpPerHourLabel.text =
-                    formatHtmlLabelText("XP /hr: ", primaryColor, formattedXpPerHour, secondaryColor)
             SwingUtilities.invokeLater{
+                xpWidget.xpPerHourLabel.text =
+                    formatHtmlLabelText("XP /hr: ", primaryColor, formattedXpPerHour, secondaryColor)
                 xpWidget.container.repaint()
             }
         }
@@ -727,9 +734,9 @@ class plugin : Plugin() {
             val elapsedTime = (System.currentTimeMillis() - totalXPWidget.startTime) / 1000.0 / 60.0 / 60.0
             val totalXPPerHour = if (elapsedTime > 0) (totalXPWidget.totalXpGained / elapsedTime).toInt() else 0
             val formattedTotalXpPerHour = formatNumber(totalXPPerHour)
-            totalXPWidget.xpPerHourLabel.text =
-                    formatHtmlLabelText("XP /hr: ", primaryColor, formattedTotalXpPerHour, secondaryColor)
             SwingUtilities.invokeLater{
+                totalXPWidget.xpPerHourLabel.text =
+                    formatHtmlLabelText("XP /hr: ", primaryColor, formattedTotalXpPerHour, secondaryColor)
                 totalXPWidget.container.repaint()
             }
         }
@@ -759,11 +766,9 @@ class plugin : Plugin() {
         rightPanelWrapper?.revalidate()
         frame?.revalidate()
 
-        SwingUtilities.invokeLater{
-            mainContentPanel.repaint()
-            rightPanelWrapper?.repaint()
-            frame?.repaint()
-        }
+        mainContentPanel.repaint()
+        rightPanelWrapper?.repaint()
+        frame?.repaint()
 
         focusedView = viewName
     }
@@ -826,20 +831,15 @@ class plugin : Plugin() {
                 override fun mouseEntered(e: MouseEvent?) {
                     background = WIDGET_COLOR.darker()
                     imageCanvas.fillColor = WIDGET_COLOR.darker()
-                    SwingUtilities.invokeLater{
-                        imageCanvas.repaint()
-                        repaint()
-                    }
+                    imageCanvas.repaint()
+                    repaint()
                 }
 
                 override fun mouseExited(e: MouseEvent?) {
                     background = WIDGET_COLOR
                     imageCanvas.fillColor = WIDGET_COLOR
-                    SwingUtilities.invokeLater{
-                        imageCanvas.repaint()
-                        repaint()
-                    }
-
+                    imageCanvas.repaint()
+                    repaint()
                 }
 
                 override fun mouseClicked(e: MouseEvent?) {
