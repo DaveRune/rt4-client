@@ -147,7 +147,8 @@ class plugin : Plugin() {
         }
         lastLogin = Player.usernameInput.toString()
     }
-    class AltCanvas() : JPanel() {
+
+    class AltCanvas : Canvas() {
         private var gameImage: VolatileImage? = null
         private var scaleX = 1.0
         private var scaleY = 1.0
@@ -207,15 +208,19 @@ class plugin : Plugin() {
             requestFocusInWindow()
         }
 
+        override fun update(g: Graphics) {
+            paint(g)
+        }
+
         private fun validateGameImage() {
             val gc = GraphicsEnvironment.getLocalGraphicsEnvironment().defaultScreenDevice.defaultConfiguration
             if (gameImage == null) {
-                gameImage = gc.createCompatibleVolatileImage(765, 503, Transparency.TRANSLUCENT)
+                gameImage = gc.createCompatibleVolatileImage(765, 503, Transparency.OPAQUE)
                 renderGameImage()
             } else {
                 val status = gameImage!!.validate(gc)
                 if (status == VolatileImage.IMAGE_INCOMPATIBLE) {
-                    gameImage = gc.createCompatibleVolatileImage(765, 503, Transparency.TRANSLUCENT)
+                    gameImage = gc.createCompatibleVolatileImage(765, 503, Transparency.OPAQUE)
                     renderGameImage()
                 } else if (status == VolatileImage.IMAGE_RESTORED) {
                     renderGameImage()
@@ -237,20 +242,35 @@ class plugin : Plugin() {
             }
         }
 
-        override fun paintComponent(g: Graphics) {
-            super.paintComponent(g)
+        override fun paint(g: Graphics) {
             val g2d = g as Graphics2D
-
-            // Set the desired background fill color here
             g2d.color = Color.BLACK
             g2d.fillRect(0, 0, width, height)
 
-            validateGameImage()
+            // Validate image within paint to ensure compatibility with GraphicsConfiguration
+            var valid = false
+            do {
+                val gc = GraphicsEnvironment.getLocalGraphicsEnvironment().defaultScreenDevice.defaultConfiguration
+                if (gameImage == null) {
+                    gameImage = gc.createCompatibleVolatileImage(765, 503, Transparency.OPAQUE)
+                    renderGameImage()
+                } else {
+                    val status = gameImage!!.validate(gc)
+                    when (status) {
+                        VolatileImage.IMAGE_INCOMPATIBLE -> {
+                            gameImage = gc.createCompatibleVolatileImage(765, 503, Transparency.OPAQUE)
+                            renderGameImage()
+                        }
+                        VolatileImage.IMAGE_RESTORED -> renderGameImage()
+                        VolatileImage.IMAGE_OK -> valid = true
+                    }
+                }
+            } while (!valid)
 
+            // Continue with rendering the image
             gameImage?.let { image ->
                 g2d.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR)
-
-                // Calculate aspect-ratio-preserving scale
+                // Scaling and centering
                 val imageAspect = image.width.toDouble() / image.height.toDouble()
                 val panelAspect = width.toDouble() / height.toDouble()
 
@@ -289,7 +309,6 @@ class plugin : Plugin() {
                 canvas, e.id, e.`when`, e.modifiersEx,
                     originalX, originalY, e.clickCount, e.isPopupTrigger, e.button
             )
-
             canvas.dispatchEvent(newEvent)
         }
 
@@ -383,8 +402,11 @@ class plugin : Plugin() {
             }
         }
         rightPanelWrapper?.preferredSize = Dimension(currentScrollPaneWidth, frame.height)
+        rightPanelWrapper?.let { it.isDoubleBuffered = true }
         rightPanelWrapper?.revalidate()
-        rightPanelWrapper?.repaint()
+        SwingUtilities.invokeLater {
+            rightPanelWrapper?.repaint()
+        }
     }
 
     fun OnKondoValueUpdated(){
@@ -446,9 +468,7 @@ class plugin : Plugin() {
         frame.remove(rightPanelWrapper)
         frame.layout = BorderLayout()
         frame.add(rightPanelWrapper, BorderLayout.EAST)
-
         frame.revalidate()
-        frame.repaint()
         pluginsReloaded = true
         reloadInterfaces = true
         return true
@@ -476,7 +496,9 @@ class plugin : Plugin() {
 
             xpTrackerView?.revalidate()
             if(focusedView == XPTrackerView.VIEW_NAME)
-                xpTrackerView?.repaint()
+                SwingUtilities.invokeLater {
+                    xpTrackerView?.repaint()
+                }
 
             updateWidget(xpWidget, xp)
         }
@@ -522,21 +544,34 @@ class plugin : Plugin() {
     }
 
     override fun LateDraw(timeDelta: Long){
-        // Clear original canvas for scaled
         if(!initialized) return
         SwingUtilities.invokeLater {
-            var p = Point(-1000,-1000)
             if (GetWindowMode() == WindowMode.FIXED) {
-                if (canvas.location != p) {
-                    println("Moving canvas offscreen");
-                    canvas.location = p;
+                if (canvas.parent !== hiddenFrame?.contentPane) {
+                    println("Moving canvas to hidden frame")
+                    initializeHiddenFrame()
+                    frame.remove(canvas) // Remove from main frame if necessary
+                    hiddenFrame?.contentPane?.add(canvas)
+                    hiddenFrame?.pack()
                 }
-            } else {
-
             }
         }
-        altCanvas?.updateGameImage()
+        altCanvas?.updateGameImage() // Update the game image as needed
     }
+
+    private var hiddenFrame: JFrame? = null
+
+    fun initializeHiddenFrame() {
+        if (hiddenFrame == null) {
+            hiddenFrame = JFrame().apply {
+                isUndecorated = true
+                isVisible = false // Keep it hidden
+                setSize(1, 1) // Minimal size
+                defaultCloseOperation = JFrame.DO_NOTHING_ON_CLOSE
+            }
+        }
+    }
+
 
     private fun initKondoUI(){
         DrawText(FontType.LARGE, fromColor(Color(16777215)), TextModifier.CENTER, "KondoKit Loading Sprites...", GameShell.canvasWidth/2, GameShell.canvasHeight/2)
@@ -683,7 +718,9 @@ class plugin : Plugin() {
             val formattedXpPerHour = formatNumber(xpPerHour)
             xpWidget.xpPerHourLabel.text =
                     formatHtmlLabelText("XP /hr: ", primaryColor, formattedXpPerHour, secondaryColor)
-            xpWidget.container.repaint()
+            SwingUtilities.invokeLater{
+                xpWidget.container.repaint()
+            }
         }
 
         totalXP?.let { totalXPWidget ->
@@ -692,7 +729,9 @@ class plugin : Plugin() {
             val formattedTotalXpPerHour = formatNumber(totalXPPerHour)
             totalXPWidget.xpPerHourLabel.text =
                     formatHtmlLabelText("XP /hr: ", primaryColor, formattedTotalXpPerHour, secondaryColor)
-            totalXPWidget.container.repaint()
+            SwingUtilities.invokeLater{
+                totalXPWidget.container.repaint()
+            }
         }
     }
 
@@ -717,11 +756,14 @@ class plugin : Plugin() {
 
         // Revalidate and repaint necessary panels
         mainContentPanel.revalidate()
-        mainContentPanel.repaint()
         rightPanelWrapper?.revalidate()
-        rightPanelWrapper?.repaint()
         frame?.revalidate()
-        frame?.repaint()
+
+        SwingUtilities.invokeLater{
+            mainContentPanel.repaint()
+            rightPanelWrapper?.repaint()
+            frame?.repaint()
+        }
 
         focusedView = viewName
     }
@@ -784,15 +826,20 @@ class plugin : Plugin() {
                 override fun mouseEntered(e: MouseEvent?) {
                     background = WIDGET_COLOR.darker()
                     imageCanvas.fillColor = WIDGET_COLOR.darker()
-                    imageCanvas.repaint()
-                    repaint()
+                    SwingUtilities.invokeLater{
+                        imageCanvas.repaint()
+                        repaint()
+                    }
                 }
 
                 override fun mouseExited(e: MouseEvent?) {
                     background = WIDGET_COLOR
                     imageCanvas.fillColor = WIDGET_COLOR
-                    imageCanvas.repaint()
-                    repaint()
+                    SwingUtilities.invokeLater{
+                        imageCanvas.repaint()
+                        repaint()
+                    }
+
                 }
 
                 override fun mouseClicked(e: MouseEvent?) {

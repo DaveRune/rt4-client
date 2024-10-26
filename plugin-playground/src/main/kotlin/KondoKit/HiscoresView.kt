@@ -7,9 +7,7 @@ import KondoKit.Helpers.formatHtmlLabelText
 import KondoKit.Helpers.getSpriteId
 import KondoKit.Helpers.showToast
 import KondoKit.SpriteToBufferedImage.getBufferedImageFromSprite
-import KondoKit.plugin.Companion.POPUP_BACKGROUND
 import KondoKit.plugin.Companion.POPUP_FOREGROUND
-import KondoKit.plugin.Companion.TITLE_BAR_COLOR
 import KondoKit.plugin.Companion.TOOLTIP_BACKGROUND
 import KondoKit.plugin.Companion.VIEW_BACKGROUND_COLOR
 import KondoKit.plugin.Companion.WIDGET_COLOR
@@ -112,7 +110,9 @@ object HiscoresView {
                     } else {
                         text += e.keyChar
                     }
-                    repaint()
+                    SwingUtilities.invokeLater {
+                        repaint()
+                    }
                 }
                 override fun keyPressed(e: KeyEvent) {
                     if (e.isControlDown) {
@@ -125,7 +125,9 @@ object HiscoresView {
                                 val clipboard = Toolkit.getDefaultToolkit().systemClipboard
                                 val pasteText = clipboard.getData(DataFlavor.stringFlavor) as String
                                 text += pasteText
-                                repaint()
+                                SwingUtilities.invokeLater {
+                                    repaint()
+                                }
                             }
                         }
                     }
@@ -136,7 +138,9 @@ object HiscoresView {
                 override fun mouseClicked(e: MouseEvent) {
                     if (e.x > width - 20 && e.y < 20) {
                         text = ""
-                        repaint()
+                        SwingUtilities.invokeLater {
+                            repaint()
+                        }
                     }
                 }
             })
@@ -144,7 +148,9 @@ object HiscoresView {
             Timer(500) {
                 cursorVisible = !cursorVisible
                 if(focusedView == VIEW_NAME)
-                    repaint()
+                    SwingUtilities.invokeLater {
+                        repaint()
+                    }
             }.start()
         }
 
