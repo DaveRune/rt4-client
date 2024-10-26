@@ -203,7 +203,7 @@ public final class GlRenderer {
 		try {
 			pixelData = readPixels();
 			drawable.swapBuffers();
-		} catch (@Pc(3) Exception local3) {*,
+		} catch (@Pc(3) Exception local3) {
 		}
 	}
 

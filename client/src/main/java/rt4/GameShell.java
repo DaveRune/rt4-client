@@ -182,6 +182,7 @@ public abstract class GameShell extends Applet implements Runnable, FocusListene
 
 	@OriginalMember(owner = "client!qh", name = "a", descriptor = "(Z)V")
 	public static void method3662() {
+		System.out.println("Moving...");
 		@Pc(8) Container local8;
 		if (fullScreenFrame != null) {
 			local8 = fullScreenFrame;
@@ -514,9 +515,10 @@ public abstract class GameShell extends Applet implements Runnable, FocusListene
 			canvasScale = getCurrentDevice().getDefaultConfiguration().getDefaultTransform().getScaleX();
 			if (frame != null && fullScreenFrame == null) {
 				@Pc(84) Insets insets = frame.getInsets();
-				canvas.setLocation(insets.left + leftMargin, topMargin + insets.top);
+				// TODO: Add a flag to ignore this.
+				//canvas.setLocation(insets.left + leftMargin, topMargin + insets.top);
 			} else {
-				canvas.setLocation(leftMargin, topMargin);
+				//canvas.setLocation(leftMargin, topMargin);
 			}
 		}
 		this.mainRedraw();

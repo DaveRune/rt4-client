@@ -44,8 +44,6 @@ import java.awt.Font
 import java.awt.event.*
 import java.awt.image.BufferedImage
 import java.awt.image.VolatileImage
-import java.util.*
-import java.util.Timer
 import javax.swing.*
 
 
@@ -449,20 +447,6 @@ class plugin : Plugin() {
         frame.layout = BorderLayout()
         frame.add(rightPanelWrapper, BorderLayout.EAST)
 
-        // Create a timer to delay execution by 2 seconds
-        Timer().schedule(object : TimerTask() {
-            override fun run() {
-                println("mode is: " + GetWindowMode().toString())
-                if (GetWindowMode() != WindowMode.FIXED) {
-                    // Perform any actions needed for non-fixed mode
-                } else {
-                    //if (canvas.isShowing) {
-                    //    frame.remove(canvas)
-                   // }
-                }
-            }
-        }, 2000) // 2000 milliseconds = 2 seconds
-
         frame.revalidate()
         frame.repaint()
         pluginsReloaded = true
@@ -540,6 +524,15 @@ class plugin : Plugin() {
     override fun LateDraw(timeDelta: Long){
         // Clear original canvas for scaled
         if(!initialized) return
+        SwingUtilities.invokeLater {
+            if (GetWindowMode() == WindowMode.FIXED) {
+                if (canvas.isShowing) {
+                    canvas.setLocation(-1000,-1000)
+                }
+            } else {
+
+            }
+        }
         altCanvas?.updateGameImage()
     }
 
