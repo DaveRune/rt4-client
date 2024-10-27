@@ -328,6 +328,9 @@ class plugin : Plugin() {
         }
 
         fun updateGameImage() {
+            if(this.parent == null) {
+                println("Unparented.. skipping update.")
+            }
             validateGameImage()
             if (IsHD()) {
                 renderGlRaster()

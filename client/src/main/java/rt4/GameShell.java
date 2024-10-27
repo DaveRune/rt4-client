@@ -182,7 +182,6 @@ public abstract class GameShell extends Applet implements Runnable, FocusListene
 
 	@OriginalMember(owner = "client!qh", name = "a", descriptor = "(Z)V")
 	public static void method3662() {
-		System.out.println("Moving...");
 		@Pc(8) Container local8;
 		if (fullScreenFrame != null) {
 			local8 = fullScreenFrame;
