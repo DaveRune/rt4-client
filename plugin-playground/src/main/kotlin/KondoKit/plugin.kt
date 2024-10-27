@@ -40,6 +40,7 @@ import rt4.GameShell.frame
 import rt4.client.js5Archive8
 import rt4.client.mainLoadState
 import java.awt.*
+import java.awt.Component
 import java.awt.Font
 import java.awt.event.*
 import java.awt.image.BufferedImage
@@ -91,6 +92,7 @@ class plugin : Plugin() {
         var uiOffset = 0
 
         private const val FIXED_WIDTH = 765
+        private const val FIXED_HEIGHT = 503
         private const val NAVBAR_WIDTH = 30
         private const val MAIN_CONTENT_WIDTH = 242
         private const val WRENCH_ICON = 907
@@ -111,6 +113,7 @@ class plugin : Plugin() {
         private var lastUIOffset = 0
         private const val HIDDEN_VIEW = "HIDDEN"
         private val drawActions = mutableListOf<() -> Unit>()
+        private var hiddenFrame: JFrame? = null
 
         fun registerDrawAction(action: () -> Unit) {
             synchronized(drawActions) {
@@ -224,12 +227,12 @@ class plugin : Plugin() {
         private fun validateGameImage() {
             val gc = GraphicsEnvironment.getLocalGraphicsEnvironment().defaultScreenDevice.defaultConfiguration
             if (gameImage == null) {
-                gameImage = gc.createCompatibleVolatileImage(765, 503, Transparency.OPAQUE)
+                gameImage = gc.createCompatibleVolatileImage(FIXED_WIDTH, FIXED_HEIGHT, Transparency.OPAQUE)
                 renderGameImage()
             } else {
                 val status = gameImage!!.validate(gc)
                 if (status == VolatileImage.IMAGE_INCOMPATIBLE) {
-                    gameImage = gc.createCompatibleVolatileImage(765, 503, Transparency.OPAQUE)
+                    gameImage = gc.createCompatibleVolatileImage(FIXED_WIDTH, FIXED_HEIGHT, Transparency.OPAQUE)
                     renderGameImage()
                 } else if (status == VolatileImage.IMAGE_RESTORED) {
                     renderGameImage()
@@ -261,13 +264,13 @@ class plugin : Plugin() {
             do {
                 val gc = GraphicsEnvironment.getLocalGraphicsEnvironment().defaultScreenDevice.defaultConfiguration
                 if (gameImage == null) {
-                    gameImage = gc.createCompatibleVolatileImage(765, 503, Transparency.OPAQUE)
+                    gameImage = gc.createCompatibleVolatileImage(FIXED_WIDTH, FIXED_HEIGHT, Transparency.OPAQUE)
                     renderGameImage()
                 } else {
                     val status = gameImage!!.validate(gc)
                     when (status) {
                         VolatileImage.IMAGE_INCOMPATIBLE -> {
-                            gameImage = gc.createCompatibleVolatileImage(765, 503, Transparency.OPAQUE)
+                            gameImage = gc.createCompatibleVolatileImage(FIXED_WIDTH, FIXED_HEIGHT, Transparency.OPAQUE)
                             renderGameImage()
                         }
                         VolatileImage.IMAGE_RESTORED -> renderGameImage()
@@ -370,7 +373,7 @@ class plugin : Plugin() {
 
     fun createAltCanvas(): AltCanvas {
         return AltCanvas().apply {
-            preferredSize = Dimension(FIXED_WIDTH, 503)
+            preferredSize = Dimension(FIXED_WIDTH, FIXED_HEIGHT)
         }
     }
 
@@ -547,38 +550,50 @@ class plugin : Plugin() {
         }
     }
 
-    override fun LateDraw(timeDelta: Long){
-        if(!initialized) return
+    override fun LateDraw(timeDelta: Long) {
+        if (!initialized) return
         if (GetWindowMode() == WindowMode.FIXED) {
-            if (canvas.parent !== hiddenFrame?.contentPane) {
-                if(altCanvas?.parent != frame) {
+            if (canvas.parent != hiddenFrame?.contentPane) {
+                if (altCanvas?.parent != frame) {
                     frame.add(altCanvas)
                 }
-                println("Moving canvas to hidden frame")
                 initializeHiddenFrame()
-                frame.remove(canvas) // Remove from main frame if necessary
-                hiddenFrame?.contentPane?.add(canvas)
-                hiddenFrame?.pack()
+                hiddenFrame?.let { transferComponent(canvas, frame, it) }
             }
         } else {
-            frame.remove(altCanvas)
+            if (altCanvas?.parent == frame) {
+                frame.remove(altCanvas)
+            }
         }
         altCanvas?.updateGameImage() // Update the game image as needed
     }
 
-    private var hiddenFrame: JFrame? = null
 
-    fun initializeHiddenFrame() {
+    fun transferComponent(component: Component, fromFrame: Frame, toFrame: Frame) {
+        println("Transferring component")
+        fromFrame.remove(component)
+        toFrame.add(component)
+        toFrame.pack()
+        fromFrame.revalidate()
+        toFrame.revalidate()
+        fromFrame.repaint()
+        toFrame.repaint()
+    }
+
+    fun initializeHiddenFrame(debugMode: Boolean = true) {
         if (hiddenFrame == null) {
             hiddenFrame = JFrame().apply {
-                isUndecorated = true
-                isVisible = false // Keep it hidden
-                setSize(1, 1) // Minimal size
+                isUndecorated = !debugMode
+                isFocusable = false
+                isVisible = debugMode // Show frame if debugMode is true
+                setSize(
+                        if(debugMode) FIXED_WIDTH else 1,
+                        if(debugMode) FIXED_HEIGHT else 1
+                )
                 defaultCloseOperation = JFrame.DO_NOTHING_ON_CLOSE
             }
         }
     }
-
 
     private fun initKondoUI(){
         DrawText(FontType.LARGE, fromColor(Color(16777215)), TextModifier.CENTER, "KondoKit Loading Sprites...", GameShell.canvasWidth/2, GameShell.canvasHeight/2)
