@@ -40,7 +40,6 @@ import rt4.GameShell.frame
 import rt4.client.js5Archive8
 import rt4.client.mainLoadState
 import java.awt.*
-import java.awt.Component
 import java.awt.Font
 import java.awt.event.*
 import java.awt.image.BufferedImage
@@ -113,7 +112,6 @@ class plugin : Plugin() {
         private var lastUIOffset = 0
         private const val HIDDEN_VIEW = "HIDDEN"
         private val drawActions = mutableListOf<() -> Unit>()
-        private var hiddenFrame: JFrame? = null
 
         fun registerDrawAction(action: () -> Unit) {
             synchronized(drawActions) {
@@ -390,13 +388,13 @@ class plugin : Plugin() {
         System.setProperty("swing.aatext", "false")
         val frame: Frame? = GameShell.frame
         if (frame != null) {
+            frame.layout = BorderLayout()
             // Create the AltCanvas and add it to the main frame
             altCanvas = createAltCanvas()
+            altCanvas?.let { frame.add(it) }
             // Use BorderLayout for better layout control
-            frame.layout = BorderLayout()
-
-            // Add the AltCanvas in the center to ensure it scales properly with the window size
-            altCanvas?.let { frame.add(it, BorderLayout.NORTH) }
+            frame.setComponentZOrder(altCanvas, 0)
+            frame.setComponentZOrder(canvas, 1)
         }
     }
 
@@ -409,6 +407,7 @@ class plugin : Plugin() {
                 if (frame.width < FIXED_WIDTH + currentScrollPaneWidth + uiOffset) {
                     frame.setSize(FIXED_WIDTH + currentScrollPaneWidth + uiOffset, frame.height)
                 }
+                canvas.setLocation(0,0)
                 val difference = frame.width - (uiOffset + currentScrollPaneWidth)
                 altCanvas?.size = Dimension(difference, frame.height - 30)
             }
@@ -486,17 +485,16 @@ class plugin : Plugin() {
     }
 
     override fun OnXPUpdate(skillId: Int, xp: Int) {
-        SwingUtilities.invokeLater{
             if (!initialXP.containsKey(skillId)) {
                 initialXP[skillId] = xp
-                return@invokeLater
+                return
             }
             var xpWidget = xpWidgets[skillId]
             if (xpWidget != null) {
                 updateWidget(xpWidget, xp)
             } else {
                 val previousXp = initialXP[skillId] ?: xp
-                if (xp == initialXP[skillId]) return@invokeLater
+                if (xp == initialXP[skillId]) return
 
                 xpWidget = createXPWidget(skillId, previousXp)
                 xpWidgets[skillId] = xpWidget
@@ -511,7 +509,6 @@ class plugin : Plugin() {
 
                 updateWidget(xpWidget, xp)
             }
-        }
     }
 
     override fun Draw(timeDelta: Long) {
@@ -555,47 +552,14 @@ class plugin : Plugin() {
 
     override fun LateDraw(timeDelta: Long) {
         if (!initialized) return
-        if (GetWindowMode() == WindowMode.FIXED) {
-            if (canvas.parent != hiddenFrame?.contentPane) {
-                if (altCanvas?.parent != frame) {
-                    frame.add(altCanvas)
-                }
-                initializeHiddenFrame()
-                hiddenFrame?.let { transferComponent(canvas, frame, it) }
-            }
+        if(GetWindowMode() == WindowMode.RESIZABLE){
+            frame.setComponentZOrder(altCanvas, 1)
+            frame.setComponentZOrder(canvas, 0)
         } else {
-            if (altCanvas?.parent == frame) {
-                frame.remove(altCanvas)
-            }
+            frame.setComponentZOrder(altCanvas, 0)
+            frame.setComponentZOrder(canvas, 1)
         }
         altCanvas?.updateGameImage() // Update the game image as needed
-    }
-
-
-    fun transferComponent(component: Component, fromFrame: Frame, toFrame: Frame) {
-        println("Transferring component")
-        fromFrame.remove(component)
-        toFrame.add(component)
-        toFrame.pack()
-        fromFrame.revalidate()
-        toFrame.revalidate()
-        fromFrame.repaint()
-        toFrame.repaint()
-    }
-
-    fun initializeHiddenFrame(debugMode: Boolean = true) {
-        if (hiddenFrame == null) {
-            hiddenFrame = JFrame().apply {
-                isUndecorated = !debugMode
-                isFocusable = false
-                isVisible = debugMode // Show frame if debugMode is true
-                setSize(
-                        if(debugMode) FIXED_WIDTH else 1,
-                        if(debugMode) FIXED_HEIGHT else 1
-                )
-                defaultCloseOperation = JFrame.DO_NOTHING_ON_CLOSE
-            }
-        }
     }
 
     private fun initKondoUI(){
@@ -720,7 +684,10 @@ class plugin : Plugin() {
             }
 
             frame.layout = BorderLayout()
-            rightPanelWrapper?.let { frame.add(it, BorderLayout.EAST) }
+            rightPanelWrapper?.let {
+                frame.add(it, BorderLayout.EAST)
+                frame.setComponentZOrder(it, 2)
+            }
 
             if(!launchMinimized){
                 setActiveView(XPTrackerView.VIEW_NAME)
