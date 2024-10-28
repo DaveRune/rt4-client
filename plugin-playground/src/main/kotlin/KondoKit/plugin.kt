@@ -126,24 +126,11 @@ class plugin : Plugin() {
         }
     }
 
-    private fun allSpritesLoaded() : Boolean {
-        // Check all skill sprites
-        try{
-            for (i in 0 until 24) {
-                if(!js5Archive8.isFileReady(getSpriteId(i))){
-                    return false
-                }
-            }
-            val otherIcons = arrayOf(LVL_ICON, MAG_SPRITE, LOOT_ICON, WRENCH_ICON, COMBAT_LVL_SPRITE, BAG_ICON)
-            for (icon in otherIcons) {
-                if(!js5Archive8.isFileReady(icon)){
-                    return false
-                }
-            }
-        } catch (e : Exception){
-            return false
-        }
-        return true
+    override fun Init() {
+        // Disable Font AA
+        System.setProperty("sun.java2d.opengl", "false")
+        System.setProperty("awt.useSystemAAFontSettings", "off")
+        System.setProperty("swing.aatext", "false")
     }
 
     override fun OnLogin() {
@@ -153,96 +140,6 @@ class plugin : Plugin() {
             xpTrackerView?.let { resetXPTracker(it) }
         }
         lastLogin = Player.usernameInput.toString()
-    }
-
-    override fun Init() {
-        // Disable Font AA
-        System.setProperty("sun.java2d.opengl", "false")
-        System.setProperty("awt.useSystemAAFontSettings", "off")
-        System.setProperty("swing.aatext", "false")
-    }
-
-    private fun initAltCanvas(){
-        if (frame != null) {
-            altCanvas = AltCanvas().apply {
-                preferredSize = Dimension(FIXED_WIDTH, FIXED_HEIGHT)
-            }
-            altCanvas?.let { frame.add(it) }
-            moveAltCanvasToFront()
-            frame.setComponentZOrder(rightPanelWrapper, 2)
-        }
-        updateDisplaySettings()
-    }
-
-    private fun updateDisplaySettings() {
-        val mode = GetWindowMode()
-        val currentScrollPaneWidth = if (mainContentPanel.isVisible) NAVBAR_WIDTH + MAIN_CONTENT_WIDTH else NAVBAR_WIDTH
-        lastUIOffset = uiOffset
-
-        when (mode) {
-            WindowMode.FIXED -> {
-                if (frame.width < FIXED_WIDTH + currentScrollPaneWidth + uiOffset) {
-                    frame.setSize(FIXED_WIDTH + currentScrollPaneWidth + uiOffset, frame.height)
-                }
-
-                val difference = frame.width - (uiOffset + currentScrollPaneWidth)
-
-                if (useScaledFixed) {
-                    GameShell.leftMargin = 0
-                    val canvasWidth = difference + uiOffset / 2
-                    val canvasHeight = frame.height - canvas.y // Restricting height to frame height
-
-                    altCanvas?.size = Dimension(canvasWidth, canvasHeight)
-                    altCanvas?.setLocation(0, canvas.y)
-                    canvas.setLocation(0, canvas.y)
-                } else {
-                    GameShell.leftMargin = (difference + uiOffset) / 2
-                    canvas.setLocation(GameShell.leftMargin - (FIXED_WIDTH / 2), canvas.y)
-                }
-            }
-
-            WindowMode.RESIZABLE -> {
-                GameShell.canvasWidth = frame.width - (currentScrollPaneWidth + uiOffset)
-            }
-        }
-
-        rightPanelWrapper?.preferredSize = Dimension(currentScrollPaneWidth, frame.height)
-        rightPanelWrapper?.isDoubleBuffered = true
-        rightPanelWrapper?.revalidate()
-        rightPanelWrapper?.repaint()
-    }
-
-    fun OnKondoValueUpdated(){
-        StoreData("kondoUseRemoteGE", useLiveGEPrices)
-        StoreData("kondoTheme", theme.toString())
-        if(appliedTheme != theme) {
-            showAlert(
-                "KondoKit Theme changes require a relaunch.",
-                "KondoKit",
-                JOptionPane.INFORMATION_MESSAGE
-            )
-        }
-        StoreData("kondoPlayerXPMultiplier", playerXPMultiplier)
-        LootTrackerView.gePriceMap = LootTrackerView.loadGEPrices()
-        StoreData("kondoLaunchMinimized", launchMinimized)
-        StoreData("kondoUIOffset", uiOffset)
-        StoreData("kondoScaledFixed", useScaledFixed)
-        if(altCanvas == null && useScaledFixed){
-            initAltCanvas()
-        } else if(altCanvas != null && !useScaledFixed){
-            destroyAltCanvas()
-        }
-        if(lastUIOffset != uiOffset){
-            updateDisplaySettings()
-            reloadInterfaces = true
-        }
-    }
-
-    private fun destroyAltCanvas(){
-        moveCanvasToFront()
-        frame.remove(altCanvas)
-        altCanvas = null
-        updateDisplaySettings()
     }
 
     override fun OnMiniMenuCreate(currentEntries: Array<out MiniMenuEntry>?) {
@@ -261,17 +158,6 @@ class plugin : Plugin() {
                     // Proceed with the full cleaned username
                     InsertMiniMenuEntry("Lookup", entry.subject, searchHiscore(cleanedInput))
                 }
-            }
-        }
-    }
-
-    private fun searchHiscore(username: String): Runnable {
-        return Runnable {
-            setActiveView(HiscoresView.VIEW_NAME)
-            val customSearchField = hiScoreView?.let { HiscoresView.CustomSearchField(it) }
-
-            customSearchField?.searchPlayer(username) ?: run {
-                println("searchView is null or CustomSearchField creation failed.")
             }
         }
     }
@@ -373,6 +259,149 @@ class plugin : Plugin() {
         altCanvas?.updateGameImage() // Update the game image as needed
     }
 
+    override fun Update() {
+
+        val widgets = xpWidgets.values
+        val totalXP = totalXPWidget
+
+        widgets.forEach { xpWidget ->
+            val elapsedTime = (System.currentTimeMillis() - xpWidget.startTime) / 1000.0 / 60.0 / 60.0
+            val xpPerHour = if (elapsedTime > 0) (xpWidget.totalXpGained / elapsedTime).toInt() else 0
+            val formattedXpPerHour = formatNumber(xpPerHour)
+            xpWidget.xpPerHourLabel.text =
+                formatHtmlLabelText("XP /hr: ", primaryColor, formattedXpPerHour, secondaryColor)
+            xpWidget.container.repaint()
+        }
+
+        totalXP?.let { totalXPWidget ->
+            val elapsedTime = (System.currentTimeMillis() - totalXPWidget.startTime) / 1000.0 / 60.0 / 60.0
+            val totalXPPerHour = if (elapsedTime > 0) (totalXPWidget.totalXpGained / elapsedTime).toInt() else 0
+            val formattedTotalXpPerHour = formatNumber(totalXPPerHour)
+            totalXPWidget.xpPerHourLabel.text =
+                formatHtmlLabelText("XP /hr: ", primaryColor, formattedTotalXpPerHour, secondaryColor)
+            totalXPWidget.container.repaint()
+        }
+    }
+
+    override fun OnKillingBlowNPC(npcID: Int, x: Int, z: Int) {
+        val preDeathSnapshot = takeGroundSnapshot(Pair(x,z))
+        npcDeathSnapshots[npcID] = LootTrackerView.GroundSnapshot(preDeathSnapshot, Pair(x, z), 0)
+    }
+
+    private fun allSpritesLoaded() : Boolean {
+        // Check all skill sprites
+        try{
+            for (i in 0 until 24) {
+                if(!js5Archive8.isFileReady(getSpriteId(i))){
+                    return false
+                }
+            }
+            val otherIcons = arrayOf(LVL_ICON, MAG_SPRITE, LOOT_ICON, WRENCH_ICON, COMBAT_LVL_SPRITE, BAG_ICON)
+            for (icon in otherIcons) {
+                if(!js5Archive8.isFileReady(icon)){
+                    return false
+                }
+            }
+        } catch (e : Exception){
+            return false
+        }
+        return true
+    }
+
+    private fun initAltCanvas(){
+        if (frame != null) {
+            altCanvas = AltCanvas().apply {
+                preferredSize = Dimension(FIXED_WIDTH, FIXED_HEIGHT)
+            }
+            altCanvas?.let { frame.add(it) }
+            moveAltCanvasToFront()
+            frame.setComponentZOrder(rightPanelWrapper, 2)
+        }
+        updateDisplaySettings()
+    }
+
+    private fun updateDisplaySettings() {
+        val mode = GetWindowMode()
+        val currentScrollPaneWidth = if (mainContentPanel.isVisible) NAVBAR_WIDTH + MAIN_CONTENT_WIDTH else NAVBAR_WIDTH
+        lastUIOffset = uiOffset
+
+        when (mode) {
+            WindowMode.FIXED -> {
+                if (frame.width < FIXED_WIDTH + currentScrollPaneWidth + uiOffset) {
+                    frame.setSize(FIXED_WIDTH + currentScrollPaneWidth + uiOffset, frame.height)
+                }
+
+                val difference = frame.width - (uiOffset + currentScrollPaneWidth)
+
+                if (useScaledFixed) {
+                    GameShell.leftMargin = 0
+                    val canvasWidth = difference + uiOffset / 2
+                    val canvasHeight = frame.height - canvas.y // Restricting height to frame height
+
+                    altCanvas?.size = Dimension(canvasWidth, canvasHeight)
+                    altCanvas?.setLocation(0, canvas.y)
+                    canvas.setLocation(0, canvas.y)
+                } else {
+                    GameShell.leftMargin = (difference + uiOffset) / 2
+                    canvas.setLocation(GameShell.leftMargin - (FIXED_WIDTH / 2), canvas.y)
+                }
+            }
+
+            WindowMode.RESIZABLE -> {
+                GameShell.canvasWidth = frame.width - (currentScrollPaneWidth + uiOffset)
+            }
+        }
+
+        rightPanelWrapper?.preferredSize = Dimension(currentScrollPaneWidth, frame.height)
+        rightPanelWrapper?.isDoubleBuffered = true
+        rightPanelWrapper?.revalidate()
+        rightPanelWrapper?.repaint()
+    }
+
+    fun OnKondoValueUpdated(){
+        StoreData("kondoUseRemoteGE", useLiveGEPrices)
+        StoreData("kondoTheme", theme.toString())
+        if(appliedTheme != theme) {
+            showAlert(
+                "KondoKit Theme changes require a relaunch.",
+                "KondoKit",
+                JOptionPane.INFORMATION_MESSAGE
+            )
+        }
+        StoreData("kondoPlayerXPMultiplier", playerXPMultiplier)
+        LootTrackerView.gePriceMap = LootTrackerView.loadGEPrices()
+        StoreData("kondoLaunchMinimized", launchMinimized)
+        StoreData("kondoUIOffset", uiOffset)
+        StoreData("kondoScaledFixed", useScaledFixed)
+        if(altCanvas == null && useScaledFixed){
+            initAltCanvas()
+        } else if(altCanvas != null && !useScaledFixed){
+            destroyAltCanvas()
+        }
+        if(lastUIOffset != uiOffset){
+            updateDisplaySettings()
+            reloadInterfaces = true
+        }
+    }
+
+    private fun destroyAltCanvas(){
+        moveCanvasToFront()
+        frame.remove(altCanvas)
+        altCanvas = null
+        updateDisplaySettings()
+    }
+
+    private fun searchHiscore(username: String): Runnable {
+        return Runnable {
+            setActiveView(HiscoresView.VIEW_NAME)
+            val customSearchField = hiScoreView?.let { HiscoresView.CustomSearchField(it) }
+
+            customSearchField?.searchPlayer(username) ?: run {
+                println("searchView is null or CustomSearchField creation failed.")
+            }
+        }
+    }
+
     private fun moveAltCanvasToFront(){
         if(altCanvas == null) return
         frame.setComponentZOrder(canvas, 2)
@@ -467,35 +496,6 @@ class plugin : Plugin() {
             initialized = true
             pluginsReloaded = true
         }
-    }
-
-    override fun Update() {
-
-        val widgets = xpWidgets.values
-        val totalXP = totalXPWidget
-
-        widgets.forEach { xpWidget ->
-            val elapsedTime = (System.currentTimeMillis() - xpWidget.startTime) / 1000.0 / 60.0 / 60.0
-            val xpPerHour = if (elapsedTime > 0) (xpWidget.totalXpGained / elapsedTime).toInt() else 0
-            val formattedXpPerHour = formatNumber(xpPerHour)
-            xpWidget.xpPerHourLabel.text =
-                formatHtmlLabelText("XP /hr: ", primaryColor, formattedXpPerHour, secondaryColor)
-            xpWidget.container.repaint()
-        }
-
-        totalXP?.let { totalXPWidget ->
-            val elapsedTime = (System.currentTimeMillis() - totalXPWidget.startTime) / 1000.0 / 60.0 / 60.0
-            val totalXPPerHour = if (elapsedTime > 0) (totalXPWidget.totalXpGained / elapsedTime).toInt() else 0
-            val formattedTotalXpPerHour = formatNumber(totalXPPerHour)
-            totalXPWidget.xpPerHourLabel.text =
-                formatHtmlLabelText("XP /hr: ", primaryColor, formattedTotalXpPerHour, secondaryColor)
-            totalXPWidget.container.repaint()
-        }
-    }
-
-    override fun OnKillingBlowNPC(npcID: Int, x: Int, z: Int) {
-        val preDeathSnapshot = takeGroundSnapshot(Pair(x,z))
-        npcDeathSnapshots[npcID] = LootTrackerView.GroundSnapshot(preDeathSnapshot, Pair(x, z), 0)
     }
 
     private fun setActiveView(viewName: String) {
