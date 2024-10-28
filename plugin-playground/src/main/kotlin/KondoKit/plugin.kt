@@ -93,6 +93,9 @@ class plugin : Plugin() {
                 "perfectly snapped to the edge of the game due to window chrome you can update this to fix it")
         var uiOffset = 0
 
+        @Exposed("Stretched/Scaled Fixed Mode Support")
+        var useAltCanvas = false
+
         private const val FIXED_WIDTH = 765
         private const val FIXED_HEIGHT = 503
         private const val NAVBAR_WIDTH = 30
@@ -113,6 +116,7 @@ class plugin : Plugin() {
         private var initialized = false
         private var lastClickTime = 0L
         private var lastUIOffset = 0
+        private var themeName = "RUNELITE"
         private const val HIDDEN_VIEW = "HIDDEN"
         private var altCanvas: AltCanvas? = null
         private val drawActions = mutableListOf<() -> Unit>()
@@ -292,27 +296,22 @@ class plugin : Plugin() {
         }
     }
 
-    private fun createAltCanvas(): AltCanvas {
-        return AltCanvas().apply {
-            preferredSize = Dimension(FIXED_WIDTH, FIXED_HEIGHT)
-        }
-    }
-
 
     override fun Init() {
         // Disable Font AA
         System.setProperty("sun.java2d.opengl", "false")
         System.setProperty("awt.useSystemAAFontSettings", "off")
         System.setProperty("swing.aatext", "false")
-        val frame: Frame? = GameShell.frame
+    }
+
+    private fun InitAltCanvas(){
         if (frame != null) {
-            frame.layout = BorderLayout()
-            // Create the AltCanvas and add it to the main frame
-            altCanvas = createAltCanvas()
+            altCanvas = AltCanvas().apply {
+                preferredSize = Dimension(FIXED_WIDTH, FIXED_HEIGHT)
+            }
             altCanvas?.let { frame.add(it) }
-            // Use BorderLayout for better layout control
-            frame.setComponentZOrder(altCanvas, 0)
-            frame.setComponentZOrder(canvas, 1)
+            moveAltCanvasToFront()
+            frame.setComponentZOrder(rightPanelWrapper, 2)
         }
     }
 
@@ -325,9 +324,15 @@ class plugin : Plugin() {
                 if (frame.width < FIXED_WIDTH + currentScrollPaneWidth + uiOffset) {
                     frame.setSize(FIXED_WIDTH + currentScrollPaneWidth + uiOffset, frame.height)
                 }
-                canvas.setLocation(0,0)
                 val difference = frame.width - (uiOffset + currentScrollPaneWidth)
-                altCanvas?.size = Dimension(difference, frame.height - 30)
+                if(useAltCanvas){
+                    GameShell.leftMargin = 0
+                    canvas.setLocation(0,canvas.y)
+                    altCanvas?.size = Dimension(difference, frame.height - canvas.y)
+                } else {
+                    GameShell.leftMargin = difference / 2
+                    canvas.setLocation(GameShell.leftMargin - (FIXED_WIDTH/2), canvas.y)
+                }
             }
             WindowMode.RESIZABLE -> {
                 GameShell.canvasWidth = frame.width - (currentScrollPaneWidth + uiOffset)
@@ -353,6 +358,15 @@ class plugin : Plugin() {
         LootTrackerView.gePriceMap = LootTrackerView.loadGEPrices()
         StoreData("kondoLaunchMinimized", launchMinimized)
         StoreData("kondoUIOffset", uiOffset)
+        StoreData("kondoScaleFixed", useAltCanvas)
+        if(altCanvas == null && useAltCanvas){
+            InitAltCanvas()
+            UpdateDisplaySettings()
+        } else if(altCanvas != null && !useAltCanvas){
+            frame.remove(altCanvas)
+            altCanvas = null
+            UpdateDisplaySettings()
+        }
         if(lastUIOffset != uiOffset){
             UpdateDisplaySettings()
             reloadInterfaces = true
@@ -472,20 +486,47 @@ class plugin : Plugin() {
         if (!initialized) return
         if(GameShell.fullScreenFrame != null) {
             DisplayMode.setWindowMode(true, 0, FIXED_WIDTH, FIXED_HEIGHT)
-            showAlert("Fullscreen is not supported by KondoKit. Disable the plugin",
+            showAlert("Fullscreen is not supported by KondoKit. Disable the plugin first.",
                 "Error",
                 JOptionPane.INFORMATION_MESSAGE
             )
-            return;
+            return
         }
+        if(!useAltCanvas) return
         if(GetWindowMode() == WindowMode.RESIZABLE){
-            frame.setComponentZOrder(altCanvas, 1)
-            frame.setComponentZOrder(canvas, 0)
+            moveAltCanvasToFront()
         } else {
-            frame.setComponentZOrder(altCanvas, 0)
-            frame.setComponentZOrder(canvas, 1)
+            moveCanvasToFront()
         }
         altCanvas?.updateGameImage() // Update the game image as needed
+    }
+
+    private fun moveAltCanvasToFront(){
+        if(altCanvas == null) {
+            println("WARNING: altcanvas is null")
+            return
+        }
+        frame.setComponentZOrder(altCanvas, 1)
+        frame.setComponentZOrder(canvas, 0)
+    }
+
+    private fun moveCanvasToFront(){
+        if(altCanvas == null) {
+            println("WARNING: altcanvas is null")
+            return
+        }
+        frame.setComponentZOrder(altCanvas, 0)
+        frame.setComponentZOrder(canvas, 1)
+    }
+
+    private fun restoreSettings(){
+        themeName = (GetData("kondoTheme") as? String) ?: "RUNELITE"
+        useLiveGEPrices = (GetData("kondoUseRemoteGE") as? Boolean) ?: true
+        playerXPMultiplier = (GetData("kondoPlayerXPMultiplier") as? Int) ?: 5
+        val osName = System.getProperty("os.name").toLowerCase()
+        uiOffset = (GetData("kondoUIOffset") as? Int) ?: if (osName.contains("win")) 16 else 0
+        launchMinimized = (GetData("kondoLaunchMinimized") as? Boolean) ?: false
+        useAltCanvas = (GetData("kondoScaleFixed") as? Boolean) ?: false
     }
 
     private fun initKondoUI(){
@@ -493,78 +534,12 @@ class plugin : Plugin() {
         if(!allSpritesLoaded()) return;
         val frame: Frame? = GameShell.frame
         if (frame != null) {
-
+            restoreSettings()
             loadFont()
-            val themeIndex = (GetData("kondoTheme") as? String) ?: "RUNELITE"
-            theme = ThemeType.valueOf(themeIndex)
+            theme = ThemeType.valueOf(themeName)
             applyTheme(getTheme(theme))
             appliedTheme = theme
-
-            try {
-                UIManager.setLookAndFeel("javax.swing.plaf.nimbus.NimbusLookAndFeel")
-
-                // Modify the UI properties to match theme
-                UIManager.put("control", VIEW_BACKGROUND_COLOR)
-                UIManager.put("info", VIEW_BACKGROUND_COLOR)
-                UIManager.put("nimbusBase", WIDGET_COLOR)
-                UIManager.put("nimbusBlueGrey", TITLE_BAR_COLOR)
-
-                UIManager.put("nimbusDisabledText", primaryColor)
-                UIManager.put("nimbusSelectedText", secondaryColor)
-                UIManager.put("text", secondaryColor)
-
-                UIManager.put("nimbusFocus", TITLE_BAR_COLOR)
-                UIManager.put("nimbusInfoBlue", POPUP_BACKGROUND)
-                UIManager.put("nimbusLightBackground", WIDGET_COLOR)
-                UIManager.put("nimbusSelectionBackground", PROGRESS_BAR_FILL)
-
-                UIManager.put("Button.background", WIDGET_COLOR)
-                UIManager.put("Button.foreground", secondaryColor)
-
-                UIManager.put("CheckBox.background", VIEW_BACKGROUND_COLOR)
-                UIManager.put("CheckBox.foreground", secondaryColor)
-                UIManager.put("CheckBox.icon", UIManager.getIcon("CheckBox.icon"))
-
-                UIManager.put("ComboBox.background", WIDGET_COLOR)
-                UIManager.put("ComboBox.foreground", secondaryColor)
-                UIManager.put("ComboBox.selectionBackground", PROGRESS_BAR_FILL)
-                UIManager.put("ComboBox.selectionForeground", primaryColor)
-                UIManager.put("ComboBox.buttonBackground", WIDGET_COLOR)
-
-                UIManager.put("Spinner.background", WIDGET_COLOR)
-                UIManager.put("Spinner.foreground", secondaryColor)
-                UIManager.put("Spinner.border", BorderFactory.createLineBorder(TITLE_BAR_COLOR))
-
-                UIManager.put("TextField.background", WIDGET_COLOR)
-                UIManager.put("TextField.foreground", secondaryColor)
-                UIManager.put("TextField.caretForeground", secondaryColor)
-                UIManager.put("TextField.border", BorderFactory.createLineBorder(TITLE_BAR_COLOR))
-
-                UIManager.put("ScrollBar.thumb", WIDGET_COLOR)
-                UIManager.put("ScrollBar.track", VIEW_BACKGROUND_COLOR)
-                UIManager.put("ScrollBar.thumbHighlight", TITLE_BAR_COLOR)
-
-                UIManager.put("ProgressBar.foreground", PROGRESS_BAR_FILL)
-                UIManager.put("ProgressBar.background", WIDGET_COLOR)
-                UIManager.put("ProgressBar.border", BorderFactory.createLineBorder(TITLE_BAR_COLOR))
-
-                UIManager.put("ToolTip.background", VIEW_BACKGROUND_COLOR)
-                UIManager.put("ToolTip.foreground", secondaryColor)
-                UIManager.put("ToolTip.border", BorderFactory.createLineBorder(TITLE_BAR_COLOR))
-
-                // Update component tree UI to apply the new theme
-                SwingUtilities.updateComponentTreeUI(GameShell.frame)
-                GameShell.frame.background = Color.BLACK
-            } catch (e : Exception) {
-                e.printStackTrace()
-            }
-
-            // Restore saved values
-            useLiveGEPrices = (GetData("kondoUseRemoteGE") as? Boolean) ?: true
-            playerXPMultiplier = (GetData("kondoPlayerXPMultiplier") as? Int) ?: 5
-            val osName = System.getProperty("os.name").toLowerCase()
-            uiOffset = (GetData("kondoUIOffset") as? Int) ?: if (osName.contains("win")) 16 else 0
-            launchMinimized = (GetData("kondoLaunchMinimized") as? Boolean) ?: false
+            configureLookAndFeel()
 
             cardLayout = CardLayout()
             mainContentPanel = JPanel(cardLayout).apply {
@@ -596,7 +571,7 @@ class plugin : Plugin() {
             navPanel.add(createNavButton(LOOT_ICON, LootTrackerView.VIEW_NAME))
             navPanel.add(createNavButton(WRENCH_ICON, ReflectiveEditorView.VIEW_NAME))
 
-            var rightPanel = Panel(BorderLayout()).apply {
+            val rightPanel = Panel(BorderLayout()).apply {
                 add(mainContentPanel, BorderLayout.CENTER)
                 add(navPanel, BorderLayout.EAST)
             }
@@ -604,7 +579,7 @@ class plugin : Plugin() {
             rightPanelWrapper = JScrollPane(rightPanel).apply {
                 preferredSize = Dimension(NAVBAR_WIDTH + MAIN_CONTENT_WIDTH, frame.height)
                 background = VIEW_BACKGROUND_COLOR
-                border = BorderFactory.createEmptyBorder()  // Removes the border completely
+                border = BorderFactory.createEmptyBorder()
                 horizontalScrollBarPolicy = JScrollPane.HORIZONTAL_SCROLLBAR_NEVER
                 verticalScrollBarPolicy = JScrollPane.VERTICAL_SCROLLBAR_NEVER
             }
@@ -612,13 +587,16 @@ class plugin : Plugin() {
             frame.layout = BorderLayout()
             rightPanelWrapper?.let {
                 frame.add(it, BorderLayout.EAST)
-                frame.setComponentZOrder(it, 2)
             }
 
-            if(!launchMinimized){
-                setActiveView(XPTrackerView.VIEW_NAME)
-            } else {
+            if(launchMinimized){
                 setActiveView(HIDDEN_VIEW)
+            } else {
+                setActiveView(XPTrackerView.VIEW_NAME)
+            }
+            if(useAltCanvas) {
+                InitAltCanvas()
+                UpdateDisplaySettings()
             }
             initialized = true
             pluginsReloaded = true
@@ -759,6 +737,67 @@ class plugin : Plugin() {
         }
 
         return panelButton
+    }
+
+    private fun configureLookAndFeel(){
+        try {
+            UIManager.setLookAndFeel("javax.swing.plaf.nimbus.NimbusLookAndFeel")
+
+            // Modify the UI properties to match theme
+            UIManager.put("control", VIEW_BACKGROUND_COLOR)
+            UIManager.put("info", VIEW_BACKGROUND_COLOR)
+            UIManager.put("nimbusBase", WIDGET_COLOR)
+            UIManager.put("nimbusBlueGrey", TITLE_BAR_COLOR)
+
+            UIManager.put("nimbusDisabledText", primaryColor)
+            UIManager.put("nimbusSelectedText", secondaryColor)
+            UIManager.put("text", secondaryColor)
+
+            UIManager.put("nimbusFocus", TITLE_BAR_COLOR)
+            UIManager.put("nimbusInfoBlue", POPUP_BACKGROUND)
+            UIManager.put("nimbusLightBackground", WIDGET_COLOR)
+            UIManager.put("nimbusSelectionBackground", PROGRESS_BAR_FILL)
+
+            UIManager.put("Button.background", WIDGET_COLOR)
+            UIManager.put("Button.foreground", secondaryColor)
+
+            UIManager.put("CheckBox.background", VIEW_BACKGROUND_COLOR)
+            UIManager.put("CheckBox.foreground", secondaryColor)
+            UIManager.put("CheckBox.icon", UIManager.getIcon("CheckBox.icon"))
+
+            UIManager.put("ComboBox.background", WIDGET_COLOR)
+            UIManager.put("ComboBox.foreground", secondaryColor)
+            UIManager.put("ComboBox.selectionBackground", PROGRESS_BAR_FILL)
+            UIManager.put("ComboBox.selectionForeground", primaryColor)
+            UIManager.put("ComboBox.buttonBackground", WIDGET_COLOR)
+
+            UIManager.put("Spinner.background", WIDGET_COLOR)
+            UIManager.put("Spinner.foreground", secondaryColor)
+            UIManager.put("Spinner.border", BorderFactory.createLineBorder(TITLE_BAR_COLOR))
+
+            UIManager.put("TextField.background", WIDGET_COLOR)
+            UIManager.put("TextField.foreground", secondaryColor)
+            UIManager.put("TextField.caretForeground", secondaryColor)
+            UIManager.put("TextField.border", BorderFactory.createLineBorder(TITLE_BAR_COLOR))
+
+            UIManager.put("ScrollBar.thumb", WIDGET_COLOR)
+            UIManager.put("ScrollBar.track", VIEW_BACKGROUND_COLOR)
+            UIManager.put("ScrollBar.thumbHighlight", TITLE_BAR_COLOR)
+
+            UIManager.put("ProgressBar.foreground", PROGRESS_BAR_FILL)
+            UIManager.put("ProgressBar.background", WIDGET_COLOR)
+            UIManager.put("ProgressBar.border", BorderFactory.createLineBorder(TITLE_BAR_COLOR))
+
+            UIManager.put("ToolTip.background", VIEW_BACKGROUND_COLOR)
+            UIManager.put("ToolTip.foreground", secondaryColor)
+            UIManager.put("ToolTip.border", BorderFactory.createLineBorder(TITLE_BAR_COLOR))
+
+            // Update component tree UI to apply the new theme
+            SwingUtilities.updateComponentTreeUI(frame)
+            frame.background = Color.BLACK
+        } catch (e : Exception) {
+            e.printStackTrace()
+        }
     }
 
 
