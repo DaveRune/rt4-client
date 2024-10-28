@@ -43,6 +43,8 @@ import rt4.client.mainLoadState
 import java.awt.*
 import java.awt.Font
 import java.awt.event.*
+import java.awt.geom.AffineTransform
+import java.awt.image.AffineTransformOp
 import java.awt.image.BufferedImage
 import java.awt.image.VolatileImage
 import javax.swing.*
@@ -153,12 +155,7 @@ class plugin : Plugin() {
 
     class AltCanvas : Canvas() {
         private var gameImage: VolatileImage? = null
-        private var flippedPixels = IntArray(FIXED_WIDTH * FIXED_HEIGHT)
         private var bufferImage = BufferedImage(FIXED_WIDTH, FIXED_HEIGHT, BufferedImage.TYPE_INT_BGR)
-        private var scaleX = 1.0
-        private var scaleY = 1.0
-        private var offsetX = 0
-        private var offsetY = 0
 
         init {
             isFocusable = true
@@ -220,13 +217,10 @@ class plugin : Plugin() {
             g2d.fillRect(0, 0, width, height)
 
             gameImage?.let { image ->
-                g2d.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR)
-                val (drawWidth, drawHeight) = calculateDrawDimensions(image)
-                scaleX = drawWidth.toDouble() / image.width
-                scaleY = drawHeight.toDouble() / image.height
-                offsetX = (width - drawWidth) / 2
-                offsetY = (height - drawHeight) / 2
-                g2d.drawImage(image, offsetX, offsetY, drawWidth, drawHeight, null)
+                val scale = minOf(width.toDouble() / image.width, height.toDouble() / image.height)
+                val x = ((width - image.width * scale) / 2).toInt()
+                val y = ((height - image.height * scale) / 2).toInt()
+                g2d.drawImage(image, x, y, (image.width * scale).toInt(), (image.height * scale).toInt(), null)
                 Toolkit.getDefaultToolkit().sync()
             }
         }
@@ -243,9 +237,14 @@ class plugin : Plugin() {
 
         private fun relayMouseEvent(e: MouseEvent) {
             requestFocusInWindow()
-            val adjustedX = ((e.x - offsetX) / scaleX).toInt().coerceIn(0, gameImage!!.width - 1)
-            val adjustedY = ((e.y - offsetY) / scaleY).toInt().coerceIn(0, gameImage!!.height - 1)
-            canvas.dispatchEvent(MouseEvent(canvas, e.id, e.`when`, e.modifiersEx, adjustedX, adjustedY, e.clickCount, e.isPopupTrigger, e.button))
+            val scale = minOf(width.toDouble() / gameImage!!.width, height.toDouble() / gameImage!!.height)
+            val xOffset = ((width - gameImage!!.width * scale) / 2)
+            val yOffset = ((height - gameImage!!.height * scale) / 2)
+
+            val adjustedX = ((e.x - xOffset) / scale).toInt().coerceIn(0, gameImage!!.width - 1)
+            val adjustedY = ((e.y - yOffset) / scale).toInt().coerceIn(0, gameImage!!.height - 1)
+
+            canvas.dispatchEvent(MouseEvent(this, e.id, e.`when`, e.modifiersEx, adjustedX, adjustedY, e.clickCount, e.isPopupTrigger, e.button))
         }
 
         private fun relayKeyEvent(e: KeyEvent, action: (KeyListener) -> Unit) {
@@ -262,21 +261,19 @@ class plugin : Plugin() {
             val height = gameImage!!.height
             val pixelData = GlRenderer.pixelData
 
-            // Flip and copy pixels in one pass using a single loop
-            for (y in 0 until height) {
-                val srcOffset = (height - 1 - y) * width
-                val destOffset = y * width
-                System.arraycopy(pixelData, srcOffset, flippedPixels, destOffset, width)
-            }
+            bufferImage.setRGB(0, 0, width, height, pixelData, 0, width)
 
-            // Draw flipped pixels directly to bufferImage
-            bufferImage.setRGB(0, 0, width, height, flippedPixels, 0, width)
+            val transform = AffineTransform.getScaleInstance(1.0, -1.0)
+            transform.translate(0.0, -height.toDouble())
+            val op = AffineTransformOp(transform, AffineTransformOp.TYPE_NEAREST_NEIGHBOR)
+            val flippedImage = op.filter(bufferImage, null)
 
             gameImage?.createGraphics()?.apply {
-                drawImage(bufferImage, 0, 0, null)
+                drawImage(flippedImage, 0, 0, null)
                 dispose()
             }
         }
+
 
         private fun renderSoftwareRaster() {
             gameImage?.createGraphics()?.apply {
