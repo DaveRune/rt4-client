@@ -155,7 +155,14 @@ class plugin : Plugin() {
 
     class AltCanvas : Canvas() {
         private var gameImage: VolatileImage? = null
+        private var op: AffineTransformOp? = null
+        private var transform: AffineTransform? = null
+
+        private var flippedImage: BufferedImage? = null // Only used in HD
         private var bufferImage = BufferedImage(FIXED_WIDTH, FIXED_HEIGHT, BufferedImage.TYPE_INT_BGR)
+
+        private var lastImageWidth = -1
+        private var lastImageHeight = -1
 
         init {
             isFocusable = true
@@ -225,16 +232,6 @@ class plugin : Plugin() {
             }
         }
 
-        private fun calculateDrawDimensions(image: VolatileImage): Pair<Int, Int> {
-            val imageAspect = image.width.toDouble() / image.height.toDouble()
-            val panelAspect = width.toDouble() / height.toDouble()
-            return if (imageAspect > panelAspect) {
-                width to (width / imageAspect).toInt()
-            } else {
-                (height * imageAspect).toInt() to height
-            }
-        }
-
         private fun relayMouseEvent(e: MouseEvent) {
             requestFocusInWindow()
             val scale = minOf(width.toDouble() / gameImage!!.width, height.toDouble() / gameImage!!.height)
@@ -259,21 +256,31 @@ class plugin : Plugin() {
         private fun renderGlRaster() {
             val width = gameImage!!.width
             val height = gameImage!!.height
-            val pixelData = GlRenderer.pixelData
 
-            bufferImage.setRGB(0, 0, width, height, pixelData, 0, width)
+            bufferImage.setRGB(0, 0, width, height, GlRenderer.pixelData, 0, width)
 
-            val transform = AffineTransform.getScaleInstance(1.0, -1.0)
-            transform.translate(0.0, -height.toDouble())
-            val op = AffineTransformOp(transform, AffineTransformOp.TYPE_NEAREST_NEIGHBOR)
-            val flippedImage = op.filter(bufferImage, null)
+            // Check if dimensions have changed
+            if (width != lastImageWidth || height != lastImageHeight) {
+                // Initialize or update transform and operation
+                transform = AffineTransform.getScaleInstance(1.0, -1.0).apply {
+                    translate(0.0, -height.toDouble())
+                }
+                op = AffineTransformOp(transform, AffineTransformOp.TYPE_NEAREST_NEIGHBOR)
+                flippedImage = BufferedImage(width, height, bufferImage.type)
 
+                lastImageWidth = width
+                lastImageHeight = height
+            }
+
+            // Apply the transform operation
+            op!!.filter(bufferImage, flippedImage)
+
+            // Draw the flipped image onto gameImage
             gameImage?.createGraphics()?.apply {
                 drawImage(flippedImage, 0, 0, null)
                 dispose()
             }
         }
-
 
         private fun renderSoftwareRaster() {
             gameImage?.createGraphics()?.apply {
