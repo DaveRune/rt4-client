@@ -60,7 +60,7 @@ object Themes {
             ThemeType.SARADOMIN -> Theme(
                 widgetColor = Color(62, 53, 41),
                 titleBarColor = Color(111, 93, 69).darker(),
-                viewBackgroundColor = Color(111, 93, 69),
+                viewBackgroundColor = Color(101, 85, 63),
                 primaryColor = Color(180, 150, 120),
                 secondaryColor = Color(230, 210, 190),
                 popupBackground = Color(70, 56, 42),
