@@ -70,7 +70,7 @@ public class PluginRepository {
         File pluginsDirectory = new File(GlobalJsonConfig.instance.pluginsFolder);
 
         if (!pluginsDirectory.exists()) {
-            //System.out.println("Skipping plugin initialization - " + pluginsDirectory.getAbsolutePath() + " does not exist.");
+            System.out.println("Skipping plugin initialization - " + pluginsDirectory.getAbsolutePath() + " does not exist.");
             return;
         }
 
@@ -120,7 +120,7 @@ public class PluginRepository {
                 }
 
                 if (loadedPlugins.containsKey(info)) {
-                    //System.out.println("Skipping reloading of plugin " + file.getName() + " as it already exists and has OnPluginsReloaded.");
+                    System.out.println("Skipping reloading of plugin " + file.getName() + " as it already exists and has OnPluginsReloaded.");
                     continue;
                 }
 
@@ -143,7 +143,7 @@ public class PluginRepository {
                     loader.loadClass(file.getName() + "." + f.getName().replace(".class",""));
                 }
 
-                //System.out.println("Successfully loaded plugin " + file.getName() + ", version " + info.version);
+                System.out.println("Successfully loaded plugin " + file.getName() + ", version " + info.version);
             }
         } catch (Exception e) {
             System.err.println("Unexpected exception during plugin initialization:");

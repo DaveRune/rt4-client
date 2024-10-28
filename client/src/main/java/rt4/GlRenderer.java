@@ -73,7 +73,7 @@ public final class GlRenderer {
 	private static int maxTextureCoords;
 
 	@OriginalMember(owner = "client!tf", name = "E", descriptor = "Lgl!javax/media/opengl/GLDrawable;")
-	public static GLDrawable drawable;
+	private static GLDrawable drawable;
 
 	@OriginalMember(owner = "client!tf", name = "H", descriptor = "Z")
 	public static boolean arbVertexProgramSupported;

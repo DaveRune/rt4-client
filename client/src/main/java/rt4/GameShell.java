@@ -323,7 +323,6 @@ public abstract class GameShell extends Applet implements Runnable, FocusListene
 	@OriginalMember(owner = "client!rc", name = "b", descriptor = "(B)V")
 	public final synchronized void addCanvas() {
 		if (canvas != null) {
-			// Remove the old canvas if it exists
 			canvas.removeFocusListener(this);
 			canvas.getParent().remove(canvas);
 		}
@@ -514,10 +513,9 @@ public abstract class GameShell extends Applet implements Runnable, FocusListene
 			canvasScale = getCurrentDevice().getDefaultConfiguration().getDefaultTransform().getScaleX();
 			if (frame != null && fullScreenFrame == null) {
 				@Pc(84) Insets insets = frame.getInsets();
-				// TODO: Add a flag to ignore this.
-				//canvas.setLocation(insets.left + leftMargin, topMargin + insets.top);
+				canvas.setLocation(insets.left + leftMargin, topMargin + insets.top);
 			} else {
-				//canvas.setLocation(leftMargin, topMargin);
+				canvas.setLocation(leftMargin, topMargin);
 			}
 		}
 		this.mainRedraw();
