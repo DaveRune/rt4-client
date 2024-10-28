@@ -75,8 +75,8 @@ object HiscoresView {
         private var cursorVisible: Boolean = true
         private val gson = Gson()
 
-        val bufferedImageSprite = getBufferedImageFromSprite(API.GetSprite(Constants.MAG_SPRITE))
-        val imageCanvas = bufferedImageSprite.let {
+        private val bufferedImageSprite = getBufferedImageFromSprite(API.GetSprite(Constants.MAG_SPRITE))
+        private val imageCanvas = bufferedImageSprite.let {
             ImageCanvas(it).apply {
                 preferredSize = Constants.ICON_DIMENSION_SMALL
                 size = preferredSize
@@ -241,7 +241,7 @@ object HiscoresView {
             playerNameLabel?.revalidate()
             playerNameLabel?.repaint()
 
-            if(data == null) return;
+            if(data == null) return
 
             playerNameLabel?.removeAll()
 
@@ -323,10 +323,6 @@ object HiscoresView {
 
             val summoningFactor = if (isMemberWorld) floor(summoning.toDouble() / 8) else 0.0
             return Math.round((base + maxCombatType + summoningFactor) * 1000.0) / 1000.0
-        }
-
-        private fun showError(message: String) {
-            JOptionPane.showMessageDialog(null, message, "Error", JOptionPane.ERROR_MESSAGE)
         }
 
         private fun findComponentByName(container: Container, name: String): Component? {
@@ -443,7 +439,7 @@ object HiscoresView {
             minimumSize = preferredSize
         }
 
-        val bufferedImageSprite = getBufferedImageFromSprite(API.GetSprite(Constants.LVL_BAR_SPRITE));
+        val bufferedImageSprite = getBufferedImageFromSprite(API.GetSprite(Constants.LVL_BAR_SPRITE))
 
         val totalLevelIcon = ImageCanvas(bufferedImageSprite).apply {
             fillColor = COLOR_BACKGROUND_DARK
@@ -492,7 +488,7 @@ object HiscoresView {
         hiscorePanel.add(totalCombatPanel)
         hiscorePanel.add(Box.createVerticalStrut(10))
 
-        hiScoreView = hiscorePanel;
+        hiScoreView = hiscorePanel
     }
 
     data class HiscoresResponse(

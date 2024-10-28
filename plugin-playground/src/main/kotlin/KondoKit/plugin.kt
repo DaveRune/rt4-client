@@ -107,7 +107,7 @@ class plugin : Plugin() {
         private var rightPanelWrapper: JScrollPane? = null
         private var accumulatedTime = 0L
         private var reloadInterfaces = false
-        private const val tickInterval = 600L
+        private const val TICK_INTERVAL = 600L
         private var pluginsReloaded = false
         private var loginScreen = 160
         private var lastLogin = ""
@@ -126,7 +126,7 @@ class plugin : Plugin() {
         }
     }
 
-    fun allSpritesLoaded() : Boolean {
+    private fun allSpritesLoaded() : Boolean {
         // Check all skill sprites
         try{
             for (i in 0 until 24) {
@@ -171,10 +171,10 @@ class plugin : Plugin() {
             moveAltCanvasToFront()
             frame.setComponentZOrder(rightPanelWrapper, 2)
         }
-        UpdateDisplaySettings()
+        updateDisplaySettings()
     }
 
-    private fun UpdateDisplaySettings() {
+    private fun updateDisplaySettings() {
         val mode = GetWindowMode()
         val currentScrollPaneWidth = if (mainContentPanel.isVisible) NAVBAR_WIDTH + MAIN_CONTENT_WIDTH else NAVBAR_WIDTH
         lastUIOffset = uiOffset
@@ -233,7 +233,7 @@ class plugin : Plugin() {
             destroyAltCanvas()
         }
         if(lastUIOffset != uiOffset){
-            UpdateDisplaySettings()
+            updateDisplaySettings()
             reloadInterfaces = true
         }
     }
@@ -242,7 +242,7 @@ class plugin : Plugin() {
         moveCanvasToFront()
         frame.remove(altCanvas)
         altCanvas = null
-        UpdateDisplaySettings()
+        updateDisplaySettings()
     }
 
     override fun OnMiniMenuCreate(currentEntries: Array<out MiniMenuEntry>?) {
@@ -278,10 +278,10 @@ class plugin : Plugin() {
 
     override fun OnPluginsReloaded(): Boolean {
         if (!initialized) return true
-        UpdateDisplaySettings()
+        updateDisplaySettings()
         frame.remove(rightPanelWrapper)
         frame.layout = BorderLayout()
-        frame.add(rightPanelWrapper, BorderLayout.EAST)
+        rightPanelWrapper?.let { frame.add(it, BorderLayout.EAST) }
         frame.revalidate()
         pluginsReloaded = true
         reloadInterfaces = true
@@ -332,7 +332,7 @@ class plugin : Plugin() {
         }
 
         accumulatedTime += timeDelta
-        if (accumulatedTime >= tickInterval) {
+        if (accumulatedTime >= TICK_INTERVAL) {
             lootTrackerView?.let { onPostClientTick(it) }
             accumulatedTime = 0L
         }
@@ -374,21 +374,14 @@ class plugin : Plugin() {
     }
 
     private fun moveAltCanvasToFront(){
-        if(altCanvas == null) {
-            println("WARNING: altcanvas is null")
-            return
-        }
+        if(altCanvas == null) return
         frame.setComponentZOrder(canvas, 2)
         frame.setComponentZOrder(altCanvas, 1)
         frame.setComponentZOrder(rightPanelWrapper, 0)
-
     }
 
     private fun moveCanvasToFront(){
-        if(altCanvas == null) {
-            println("WARNING: altcanvas is null")
-            return
-        }
+        if(altCanvas == null) return
         frame.setComponentZOrder(altCanvas, 2)
         frame.setComponentZOrder(canvas, 1)
         frame.setComponentZOrder(rightPanelWrapper, 0)
@@ -401,7 +394,7 @@ class plugin : Plugin() {
         val osName = System.getProperty("os.name").toLowerCase()
         uiOffset = (GetData("kondoUIOffset") as? Int) ?: if (osName.contains("win")) 16 else 0
         launchMinimized = (GetData("kondoLaunchMinimized") as? Boolean) ?: false
-        useScaledFixed = (GetData("kondoScaleFixed") as? Boolean) ?: false
+        useScaledFixed = (GetData("kondoScaledFixed") as? Boolean) ?: false
     }
 
     private fun initKondoUI(){
@@ -517,7 +510,7 @@ class plugin : Plugin() {
         }
 
         reloadInterfaces = true
-        UpdateDisplaySettings()
+        updateDisplaySettings()
 
         // Revalidate and repaint necessary panels
         mainContentPanel.revalidate()
@@ -674,7 +667,7 @@ class plugin : Plugin() {
         }
     }
 
-    fun loadFont(): Font? {
+    private fun loadFont(): Font? {
         val fontStream = plugin::class.java.getResourceAsStream("res/runescape_small.ttf")
         return if (fontStream != null) {
             try {
@@ -696,7 +689,7 @@ class plugin : Plugin() {
         var focusedView: String = ""
     }
 
-    fun applyTheme(theme: Theme) {
+    private fun applyTheme(theme: Theme) {
         WIDGET_COLOR = theme.widgetColor
         TITLE_BAR_COLOR = theme.titleBarColor
         VIEW_BACKGROUND_COLOR = theme.viewBackgroundColor

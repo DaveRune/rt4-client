@@ -40,14 +40,12 @@ class AltCanvas : Canvas() {
         })
 
         addKeyListener(object : KeyAdapter() {
-            override fun keyPressed(e: KeyEvent) = relayKeyEvent(e) { it.keyPressed(e) }
-            override fun keyReleased(e: KeyEvent) = relayKeyEvent(e) { it.keyReleased(e) }
-            override fun keyTyped(e: KeyEvent) = relayKeyEvent(e) { it.keyTyped(e) }
+            override fun keyPressed(e: KeyEvent) = relayKeyEvent { it.keyPressed(e) }
+            override fun keyReleased(e: KeyEvent) = relayKeyEvent { it.keyReleased(e) }
+            override fun keyTyped(e: KeyEvent) = relayKeyEvent { it.keyTyped(e) }
         })
 
-        addMouseWheelListener(object : MouseWheelListener {
-            override fun mouseWheelMoved(e: MouseWheelEvent) = relayMouseWheelEvent(e)
-        })
+        addMouseWheelListener(MouseWheelListener { e -> relayMouseWheelEvent(e) })
     }
 
     override fun update(g: Graphics) = paint(g)
@@ -115,7 +113,7 @@ class AltCanvas : Canvas() {
         canvas.dispatchEvent(MouseEvent(this, e.id, e.`when`, e.modifiersEx, adjustedX, adjustedY, e.clickCount, e.isPopupTrigger, e.button))
     }
 
-    private fun relayKeyEvent(e: KeyEvent, action: (KeyListener) -> Unit) {
+    private fun relayKeyEvent(action: (KeyListener) -> Unit) {
         for (listener in canvas.keyListeners) action(listener)
     }
 
