@@ -342,8 +342,8 @@ class plugin : Plugin() {
                     altCanvas?.setLocation(0, canvas.y)
                     canvas.setLocation(0, canvas.y)
                 } else {
-                    GameShell.leftMargin = (difference + uiOffset) / 2
-                    canvas.setLocation(GameShell.leftMargin - (FIXED_WIDTH / 2), canvas.y)
+                    val difference = frame.width - (FIXED_WIDTH + uiOffset + currentScrollPaneWidth)
+                    GameShell.leftMargin = difference / 2
                 }
             }
 
