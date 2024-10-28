@@ -158,7 +158,7 @@ class plugin : Plugin() {
         private var op: AffineTransformOp? = null
         private var transform: AffineTransform? = null
 
-        private var flippedImage: BufferedImage? = null // Only used in HD
+        private var flippedImage: BufferedImage? = null
         private var bufferImage = BufferedImage(FIXED_WIDTH, FIXED_HEIGHT, BufferedImage.TYPE_INT_BGR)
 
         private var lastImageWidth = -1
@@ -190,6 +190,7 @@ class plugin : Plugin() {
 
         override fun addNotify() {
             super.addNotify()
+            createBufferStrategy(2) // Double-buffering
             validateGameImage()
         }
 
@@ -218,17 +219,23 @@ class plugin : Plugin() {
             }
         }
 
-        override fun paint(g: Graphics) {
-            val g2d = g as Graphics2D
-            g2d.color = Color.BLACK
-            g2d.fillRect(0, 0, width, height)
 
-            gameImage?.let { image ->
-                val scale = minOf(width.toDouble() / image.width, height.toDouble() / image.height)
-                val x = ((width - image.width * scale) / 2).toInt()
-                val y = ((height - image.height * scale) / 2).toInt()
-                g2d.drawImage(image, x, y, (image.width * scale).toInt(), (image.height * scale).toInt(), null)
-                Toolkit.getDefaultToolkit().sync()
+        override fun paint(g: Graphics) {
+            bufferStrategy?.let { strategy ->
+                val g2d = strategy.drawGraphics as? Graphics2D ?: return
+
+                g2d.color = Color.BLACK
+                g2d.fillRect(0, 0, width, height)
+
+                gameImage?.let { image ->
+                    val scale = minOf(width.toDouble() / image.width, height.toDouble() / image.height)
+                    val x = ((width - image.width * scale) / 2).toInt()
+                    val y = ((height - image.height * scale) / 2).toInt()
+                    g2d.drawImage(image, x, y, (image.width * scale).toInt(), (image.height * scale).toInt(), null)
+                }
+
+                g2d.dispose() // Release the graphics context
+                strategy.show() // Display the buffer
             }
         }
 
@@ -259,23 +266,18 @@ class plugin : Plugin() {
 
             bufferImage.setRGB(0, 0, width, height, GlRenderer.pixelData, 0, width)
 
-            // Check if dimensions have changed
             if (width != lastImageWidth || height != lastImageHeight) {
-                // Initialize or update transform and operation
                 transform = AffineTransform.getScaleInstance(1.0, -1.0).apply {
                     translate(0.0, -height.toDouble())
                 }
                 op = AffineTransformOp(transform, AffineTransformOp.TYPE_NEAREST_NEIGHBOR)
                 flippedImage = BufferedImage(width, height, bufferImage.type)
-
                 lastImageWidth = width
                 lastImageHeight = height
             }
 
-            // Apply the transform operation
             op!!.filter(bufferImage, flippedImage)
 
-            // Draw the flipped image onto gameImage
             gameImage?.createGraphics()?.apply {
                 drawImage(flippedImage, 0, 0, null)
                 dispose()
