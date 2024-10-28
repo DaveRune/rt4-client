@@ -35,6 +35,7 @@ import plugin.api.*
 import plugin.api.API.*
 import plugin.api.FontColor.fromColor
 import rt4.*
+import rt4.DisplayMode
 import rt4.GameShell.canvas
 import rt4.GameShell.frame
 import rt4.client.js5Archive8
@@ -111,6 +112,7 @@ class plugin : Plugin() {
         private var lastClickTime = 0L
         private var lastUIOffset = 0
         private const val HIDDEN_VIEW = "HIDDEN"
+        private var altCanvas: AltCanvas? = null
         private val drawActions = mutableListOf<() -> Unit>()
 
         fun registerDrawAction(action: () -> Unit) {
@@ -151,104 +153,64 @@ class plugin : Plugin() {
 
     class AltCanvas : Canvas() {
         private var gameImage: VolatileImage? = null
-        private var flippedPixels: IntArray? = null
-        private var bufferImage: BufferedImage? = null
+        private var flippedPixels = IntArray(FIXED_WIDTH * FIXED_HEIGHT)
+        private var bufferImage = BufferedImage(FIXED_WIDTH, FIXED_HEIGHT, BufferedImage.TYPE_INT_BGR)
         private var scaleX = 1.0
         private var scaleY = 1.0
         private var offsetX = 0
         private var offsetY = 0
 
-
         init {
-            validateGameImage()
             isFocusable = true
             requestFocusInWindow()
 
             addMouseListener(object : MouseAdapter() {
-                override fun mousePressed(e: MouseEvent) {
-                    relayMouseEvent(e)
-                }
-
-                override fun mouseReleased(e: MouseEvent) {
-                    relayMouseEvent(e)
-                }
-
-                override fun mouseClicked(e: MouseEvent) {
-                    relayMouseEvent(e)
-                }
+                override fun mousePressed(e: MouseEvent) = relayMouseEvent(e)
+                override fun mouseReleased(e: MouseEvent) = relayMouseEvent(e)
+                override fun mouseClicked(e: MouseEvent) = relayMouseEvent(e)
             })
 
             addMouseMotionListener(object : MouseMotionAdapter() {
-                override fun mouseMoved(e: MouseEvent) {
-                    relayMouseEvent(e)
-                }
-
-                override fun mouseDragged(e: MouseEvent) {
-                    relayMouseEvent(e)
-                }
+                override fun mouseMoved(e: MouseEvent) = relayMouseEvent(e)
+                override fun mouseDragged(e: MouseEvent) = relayMouseEvent(e)
             })
 
-            // Register a KeyAdapter for handling key events
             addKeyListener(object : KeyAdapter() {
-                override fun keyPressed(e: KeyEvent) {
-                    for (listener in canvas.keyListeners) {
-                        listener.keyPressed(e)
-                    }
-                }
-
-                override fun keyReleased(e: KeyEvent) {
-                    for (listener in canvas.keyListeners) {
-                        listener.keyReleased(e)
-                    }
-                }
-
-                override fun keyTyped(e: KeyEvent) {
-                    for (listener in canvas.keyListeners) {
-                        listener.keyTyped(e)
-                    }
-                }
+                override fun keyPressed(e: KeyEvent) = relayKeyEvent(e) { it.keyPressed(e) }
+                override fun keyReleased(e: KeyEvent) = relayKeyEvent(e) { it.keyReleased(e) }
+                override fun keyTyped(e: KeyEvent) = relayKeyEvent(e) { it.keyTyped(e) }
             })
-
-            isFocusable = true
-            requestFocusInWindow()
         }
 
-        override fun update(g: Graphics) {
-            paint(g)
-        }
+        override fun update(g: Graphics) = paint(g)
 
         override fun addNotify() {
             super.addNotify()
-            //createBufferStrategy(2) // Double buffering for V-Sync, called only after the peer is created
+            validateGameImage()
         }
 
         private fun validateGameImage() {
             val gc = GraphicsEnvironment.getLocalGraphicsEnvironment().defaultScreenDevice.defaultConfiguration
-            if (gameImage == null) {
-                gameImage = gc.createCompatibleVolatileImage(FIXED_WIDTH, FIXED_HEIGHT, Transparency.OPAQUE)
-                renderGameImage()
-            } else {
-                val status = gameImage!!.validate(gc)
-                if (status == VolatileImage.IMAGE_INCOMPATIBLE) {
-                    gameImage = gc.createCompatibleVolatileImage(FIXED_WIDTH, FIXED_HEIGHT, Transparency.OPAQUE)
-                    renderGameImage()
-                } else if (status == VolatileImage.IMAGE_RESTORED) {
-                    renderGameImage()
+            gameImage?.let {
+                when (it.validate(gc)) {
+                    VolatileImage.IMAGE_INCOMPATIBLE -> createGameImage(gc)
+                    VolatileImage.IMAGE_RESTORED -> renderGameImage()
                 }
-            }
+            } ?: createGameImage(gc)
+        }
+
+        private fun createGameImage(gc: GraphicsConfiguration) {
+            gameImage = gc.createCompatibleVolatileImage(FIXED_WIDTH, FIXED_HEIGHT, Transparency.OPAQUE)
+            renderGameImage()
         }
 
         private fun renderGameImage() {
-            val g = gameImage!!.createGraphics()
-            try {
-                // Initial drawing code
-                g.color = Color.RED
-                g.fillRect(0, 0, gameImage!!.width, gameImage!!.height)
-                g.color = Color.BLACK
-                g.drawString("Game Frame", 20, 20)
-                // Add any additional rendering here
-            } finally {
-                g.dispose()
+            gameImage?.createGraphics()?.apply {
+                color = Color.RED
+                fillRect(0, 0, gameImage!!.width, gameImage!!.height)
+                color = Color.BLACK
+                drawString("Game Frame", 20, 20)
+                dispose()
             }
         }
 
@@ -257,104 +219,58 @@ class plugin : Plugin() {
             g2d.color = Color.BLACK
             g2d.fillRect(0, 0, width, height)
 
-            // Validate image within paint to ensure compatibility with GraphicsConfiguration
-            var valid = false
-            do {
-                val gc = GraphicsEnvironment.getLocalGraphicsEnvironment().defaultScreenDevice.defaultConfiguration
-                if (gameImage == null) {
-                    gameImage = gc.createCompatibleVolatileImage(FIXED_WIDTH, FIXED_HEIGHT, Transparency.OPAQUE)
-                    renderGameImage()
-                } else {
-                    val status = gameImage!!.validate(gc)
-                    when (status) {
-                        VolatileImage.IMAGE_INCOMPATIBLE -> {
-                            gameImage = gc.createCompatibleVolatileImage(FIXED_WIDTH, FIXED_HEIGHT, Transparency.OPAQUE)
-                            renderGameImage()
-                        }
-                        VolatileImage.IMAGE_RESTORED -> renderGameImage()
-                        VolatileImage.IMAGE_OK -> valid = true
-                    }
-                }
-            } while (!valid)
-
-            // Continue with rendering the image
             gameImage?.let { image ->
                 g2d.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR)
-                // Scaling and centering
-                val imageAspect = image.width.toDouble() / image.height.toDouble()
-                val panelAspect = width.toDouble() / height.toDouble()
-
-                val (drawWidth, drawHeight) = if (imageAspect > panelAspect) {
-                    val newWidth = width
-                    val newHeight = (width / imageAspect).toInt()
-                    newWidth to newHeight
-                } else {
-                    val newHeight = height
-                    val newWidth = (height * imageAspect).toInt()
-                    newWidth to newHeight
-                }
-
-                // Store scale factors and offsets for event adjustment
+                val (drawWidth, drawHeight) = calculateDrawDimensions(image)
                 scaleX = drawWidth.toDouble() / image.width
                 scaleY = drawHeight.toDouble() / image.height
                 offsetX = (width - drawWidth) / 2
                 offsetY = (height - drawHeight) / 2
+                g2d.drawImage(image, offsetX, offsetY, drawWidth, drawHeight, null)
+                Toolkit.getDefaultToolkit().sync()
+            }
+        }
 
-                // Draw the scaled image centered in the panel
-                val x = offsetX
-                val y = offsetY
-                g2d.drawImage(image, x, y, drawWidth, drawHeight, null)
-                g2d.dispose()
-                //bufferStrategy.show() // Shows the buffer with V-Sync enabled
-                Toolkit.getDefaultToolkit().sync() // Ensures V-Sync on some systems
+        private fun calculateDrawDimensions(image: VolatileImage): Pair<Int, Int> {
+            val imageAspect = image.width.toDouble() / image.height.toDouble()
+            val panelAspect = width.toDouble() / height.toDouble()
+            return if (imageAspect > panelAspect) {
+                width to (width / imageAspect).toInt()
+            } else {
+                (height * imageAspect).toInt() to height
             }
         }
 
         private fun relayMouseEvent(e: MouseEvent) {
-            this.requestFocusInWindow()
-            val adjustedX = (e.x - offsetX) / scaleX
-            val adjustedY = (e.y - offsetY) / scaleY
+            requestFocusInWindow()
+            val adjustedX = ((e.x - offsetX) / scaleX).toInt().coerceIn(0, gameImage!!.width - 1)
+            val adjustedY = ((e.y - offsetY) / scaleY).toInt().coerceIn(0, gameImage!!.height - 1)
+            canvas.dispatchEvent(MouseEvent(canvas, e.id, e.`when`, e.modifiersEx, adjustedX, adjustedY, e.clickCount, e.isPopupTrigger, e.button))
+        }
 
-            val originalX = adjustedX.toInt().coerceIn(0, gameImage!!.width - 1)
-            val originalY = adjustedY.toInt().coerceIn(0, gameImage!!.height - 1)
-
-            val newEvent = MouseEvent(
-                canvas, e.id, e.`when`, e.modifiersEx,
-                    originalX, originalY, e.clickCount, e.isPopupTrigger, e.button
-            )
-            canvas.dispatchEvent(newEvent)
+        private fun relayKeyEvent(e: KeyEvent, action: (KeyListener) -> Unit) {
+            for (listener in canvas.keyListeners) action(listener)
         }
 
         fun updateGameImage() {
-            if(this.parent == null) {
-                println("Unparented.. skipping update.")
-            }
-            validateGameImage()
-            if (IsHD()) {
-                renderGlRaster()
-            } else {
-                renderSoftwareRaster()
-            }
+            if (IsHD()) renderGlRaster() else renderSoftwareRaster()
             repaint()
         }
+
         private fun renderGlRaster() {
-            if (flippedPixels == null || flippedPixels!!.size != gameImage!!.width * gameImage!!.height) {
-                flippedPixels = IntArray(gameImage!!.width * gameImage!!.height)
-            }
-
-            // Initialize bufferImage only once and reuse it
-            if (bufferImage == null || bufferImage!!.width != gameImage!!.width || bufferImage!!.height != gameImage!!.height) {
-                bufferImage = BufferedImage(gameImage!!.width, gameImage!!.height, BufferedImage.TYPE_INT_BGR)
-            }
-
             val width = gameImage!!.width
             val height = gameImage!!.height
-            val pixels = GlRenderer.pixelData // Retrieve BGRA pixel data
+            val pixelData = GlRenderer.pixelData
+
+            // Flip and copy pixels in one pass using a single loop
             for (y in 0 until height) {
-                System.arraycopy(pixels, (height - 1 - y) * width, flippedPixels, y * width, width)
+                val srcOffset = (height - 1 - y) * width
+                val destOffset = y * width
+                System.arraycopy(pixelData, srcOffset, flippedPixels, destOffset, width)
             }
 
-            bufferImage!!.setRGB(0, 0, width, height, flippedPixels, 0, width)
+            // Draw flipped pixels directly to bufferImage
+            bufferImage.setRGB(0, 0, width, height, flippedPixels, 0, width)
 
             gameImage?.createGraphics()?.apply {
                 drawImage(bufferImage, 0, 0, null)
@@ -363,22 +279,18 @@ class plugin : Plugin() {
         }
 
         private fun renderSoftwareRaster() {
-            val g = gameImage!!.createGraphics()
-            try {
-                SoftwareRaster.frameBuffer.draw(g)
-            } finally {
-                g.dispose()
+            gameImage?.createGraphics()?.apply {
+                SoftwareRaster.frameBuffer.draw(this)
+                dispose()
             }
         }
     }
 
-    fun createAltCanvas(): AltCanvas {
+    private fun createAltCanvas(): AltCanvas {
         return AltCanvas().apply {
             preferredSize = Dimension(FIXED_WIDTH, FIXED_HEIGHT)
         }
     }
-
-    private var altCanvas: AltCanvas? = null
 
 
     override fun Init() {
@@ -552,6 +464,14 @@ class plugin : Plugin() {
 
     override fun LateDraw(timeDelta: Long) {
         if (!initialized) return
+        if(GameShell.fullScreenFrame != null) {
+            DisplayMode.setWindowMode(true, 0, FIXED_WIDTH, FIXED_HEIGHT)
+            showAlert("Fullscreen is not supported by KondoKit. Disable the plugin",
+                "Error",
+                JOptionPane.INFORMATION_MESSAGE
+            )
+            return;
+        }
         if(GetWindowMode() == WindowMode.RESIZABLE){
             frame.setComponentZOrder(altCanvas, 1)
             frame.setComponentZOrder(canvas, 0)
@@ -708,22 +628,18 @@ class plugin : Plugin() {
             val elapsedTime = (System.currentTimeMillis() - xpWidget.startTime) / 1000.0 / 60.0 / 60.0
             val xpPerHour = if (elapsedTime > 0) (xpWidget.totalXpGained / elapsedTime).toInt() else 0
             val formattedXpPerHour = formatNumber(xpPerHour)
-            SwingUtilities.invokeLater{
-                xpWidget.xpPerHourLabel.text =
-                    formatHtmlLabelText("XP /hr: ", primaryColor, formattedXpPerHour, secondaryColor)
-                xpWidget.container.repaint()
-            }
+            xpWidget.xpPerHourLabel.text =
+                formatHtmlLabelText("XP /hr: ", primaryColor, formattedXpPerHour, secondaryColor)
+            xpWidget.container.repaint()
         }
 
         totalXP?.let { totalXPWidget ->
             val elapsedTime = (System.currentTimeMillis() - totalXPWidget.startTime) / 1000.0 / 60.0 / 60.0
             val totalXPPerHour = if (elapsedTime > 0) (totalXPWidget.totalXpGained / elapsedTime).toInt() else 0
             val formattedTotalXpPerHour = formatNumber(totalXPPerHour)
-            SwingUtilities.invokeLater{
-                totalXPWidget.xpPerHourLabel.text =
-                    formatHtmlLabelText("XP /hr: ", primaryColor, formattedTotalXpPerHour, secondaryColor)
-                totalXPWidget.container.repaint()
-            }
+            totalXPWidget.xpPerHourLabel.text =
+                formatHtmlLabelText("XP /hr: ", primaryColor, formattedTotalXpPerHour, secondaryColor)
+            totalXPWidget.container.repaint()
         }
     }
 
