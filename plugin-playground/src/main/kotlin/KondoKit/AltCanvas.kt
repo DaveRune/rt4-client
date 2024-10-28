@@ -44,6 +44,10 @@ class AltCanvas : Canvas() {
             override fun keyReleased(e: KeyEvent) = relayKeyEvent(e) { it.keyReleased(e) }
             override fun keyTyped(e: KeyEvent) = relayKeyEvent(e) { it.keyTyped(e) }
         })
+
+        addMouseWheelListener(object : MouseWheelListener {
+            override fun mouseWheelMoved(e: MouseWheelEvent) = relayMouseWheelEvent(e)
+        })
     }
 
     override fun update(g: Graphics) = paint(g)
@@ -113,6 +117,17 @@ class AltCanvas : Canvas() {
 
     private fun relayKeyEvent(e: KeyEvent, action: (KeyListener) -> Unit) {
         for (listener in canvas.keyListeners) action(listener)
+    }
+
+    private fun relayMouseWheelEvent(e: MouseWheelEvent) {
+        val scale = minOf(width.toDouble() / gameImage!!.width, height.toDouble() / gameImage!!.height)
+        val xOffset = ((width - gameImage!!.width * scale) / 2)
+        val yOffset = ((height - gameImage!!.height * scale) / 2)
+
+        val adjustedX = ((e.x - xOffset) / scale).toInt().coerceIn(0, gameImage!!.width - 1)
+        val adjustedY = ((e.y - yOffset) / scale).toInt().coerceIn(0, gameImage!!.height - 1)
+
+        canvas.dispatchEvent(MouseWheelEvent(this, e.id, e.`when`, e.modifiersEx, adjustedX, adjustedY, e.clickCount, e.isPopupTrigger, e.scrollType, e.scrollAmount, e.wheelRotation))
     }
 
     fun updateGameImage() {
