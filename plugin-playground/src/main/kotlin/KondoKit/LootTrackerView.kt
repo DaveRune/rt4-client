@@ -4,7 +4,6 @@ import KondoKit.Helpers.addMouseListenerToAll
 import KondoKit.Helpers.formatHtmlLabelText
 import KondoKit.SpriteToBufferedImage.getBufferedImageFromSprite
 import KondoKit.XPTrackerView.wrappedWidget
-import KondoKit.plugin.Companion.IMAGE_SIZE
 import KondoKit.plugin.Companion.POPUP_BACKGROUND
 import KondoKit.plugin.Companion.POPUP_FOREGROUND
 import KondoKit.plugin.Companion.TITLE_BAR_COLOR
@@ -351,6 +350,7 @@ object LootTrackerView {
                 ?.apply {
                     val newValue = (getClientProperty("val") as? Int ?: 0) + valueOfNewDrops.toInt()
                     text = "${formatValue(newValue)} gp"
+                    foreground = primaryColor
                     putClientProperty("val", newValue)
                     revalidate()
                     if(focusedView == VIEW_NAME)

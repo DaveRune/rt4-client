@@ -92,7 +92,7 @@ class plugin : Plugin() {
         var uiOffset = 0
 
         @Exposed("Stretched/Scaled Fixed Mode Support")
-        var useAltCanvas = false
+        var useScaledFixed = false
 
         const val FIXED_WIDTH = 765
         const val FIXED_HEIGHT = 503
@@ -162,7 +162,7 @@ class plugin : Plugin() {
         System.setProperty("swing.aatext", "false")
     }
 
-    private fun InitAltCanvas(){
+    private fun initAltCanvas(){
         if (frame != null) {
             altCanvas = AltCanvas().apply {
                 preferredSize = Dimension(FIXED_WIDTH, FIXED_HEIGHT)
@@ -178,27 +178,36 @@ class plugin : Plugin() {
         val mode = GetWindowMode()
         val currentScrollPaneWidth = if (mainContentPanel.isVisible) NAVBAR_WIDTH + MAIN_CONTENT_WIDTH else NAVBAR_WIDTH
         lastUIOffset = uiOffset
+
         when (mode) {
             WindowMode.FIXED -> {
                 if (frame.width < FIXED_WIDTH + currentScrollPaneWidth + uiOffset) {
                     frame.setSize(FIXED_WIDTH + currentScrollPaneWidth + uiOffset, frame.height)
                 }
+
                 val difference = frame.width - (uiOffset + currentScrollPaneWidth)
-                if(useAltCanvas){
+
+                if (useScaledFixed) {
                     GameShell.leftMargin = 0
-                    canvas.setLocation(0,canvas.y)
-                    altCanvas?.size = Dimension(difference + uiOffset/2, frame.height - canvas.y)
+                    val canvasWidth = difference + uiOffset / 2
+                    val canvasHeight = frame.height - canvas.y // Restricting height to frame height
+
+                    altCanvas?.size = Dimension(canvasWidth, canvasHeight)
+                    altCanvas?.setLocation(0, canvas.y)
+                    canvas.setLocation(0, canvas.y)
                 } else {
                     GameShell.leftMargin = (difference + uiOffset) / 2
-                    canvas.setLocation(GameShell.leftMargin - (FIXED_WIDTH/2), canvas.y)
+                    canvas.setLocation(GameShell.leftMargin - (FIXED_WIDTH / 2), canvas.y)
                 }
             }
+
             WindowMode.RESIZABLE -> {
                 GameShell.canvasWidth = frame.width - (currentScrollPaneWidth + uiOffset)
             }
         }
+
         rightPanelWrapper?.preferredSize = Dimension(currentScrollPaneWidth, frame.height)
-        rightPanelWrapper?.let { it.isDoubleBuffered = true }
+        rightPanelWrapper?.isDoubleBuffered = true
         rightPanelWrapper?.revalidate()
         rightPanelWrapper?.repaint()
     }
@@ -217,18 +226,23 @@ class plugin : Plugin() {
         LootTrackerView.gePriceMap = LootTrackerView.loadGEPrices()
         StoreData("kondoLaunchMinimized", launchMinimized)
         StoreData("kondoUIOffset", uiOffset)
-        StoreData("kondoScaleFixed", useAltCanvas)
-        if(altCanvas == null && useAltCanvas){
-            InitAltCanvas()
-        } else if(altCanvas != null && !useAltCanvas){
-            frame.remove(altCanvas)
-            altCanvas = null
-            UpdateDisplaySettings()
+        StoreData("kondoScaledFixed", useScaledFixed)
+        if(altCanvas == null && useScaledFixed){
+            initAltCanvas()
+        } else if(altCanvas != null && !useScaledFixed){
+            destroyAltCanvas()
         }
         if(lastUIOffset != uiOffset){
             UpdateDisplaySettings()
             reloadInterfaces = true
         }
+    }
+
+    private fun destroyAltCanvas(){
+        moveCanvasToFront()
+        frame.remove(altCanvas)
+        altCanvas = null
+        UpdateDisplaySettings()
     }
 
     override fun OnMiniMenuCreate(currentEntries: Array<out MiniMenuEntry>?) {
@@ -350,8 +364,8 @@ class plugin : Plugin() {
             )
             return
         }
-        if(!useAltCanvas) return
-        if(GetWindowMode() == WindowMode.RESIZABLE){
+        if(!useScaledFixed) return
+        if(GetWindowMode() == WindowMode.FIXED){
             moveAltCanvasToFront()
         } else {
             moveCanvasToFront()
@@ -364,8 +378,10 @@ class plugin : Plugin() {
             println("WARNING: altcanvas is null")
             return
         }
+        frame.setComponentZOrder(canvas, 2)
         frame.setComponentZOrder(altCanvas, 1)
-        frame.setComponentZOrder(canvas, 0)
+        frame.setComponentZOrder(rightPanelWrapper, 0)
+
     }
 
     private fun moveCanvasToFront(){
@@ -373,8 +389,9 @@ class plugin : Plugin() {
             println("WARNING: altcanvas is null")
             return
         }
-        frame.setComponentZOrder(altCanvas, 0)
+        frame.setComponentZOrder(altCanvas, 2)
         frame.setComponentZOrder(canvas, 1)
+        frame.setComponentZOrder(rightPanelWrapper, 0)
     }
 
     private fun restoreSettings(){
@@ -384,12 +401,12 @@ class plugin : Plugin() {
         val osName = System.getProperty("os.name").toLowerCase()
         uiOffset = (GetData("kondoUIOffset") as? Int) ?: if (osName.contains("win")) 16 else 0
         launchMinimized = (GetData("kondoLaunchMinimized") as? Boolean) ?: false
-        useAltCanvas = (GetData("kondoScaleFixed") as? Boolean) ?: false
+        useScaledFixed = (GetData("kondoScaleFixed") as? Boolean) ?: false
     }
 
     private fun initKondoUI(){
         DrawText(FontType.LARGE, fromColor(Color(16777215)), TextModifier.CENTER, "KondoKit Loading Sprites...", GameShell.canvasWidth/2, GameShell.canvasHeight/2)
-        if(!allSpritesLoaded()) return;
+        if(!allSpritesLoaded()) return
         val frame: Frame? = GameShell.frame
         if (frame != null) {
             restoreSettings()
@@ -451,8 +468,8 @@ class plugin : Plugin() {
             } else {
                 setActiveView(XPTrackerView.VIEW_NAME)
             }
-            if(useAltCanvas) {
-                InitAltCanvas()
+            if(useScaledFixed) {
+                initAltCanvas()
             }
             initialized = true
             pluginsReloaded = true
@@ -558,7 +575,7 @@ class plugin : Plugin() {
             maximumSize = buttonSize
             minimumSize = buttonSize
             background = WIDGET_COLOR
-            isOpaque = true // Ensure background is painted
+            isOpaque = true
 
             val gbc = GridBagConstraints().apply {
                 anchor = GridBagConstraints.CENTER
@@ -656,7 +673,6 @@ class plugin : Plugin() {
             e.printStackTrace()
         }
     }
-
 
     fun loadFont(): Font? {
         val fontStream = plugin::class.java.getResourceAsStream("res/runescape_small.ttf")
