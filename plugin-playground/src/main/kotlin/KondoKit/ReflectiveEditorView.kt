@@ -30,7 +30,7 @@ import kotlin.math.ceil
 
 object ReflectiveEditorView {
     var reflectiveEditorView: JPanel? = null
-    val loadedPlugins: MutableList<String> = mutableListOf()
+    private val loadedPlugins: MutableList<String> = mutableListOf()
     const val VIEW_NAME = "REFLECTIVE_EDITOR_VIEW"
     fun createReflectiveEditorView() {
         val reflectiveEditorPanel = JPanel(BorderLayout())
@@ -266,7 +266,7 @@ object ReflectiveEditorView {
             }
         }
         else {
-            loadedPlugins.add(plugin.javaClass.`package`.name);
+            loadedPlugins.add(plugin.javaClass.`package`.name)
         }
     }
 

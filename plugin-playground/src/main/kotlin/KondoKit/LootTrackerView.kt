@@ -4,7 +4,6 @@ import KondoKit.Helpers.addMouseListenerToAll
 import KondoKit.Helpers.formatHtmlLabelText
 import KondoKit.SpriteToBufferedImage.getBufferedImageFromSprite
 import KondoKit.XPTrackerView.wrappedWidget
-import KondoKit.plugin.Companion.IMAGE_SIZE
 import KondoKit.plugin.Companion.POPUP_BACKGROUND
 import KondoKit.plugin.Companion.POPUP_FOREGROUND
 import KondoKit.plugin.Companion.TITLE_BAR_COLOR
@@ -33,15 +32,15 @@ import kotlin.math.ceil
 
 object LootTrackerView {
     private const val SNAPSHOT_LIFESPAN = 10
-    const val BAG_ICON = 900;
+    const val BAG_ICON = 900
     val npcDeathSnapshots = mutableMapOf<Int, GroundSnapshot>()
     var gePriceMap = loadGEPrices()
-    const val VIEW_NAME = "LOOT_TRACKER_VIEW";
+    const val VIEW_NAME = "LOOT_TRACKER_VIEW"
     private val lootItemPanels = mutableMapOf<String, MutableMap<Int, Int>>()
     private val npcKillCounts = mutableMapOf<String, Int>()
     private var totalTrackerWidget: XPWidget? = null
     var lastConfirmedKillNpcId = -1
-    var customToolTipWindow: JWindow? = null
+    private var customToolTipWindow: JWindow? = null
     var lootTrackerView: JPanel? = null
 
      fun loadGEPrices(): Map<String, String> {
@@ -284,7 +283,7 @@ object LootTrackerView {
 
     // Function to show the custom tooltip
     fun showCustomToolTip(location: Point, itemId: Int, quantity: Int, parentComponent: ImageCanvas) {
-        var itemDef = ObjTypeList.get(itemId)
+        val itemDef = ObjTypeList.get(itemId)
         val gePricePerItem = gePriceMap[itemDef.id.toString()]?.toInt() ?: 0
         val totalGePrice = gePricePerItem * quantity
         val totalHaPrice = itemDef.cost * quantity
@@ -351,6 +350,7 @@ object LootTrackerView {
                 ?.apply {
                     val newValue = (getClientProperty("val") as? Int ?: 0) + valueOfNewDrops.toInt()
                     text = "${formatValue(newValue)} gp"
+                    foreground = primaryColor
                     putClientProperty("val", newValue)
                     revalidate()
                     if(focusedView == VIEW_NAME)
@@ -382,7 +382,7 @@ object LootTrackerView {
 
             if (newDrops.isNotEmpty()) {
                 val npcName = NpcTypeList.get(npcId).name
-                lastConfirmedKillNpcId = npcId;
+                lastConfirmedKillNpcId = npcId
                 handleNewDrops(npcName.toString(), newDrops, lootTrackerView)
                 toRemove.add(npcId)
             } else if (snapshot.age >= SNAPSHOT_LIFESPAN) {
@@ -501,7 +501,7 @@ object LootTrackerView {
         return childFramePanel
     }
 
-    fun removeLootFrameMenu(toRemove: JPanel, npcName: String): JPopupMenu {
+    private fun removeLootFrameMenu(toRemove: JPanel, npcName: String): JPopupMenu {
         // Create a popup menu
         val popupMenu = JPopupMenu()
         val rFont = Font("RuneScape Small", Font.TRUETYPE_FONT, 16)
@@ -538,7 +538,7 @@ object LootTrackerView {
     }
 
 
-    fun resetLootTrackerMenu(): JPopupMenu {
+    private fun resetLootTrackerMenu(): JPopupMenu {
         // Create a popup menu
         val popupMenu = JPopupMenu()
         val rFont = Font("RuneScape Small", Font.TRUETYPE_FONT, 16)

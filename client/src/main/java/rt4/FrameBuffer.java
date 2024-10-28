@@ -12,7 +12,7 @@ import java.awt.*;
 public abstract class FrameBuffer {
 
 	@OriginalMember(owner = "client!vk", name = "e", descriptor = "[I")
-	protected int[] pixels;
+	public int[] pixels;
 
 	@OriginalMember(owner = "client!vk", name = "g", descriptor = "Ljava/awt/Image;")
 	protected Image image;

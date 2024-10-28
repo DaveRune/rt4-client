@@ -34,14 +34,14 @@ import plugin.Plugin
 import plugin.api.*
 import plugin.api.API.*
 import plugin.api.FontColor.fromColor
-import rt4.GameShell
+import rt4.*
+import rt4.DisplayMode
+import rt4.GameShell.canvas
 import rt4.GameShell.frame
-import rt4.GlRenderer
-import rt4.InterfaceList
-import rt4.Player
 import rt4.client.js5Archive8
 import rt4.client.mainLoadState
 import java.awt.*
+import java.awt.Font
 import java.awt.event.ActionListener
 import java.awt.event.MouseAdapter
 import java.awt.event.MouseEvent
@@ -91,7 +91,11 @@ class plugin : Plugin() {
                 "perfectly snapped to the edge of the game due to window chrome you can update this to fix it")
         var uiOffset = 0
 
-        private const val FIXED_WIDTH = 765
+        @Exposed("Stretched/Scaled Fixed Mode Support")
+        var useScaledFixed = false
+
+        const val FIXED_WIDTH = 765
+        const val FIXED_HEIGHT = 503
         private const val NAVBAR_WIDTH = 30
         private const val MAIN_CONTENT_WIDTH = 242
         private const val WRENCH_ICON = 907
@@ -103,14 +107,16 @@ class plugin : Plugin() {
         private var rightPanelWrapper: JScrollPane? = null
         private var accumulatedTime = 0L
         private var reloadInterfaces = false
-        private const val tickInterval = 600L
+        private const val TICK_INTERVAL = 600L
         private var pluginsReloaded = false
         private var loginScreen = 160
         private var lastLogin = ""
         private var initialized = false
         private var lastClickTime = 0L
         private var lastUIOffset = 0
+        private var themeName = "RUNELITE"
         private const val HIDDEN_VIEW = "HIDDEN"
+        private var altCanvas: AltCanvas? = null
         private val drawActions = mutableListOf<() -> Unit>()
 
         fun registerDrawAction(action: () -> Unit) {
@@ -120,24 +126,11 @@ class plugin : Plugin() {
         }
     }
 
-    fun allSpritesLoaded() : Boolean {
-        // Check all skill sprites
-        try{
-            for (i in 0 until 24) {
-                if(!js5Archive8.isFileReady(getSpriteId(i))){
-                    return false
-                }
-            }
-            val otherIcons = arrayOf(LVL_ICON, MAG_SPRITE, LOOT_ICON, WRENCH_ICON, COMBAT_LVL_SPRITE, BAG_ICON)
-            for (icon in otherIcons) {
-                if(!js5Archive8.isFileReady(icon)){
-                    return false
-                }
-            }
-        } catch (e : Exception){
-            return false
-        }
-        return true
+    override fun Init() {
+        // Disable Font AA
+        System.setProperty("sun.java2d.opengl", "false")
+        System.setProperty("awt.useSystemAAFontSettings", "off")
+        System.setProperty("swing.aatext", "false")
     }
 
     override fun OnLogin() {
@@ -147,55 +140,6 @@ class plugin : Plugin() {
             xpTrackerView?.let { resetXPTracker(it) }
         }
         lastLogin = Player.usernameInput.toString()
-    }
-
-    override fun Init() {
-        // Disable Font AA
-        System.setProperty("sun.java2d.opengl", "false")
-        System.setProperty("awt.useSystemAAFontSettings", "off")
-        System.setProperty("swing.aatext", "false")
-    }
-
-    private fun UpdateDisplaySettings() {
-        val mode = GetWindowMode()
-        val currentScrollPaneWidth = if (mainContentPanel.isVisible) NAVBAR_WIDTH + MAIN_CONTENT_WIDTH else NAVBAR_WIDTH
-        lastUIOffset = uiOffset
-        when (mode) {
-            WindowMode.FIXED -> {
-                if (frame.width < FIXED_WIDTH + currentScrollPaneWidth + uiOffset) {
-                    frame.setSize(FIXED_WIDTH + currentScrollPaneWidth + uiOffset, frame.height)
-                }
-
-                val difference = frame.width - (FIXED_WIDTH + uiOffset + currentScrollPaneWidth)
-                GameShell.leftMargin = difference / 2
-            }
-            WindowMode.RESIZABLE -> {
-                GameShell.canvasWidth = frame.width - (currentScrollPaneWidth + uiOffset)
-            }
-        }
-        rightPanelWrapper?.preferredSize = Dimension(currentScrollPaneWidth, frame.height)
-        rightPanelWrapper?.revalidate()
-        rightPanelWrapper?.repaint()
-    }
-
-    fun OnKondoValueUpdated(){
-        StoreData("kondoUseRemoteGE", useLiveGEPrices)
-        StoreData("kondoTheme", theme.toString())
-        if(appliedTheme != theme) {
-            showAlert(
-                "KondoKit Theme changes require a relaunch.",
-                "KondoKit",
-                JOptionPane.INFORMATION_MESSAGE
-            )
-        }
-        StoreData("kondoPlayerXPMultiplier", playerXPMultiplier)
-        LootTrackerView.gePriceMap = LootTrackerView.loadGEPrices()
-        StoreData("kondoLaunchMinimized", launchMinimized)
-        StoreData("kondoUIOffset", uiOffset)
-        if(lastUIOffset != uiOffset){
-            UpdateDisplaySettings()
-            reloadInterfaces = true
-        }
     }
 
     override fun OnMiniMenuCreate(currentEntries: Array<out MiniMenuEntry>?) {
@@ -218,59 +162,43 @@ class plugin : Plugin() {
         }
     }
 
-    private fun searchHiscore(username: String): Runnable {
-        return Runnable {
-            setActiveView(HiscoresView.VIEW_NAME)
-            val customSearchField = hiScoreView?.let { HiscoresView.CustomSearchField(it) }
-
-            customSearchField?.searchPlayer(username) ?: run {
-                println("searchView is null or CustomSearchField creation failed.")
-            }
-        }
-    }
-
     override fun OnPluginsReloaded(): Boolean {
         if (!initialized) return true
-
-        UpdateDisplaySettings()
-
+        updateDisplaySettings()
         frame.remove(rightPanelWrapper)
         frame.layout = BorderLayout()
-        frame.add(rightPanelWrapper, BorderLayout.EAST)
-
+        rightPanelWrapper?.let { frame.add(it, BorderLayout.EAST) }
         frame.revalidate()
-        frame.repaint()
         pluginsReloaded = true
         reloadInterfaces = true
         return true
     }
 
     override fun OnXPUpdate(skillId: Int, xp: Int) {
-        if (!initialXP.containsKey(skillId)) {
-            initialXP[skillId] = xp
-            return
-        }
+            if (!initialXP.containsKey(skillId)) {
+                initialXP[skillId] = xp
+                return
+            }
+            var xpWidget = xpWidgets[skillId]
+            if (xpWidget != null) {
+                updateWidget(xpWidget, xp)
+            } else {
+                val previousXp = initialXP[skillId] ?: xp
+                if (xp == initialXP[skillId]) return
 
-        var xpWidget = xpWidgets[skillId]
+                xpWidget = createXPWidget(skillId, previousXp)
+                xpWidgets[skillId] = xpWidget
 
-        if (xpWidget != null) {
-            updateWidget(xpWidget, xp)
-        } else {
-            val previousXp = initialXP[skillId] ?: xp
-            if (xp == initialXP[skillId]) return
+                xpTrackerView?.add(wrappedWidget(xpWidget.container))
+                xpTrackerView?.add(Box.createVerticalStrut(5))
 
-            xpWidget = createXPWidget(skillId, previousXp)
-            xpWidgets[skillId] = xpWidget
+                if(focusedView == XPTrackerView.VIEW_NAME) {
+                    xpTrackerView?.revalidate()
+                    xpTrackerView?.repaint()
+                }
 
-            xpTrackerView?.add(wrappedWidget(xpWidget.container))
-            xpTrackerView?.add(Box.createVerticalStrut(5))
-
-            xpTrackerView?.revalidate()
-            if(focusedView == XPTrackerView.VIEW_NAME)
-                xpTrackerView?.repaint()
-
-            updateWidget(xpWidget, xp)
-        }
+                updateWidget(xpWidget, xp)
+            }
     }
 
     override fun Draw(timeDelta: Long) {
@@ -290,7 +218,7 @@ class plugin : Plugin() {
         }
 
         accumulatedTime += timeDelta
-        if (accumulatedTime >= tickInterval) {
+        if (accumulatedTime >= TICK_INTERVAL) {
             lootTrackerView?.let { onPostClientTick(it) }
             accumulatedTime = 0L
         }
@@ -312,82 +240,202 @@ class plugin : Plugin() {
         }
     }
 
-    private fun initKondoUI(){
-        DrawText(FontType.LARGE, fromColor(Color(16777215)), TextModifier.CENTER, "KondoKit Loading Sprites...", GameShell.canvasWidth/2, GameShell.canvasHeight/2)
-        if(!allSpritesLoaded()) return;
-        val frame: Frame? = GameShell.frame
+    override fun LateDraw(timeDelta: Long) {
+        if (!initialized) return
+        if(GameShell.fullScreenFrame != null) {
+            DisplayMode.setWindowMode(true, 0, FIXED_WIDTH, FIXED_HEIGHT)
+            showAlert("Fullscreen is not supported by KondoKit. Disable the plugin first.",
+                "Error",
+                JOptionPane.INFORMATION_MESSAGE
+            )
+            return
+        }
+        if(!useScaledFixed) return
+        if(GetWindowMode() == WindowMode.FIXED){
+            moveAltCanvasToFront()
+        } else {
+            moveCanvasToFront()
+        }
+        altCanvas?.updateGameImage() // Update the game image as needed
+    }
+
+    override fun Update() {
+
+        val widgets = xpWidgets.values
+        val totalXP = totalXPWidget
+
+        widgets.forEach { xpWidget ->
+            val elapsedTime = (System.currentTimeMillis() - xpWidget.startTime) / 1000.0 / 60.0 / 60.0
+            val xpPerHour = if (elapsedTime > 0) (xpWidget.totalXpGained / elapsedTime).toInt() else 0
+            val formattedXpPerHour = formatNumber(xpPerHour)
+            xpWidget.xpPerHourLabel.text =
+                formatHtmlLabelText("XP /hr: ", primaryColor, formattedXpPerHour, secondaryColor)
+            xpWidget.container.repaint()
+        }
+
+        totalXP?.let { totalXPWidget ->
+            val elapsedTime = (System.currentTimeMillis() - totalXPWidget.startTime) / 1000.0 / 60.0 / 60.0
+            val totalXPPerHour = if (elapsedTime > 0) (totalXPWidget.totalXpGained / elapsedTime).toInt() else 0
+            val formattedTotalXpPerHour = formatNumber(totalXPPerHour)
+            totalXPWidget.xpPerHourLabel.text =
+                formatHtmlLabelText("XP /hr: ", primaryColor, formattedTotalXpPerHour, secondaryColor)
+            totalXPWidget.container.repaint()
+        }
+    }
+
+    override fun OnKillingBlowNPC(npcID: Int, x: Int, z: Int) {
+        val preDeathSnapshot = takeGroundSnapshot(Pair(x,z))
+        npcDeathSnapshots[npcID] = LootTrackerView.GroundSnapshot(preDeathSnapshot, Pair(x, z), 0)
+    }
+
+    private fun allSpritesLoaded() : Boolean {
+        // Check all skill sprites
+        try{
+            for (i in 0 until 24) {
+                if(!js5Archive8.isFileReady(getSpriteId(i))){
+                    return false
+                }
+            }
+            val otherIcons = arrayOf(LVL_ICON, MAG_SPRITE, LOOT_ICON, WRENCH_ICON, COMBAT_LVL_SPRITE, BAG_ICON)
+            for (icon in otherIcons) {
+                if(!js5Archive8.isFileReady(icon)){
+                    return false
+                }
+            }
+        } catch (e : Exception){
+            return false
+        }
+        return true
+    }
+
+    private fun initAltCanvas(){
         if (frame != null) {
+            altCanvas = AltCanvas().apply {
+                preferredSize = Dimension(FIXED_WIDTH, FIXED_HEIGHT)
+            }
+            altCanvas?.let { frame.add(it) }
+            moveAltCanvasToFront()
+            frame.setComponentZOrder(rightPanelWrapper, 2)
+        }
+        updateDisplaySettings()
+    }
 
-            loadFont()
-            val themeIndex = (GetData("kondoTheme") as? String) ?: "RUNELITE"
-            theme = ThemeType.valueOf(themeIndex)
-            applyTheme(getTheme(theme))
-            appliedTheme = theme
+    private fun updateDisplaySettings() {
+        val mode = GetWindowMode()
+        val currentScrollPaneWidth = if (mainContentPanel.isVisible) NAVBAR_WIDTH + MAIN_CONTENT_WIDTH else NAVBAR_WIDTH
+        lastUIOffset = uiOffset
 
-            try {
-                UIManager.setLookAndFeel("javax.swing.plaf.nimbus.NimbusLookAndFeel")
+        when (mode) {
+            WindowMode.FIXED -> {
+                if (frame.width < FIXED_WIDTH + currentScrollPaneWidth + uiOffset) {
+                    frame.setSize(FIXED_WIDTH + currentScrollPaneWidth + uiOffset, frame.height)
+                }
 
-                // Modify the UI properties to match theme
-                UIManager.put("control", VIEW_BACKGROUND_COLOR)
-                UIManager.put("info", VIEW_BACKGROUND_COLOR)
-                UIManager.put("nimbusBase", WIDGET_COLOR)
-                UIManager.put("nimbusBlueGrey", TITLE_BAR_COLOR)
+                val difference = frame.width - (uiOffset + currentScrollPaneWidth)
 
-                UIManager.put("nimbusDisabledText", primaryColor)
-                UIManager.put("nimbusSelectedText", secondaryColor)
-                UIManager.put("text", secondaryColor)
+                if (useScaledFixed) {
+                    GameShell.leftMargin = 0
+                    val canvasWidth = difference + uiOffset / 2
+                    val canvasHeight = frame.height - canvas.y // Restricting height to frame height
 
-                UIManager.put("nimbusFocus", TITLE_BAR_COLOR)
-                UIManager.put("nimbusInfoBlue", POPUP_BACKGROUND)
-                UIManager.put("nimbusLightBackground", WIDGET_COLOR)
-                UIManager.put("nimbusSelectionBackground", PROGRESS_BAR_FILL)
-
-                UIManager.put("Button.background", WIDGET_COLOR)
-                UIManager.put("Button.foreground", secondaryColor)
-
-                UIManager.put("CheckBox.background", VIEW_BACKGROUND_COLOR)
-                UIManager.put("CheckBox.foreground", secondaryColor)
-                UIManager.put("CheckBox.icon", UIManager.getIcon("CheckBox.icon"))
-
-                UIManager.put("ComboBox.background", WIDGET_COLOR)
-                UIManager.put("ComboBox.foreground", secondaryColor)
-                UIManager.put("ComboBox.selectionBackground", PROGRESS_BAR_FILL)
-                UIManager.put("ComboBox.selectionForeground", primaryColor)
-                UIManager.put("ComboBox.buttonBackground", WIDGET_COLOR)
-
-                UIManager.put("Spinner.background", WIDGET_COLOR)
-                UIManager.put("Spinner.foreground", secondaryColor)
-                UIManager.put("Spinner.border", BorderFactory.createLineBorder(TITLE_BAR_COLOR))
-
-                UIManager.put("TextField.background", WIDGET_COLOR)
-                UIManager.put("TextField.foreground", secondaryColor)
-                UIManager.put("TextField.caretForeground", secondaryColor)
-                UIManager.put("TextField.border", BorderFactory.createLineBorder(TITLE_BAR_COLOR))
-
-                UIManager.put("ScrollBar.thumb", WIDGET_COLOR)
-                UIManager.put("ScrollBar.track", VIEW_BACKGROUND_COLOR)
-                UIManager.put("ScrollBar.thumbHighlight", TITLE_BAR_COLOR)
-
-                UIManager.put("ProgressBar.foreground", PROGRESS_BAR_FILL)
-                UIManager.put("ProgressBar.background", WIDGET_COLOR)
-                UIManager.put("ProgressBar.border", BorderFactory.createLineBorder(TITLE_BAR_COLOR))
-
-                UIManager.put("ToolTip.background", VIEW_BACKGROUND_COLOR)
-                UIManager.put("ToolTip.foreground", secondaryColor)
-                UIManager.put("ToolTip.border", BorderFactory.createLineBorder(TITLE_BAR_COLOR))
-
-                // Update component tree UI to apply the new theme
-                SwingUtilities.updateComponentTreeUI(GameShell.frame)
-            } catch (e : Exception) {
-                e.printStackTrace()
+                    altCanvas?.size = Dimension(canvasWidth, canvasHeight)
+                    altCanvas?.setLocation(0, canvas.y)
+                    canvas.setLocation(0, canvas.y)
+                } else {
+                    val difference = frame.width - (FIXED_WIDTH + uiOffset + currentScrollPaneWidth)
+                    GameShell.leftMargin = difference / 2
+                }
             }
 
-            // Restore saved values
-            useLiveGEPrices = (GetData("kondoUseRemoteGE") as? Boolean) ?: true
-            playerXPMultiplier = (GetData("kondoPlayerXPMultiplier") as? Int) ?: 5
-            val osName = System.getProperty("os.name").toLowerCase()
-            uiOffset = (GetData("kondoUIOffset") as? Int) ?: if (osName.contains("win")) 16 else 0
-            launchMinimized = (GetData("kondoLaunchMinimized") as? Boolean) ?: false
+            WindowMode.RESIZABLE -> {
+                GameShell.canvasWidth = frame.width - (currentScrollPaneWidth + uiOffset)
+            }
+        }
+
+        rightPanelWrapper?.preferredSize = Dimension(currentScrollPaneWidth, frame.height)
+        rightPanelWrapper?.isDoubleBuffered = true
+        rightPanelWrapper?.revalidate()
+        rightPanelWrapper?.repaint()
+    }
+
+    fun OnKondoValueUpdated(){
+        StoreData("kondoUseRemoteGE", useLiveGEPrices)
+        StoreData("kondoTheme", theme.toString())
+        if(appliedTheme != theme) {
+            showAlert(
+                "KondoKit Theme changes require a relaunch.",
+                "KondoKit",
+                JOptionPane.INFORMATION_MESSAGE
+            )
+        }
+        StoreData("kondoPlayerXPMultiplier", playerXPMultiplier)
+        LootTrackerView.gePriceMap = LootTrackerView.loadGEPrices()
+        StoreData("kondoLaunchMinimized", launchMinimized)
+        StoreData("kondoUIOffset", uiOffset)
+        StoreData("kondoScaledFixed", useScaledFixed)
+        if(altCanvas == null && useScaledFixed){
+            initAltCanvas()
+        } else if(altCanvas != null && !useScaledFixed){
+            destroyAltCanvas()
+        }
+        if(lastUIOffset != uiOffset){
+            updateDisplaySettings()
+            reloadInterfaces = true
+        }
+    }
+
+    private fun destroyAltCanvas(){
+        moveCanvasToFront()
+        frame.remove(altCanvas)
+        altCanvas = null
+        updateDisplaySettings()
+    }
+
+    private fun searchHiscore(username: String): Runnable {
+        return Runnable {
+            setActiveView(HiscoresView.VIEW_NAME)
+            val customSearchField = hiScoreView?.let { HiscoresView.CustomSearchField(it) }
+
+            customSearchField?.searchPlayer(username) ?: run {
+                println("searchView is null or CustomSearchField creation failed.")
+            }
+        }
+    }
+
+    private fun moveAltCanvasToFront(){
+        if(altCanvas == null) return
+        frame.setComponentZOrder(canvas, 2)
+        frame.setComponentZOrder(altCanvas, 1)
+        frame.setComponentZOrder(rightPanelWrapper, 0)
+    }
+
+    private fun moveCanvasToFront(){
+        if(altCanvas == null) return
+        frame.setComponentZOrder(altCanvas, 2)
+        frame.setComponentZOrder(canvas, 1)
+        frame.setComponentZOrder(rightPanelWrapper, 0)
+    }
+
+    private fun restoreSettings(){
+        themeName = (GetData("kondoTheme") as? String) ?: "RUNELITE"
+        useLiveGEPrices = (GetData("kondoUseRemoteGE") as? Boolean) ?: true
+        playerXPMultiplier = (GetData("kondoPlayerXPMultiplier") as? Int) ?: 5
+        val osName = System.getProperty("os.name").toLowerCase()
+        uiOffset = (GetData("kondoUIOffset") as? Int) ?: if (osName.contains("win")) 16 else 0
+        launchMinimized = (GetData("kondoLaunchMinimized") as? Boolean) ?: false
+        useScaledFixed = (GetData("kondoScaledFixed") as? Boolean) ?: false
+    }
+
+    private fun initKondoUI(){
+        DrawText(FontType.LARGE, fromColor(Color(16777215)), TextModifier.CENTER, "KondoKit Loading Sprites...", GameShell.canvasWidth/2, GameShell.canvasHeight/2)
+        if(!allSpritesLoaded()) return
+        val frame: Frame? = GameShell.frame
+        if (frame != null) {
+            restoreSettings()
+            theme = ThemeType.valueOf(themeName)
+            applyTheme(getTheme(theme))
+            appliedTheme = theme
+            configureLookAndFeel()
 
             cardLayout = CardLayout()
             mainContentPanel = JPanel(cardLayout).apply {
@@ -419,7 +467,7 @@ class plugin : Plugin() {
             navPanel.add(createNavButton(LOOT_ICON, LootTrackerView.VIEW_NAME))
             navPanel.add(createNavButton(WRENCH_ICON, ReflectiveEditorView.VIEW_NAME))
 
-            var rightPanel = Panel(BorderLayout()).apply {
+            val rightPanel = Panel(BorderLayout()).apply {
                 add(mainContentPanel, BorderLayout.CENTER)
                 add(navPanel, BorderLayout.EAST)
             }
@@ -427,51 +475,27 @@ class plugin : Plugin() {
             rightPanelWrapper = JScrollPane(rightPanel).apply {
                 preferredSize = Dimension(NAVBAR_WIDTH + MAIN_CONTENT_WIDTH, frame.height)
                 background = VIEW_BACKGROUND_COLOR
-                border = BorderFactory.createEmptyBorder()  // Removes the border completely
+                border = BorderFactory.createEmptyBorder()
                 horizontalScrollBarPolicy = JScrollPane.HORIZONTAL_SCROLLBAR_NEVER
                 verticalScrollBarPolicy = JScrollPane.VERTICAL_SCROLLBAR_NEVER
             }
 
             frame.layout = BorderLayout()
-            rightPanelWrapper?.let { frame.add(it, BorderLayout.EAST) }
+            rightPanelWrapper?.let {
+                frame.add(it, BorderLayout.EAST)
+            }
 
-            if(!launchMinimized){
-                setActiveView(XPTrackerView.VIEW_NAME)
-            } else {
+            if(launchMinimized){
                 setActiveView(HIDDEN_VIEW)
+            } else {
+                setActiveView(XPTrackerView.VIEW_NAME)
+            }
+            if(useScaledFixed) {
+                initAltCanvas()
             }
             initialized = true
             pluginsReloaded = true
         }
-    }
-
-    override fun Update() {
-
-        val widgets = xpWidgets.values
-        val totalXP = totalXPWidget
-
-        widgets.forEach { xpWidget ->
-            val elapsedTime = (System.currentTimeMillis() - xpWidget.startTime) / 1000.0 / 60.0 / 60.0
-            val xpPerHour = if (elapsedTime > 0) (xpWidget.totalXpGained / elapsedTime).toInt() else 0
-            val formattedXpPerHour = formatNumber(xpPerHour)
-            xpWidget.xpPerHourLabel.text =
-                    formatHtmlLabelText("XP /hr: ", primaryColor, formattedXpPerHour, secondaryColor)
-            xpWidget.container.repaint()
-        }
-
-        totalXP?.let { totalXPWidget ->
-            val elapsedTime = (System.currentTimeMillis() - totalXPWidget.startTime) / 1000.0 / 60.0 / 60.0
-            val totalXPPerHour = if (elapsedTime > 0) (totalXPWidget.totalXpGained / elapsedTime).toInt() else 0
-            val formattedTotalXpPerHour = formatNumber(totalXPPerHour)
-            totalXPWidget.xpPerHourLabel.text =
-                    formatHtmlLabelText("XP /hr: ", primaryColor, formattedTotalXpPerHour, secondaryColor)
-            totalXPWidget.container.repaint()
-        }
-    }
-
-    override fun OnKillingBlowNPC(npcID: Int, x: Int, z: Int) {
-        val preDeathSnapshot = takeGroundSnapshot(Pair(x,z))
-        npcDeathSnapshots[npcID] = LootTrackerView.GroundSnapshot(preDeathSnapshot, Pair(x, z), 0)
     }
 
     private fun setActiveView(viewName: String) {
@@ -486,14 +510,15 @@ class plugin : Plugin() {
         }
 
         reloadInterfaces = true
-        UpdateDisplaySettings()
+        updateDisplaySettings()
 
         // Revalidate and repaint necessary panels
         mainContentPanel.revalidate()
-        mainContentPanel.repaint()
         rightPanelWrapper?.revalidate()
-        rightPanelWrapper?.repaint()
         frame?.revalidate()
+
+        mainContentPanel.repaint()
+        rightPanelWrapper?.repaint()
         frame?.repaint()
 
         focusedView = viewName
@@ -543,7 +568,7 @@ class plugin : Plugin() {
             maximumSize = buttonSize
             minimumSize = buttonSize
             background = WIDGET_COLOR
-            isOpaque = true // Ensure background is painted
+            isOpaque = true
 
             val gbc = GridBagConstraints().apply {
                 anchor = GridBagConstraints.CENTER
@@ -580,8 +605,69 @@ class plugin : Plugin() {
         return panelButton
     }
 
+    private fun configureLookAndFeel(){
+        loadFont()
+        try {
+            UIManager.setLookAndFeel("javax.swing.plaf.nimbus.NimbusLookAndFeel")
 
-    fun loadFont(): Font? {
+            // Modify the UI properties to match theme
+            UIManager.put("control", VIEW_BACKGROUND_COLOR)
+            UIManager.put("info", VIEW_BACKGROUND_COLOR)
+            UIManager.put("nimbusBase", WIDGET_COLOR)
+            UIManager.put("nimbusBlueGrey", TITLE_BAR_COLOR)
+
+            UIManager.put("nimbusDisabledText", primaryColor)
+            UIManager.put("nimbusSelectedText", secondaryColor)
+            UIManager.put("text", secondaryColor)
+
+            UIManager.put("nimbusFocus", TITLE_BAR_COLOR)
+            UIManager.put("nimbusInfoBlue", POPUP_BACKGROUND)
+            UIManager.put("nimbusLightBackground", WIDGET_COLOR)
+            UIManager.put("nimbusSelectionBackground", PROGRESS_BAR_FILL)
+
+            UIManager.put("Button.background", WIDGET_COLOR)
+            UIManager.put("Button.foreground", secondaryColor)
+
+            UIManager.put("CheckBox.background", VIEW_BACKGROUND_COLOR)
+            UIManager.put("CheckBox.foreground", secondaryColor)
+            UIManager.put("CheckBox.icon", UIManager.getIcon("CheckBox.icon"))
+
+            UIManager.put("ComboBox.background", WIDGET_COLOR)
+            UIManager.put("ComboBox.foreground", secondaryColor)
+            UIManager.put("ComboBox.selectionBackground", PROGRESS_BAR_FILL)
+            UIManager.put("ComboBox.selectionForeground", primaryColor)
+            UIManager.put("ComboBox.buttonBackground", WIDGET_COLOR)
+
+            UIManager.put("Spinner.background", WIDGET_COLOR)
+            UIManager.put("Spinner.foreground", secondaryColor)
+            UIManager.put("Spinner.border", BorderFactory.createLineBorder(TITLE_BAR_COLOR))
+
+            UIManager.put("TextField.background", WIDGET_COLOR)
+            UIManager.put("TextField.foreground", secondaryColor)
+            UIManager.put("TextField.caretForeground", secondaryColor)
+            UIManager.put("TextField.border", BorderFactory.createLineBorder(TITLE_BAR_COLOR))
+
+            UIManager.put("ScrollBar.thumb", WIDGET_COLOR)
+            UIManager.put("ScrollBar.track", VIEW_BACKGROUND_COLOR)
+            UIManager.put("ScrollBar.thumbHighlight", TITLE_BAR_COLOR)
+
+            UIManager.put("ProgressBar.foreground", PROGRESS_BAR_FILL)
+            UIManager.put("ProgressBar.background", WIDGET_COLOR)
+            UIManager.put("ProgressBar.border", BorderFactory.createLineBorder(TITLE_BAR_COLOR))
+
+            UIManager.put("ToolTip.background", VIEW_BACKGROUND_COLOR)
+            UIManager.put("ToolTip.foreground", secondaryColor)
+            UIManager.put("ToolTip.border", BorderFactory.createLineBorder(TITLE_BAR_COLOR))
+
+            // Update component tree UI to apply the new theme
+            SwingUtilities.updateComponentTreeUI(frame)
+            frame.background = Color.BLACK
+        } catch (e : Exception) {
+            e.printStackTrace()
+        }
+    }
+
+    private fun loadFont(): Font? {
         val fontStream = plugin::class.java.getResourceAsStream("res/runescape_small.ttf")
         return if (fontStream != null) {
             try {
@@ -603,7 +689,7 @@ class plugin : Plugin() {
         var focusedView: String = ""
     }
 
-    fun applyTheme(theme: Theme) {
+    private fun applyTheme(theme: Theme) {
         WIDGET_COLOR = theme.widgetColor
         TITLE_BAR_COLOR = theme.titleBarColor
         VIEW_BACKGROUND_COLOR = theme.viewBackgroundColor

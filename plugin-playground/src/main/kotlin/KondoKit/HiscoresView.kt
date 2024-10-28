@@ -7,9 +7,7 @@ import KondoKit.Helpers.formatHtmlLabelText
 import KondoKit.Helpers.getSpriteId
 import KondoKit.Helpers.showToast
 import KondoKit.SpriteToBufferedImage.getBufferedImageFromSprite
-import KondoKit.plugin.Companion.POPUP_BACKGROUND
 import KondoKit.plugin.Companion.POPUP_FOREGROUND
-import KondoKit.plugin.Companion.TITLE_BAR_COLOR
 import KondoKit.plugin.Companion.TOOLTIP_BACKGROUND
 import KondoKit.plugin.Companion.VIEW_BACKGROUND_COLOR
 import KondoKit.plugin.Companion.WIDGET_COLOR
@@ -77,8 +75,8 @@ object HiscoresView {
         private var cursorVisible: Boolean = true
         private val gson = Gson()
 
-        val bufferedImageSprite = getBufferedImageFromSprite(API.GetSprite(Constants.MAG_SPRITE))
-        val imageCanvas = bufferedImageSprite.let {
+        private val bufferedImageSprite = getBufferedImageFromSprite(API.GetSprite(Constants.MAG_SPRITE))
+        private val imageCanvas = bufferedImageSprite.let {
             ImageCanvas(it).apply {
                 preferredSize = Constants.ICON_DIMENSION_SMALL
                 size = preferredSize
@@ -112,7 +110,9 @@ object HiscoresView {
                     } else {
                         text += e.keyChar
                     }
-                    repaint()
+                    SwingUtilities.invokeLater {
+                        repaint()
+                    }
                 }
                 override fun keyPressed(e: KeyEvent) {
                     if (e.isControlDown) {
@@ -125,7 +125,9 @@ object HiscoresView {
                                 val clipboard = Toolkit.getDefaultToolkit().systemClipboard
                                 val pasteText = clipboard.getData(DataFlavor.stringFlavor) as String
                                 text += pasteText
-                                repaint()
+                                SwingUtilities.invokeLater {
+                                    repaint()
+                                }
                             }
                         }
                     }
@@ -136,7 +138,9 @@ object HiscoresView {
                 override fun mouseClicked(e: MouseEvent) {
                     if (e.x > width - 20 && e.y < 20) {
                         text = ""
-                        repaint()
+                        SwingUtilities.invokeLater {
+                            repaint()
+                        }
                     }
                 }
             })
@@ -144,7 +148,9 @@ object HiscoresView {
             Timer(500) {
                 cursorVisible = !cursorVisible
                 if(focusedView == VIEW_NAME)
-                    repaint()
+                    SwingUtilities.invokeLater {
+                        repaint()
+                    }
             }.start()
         }
 
@@ -235,7 +241,7 @@ object HiscoresView {
             playerNameLabel?.revalidate()
             playerNameLabel?.repaint()
 
-            if(data == null) return;
+            if(data == null) return
 
             playerNameLabel?.removeAll()
 
@@ -317,10 +323,6 @@ object HiscoresView {
 
             val summoningFactor = if (isMemberWorld) floor(summoning.toDouble() / 8) else 0.0
             return Math.round((base + maxCombatType + summoningFactor) * 1000.0) / 1000.0
-        }
-
-        private fun showError(message: String) {
-            JOptionPane.showMessageDialog(null, message, "Error", JOptionPane.ERROR_MESSAGE)
         }
 
         private fun findComponentByName(container: Container, name: String): Component? {
@@ -437,7 +439,7 @@ object HiscoresView {
             minimumSize = preferredSize
         }
 
-        val bufferedImageSprite = getBufferedImageFromSprite(API.GetSprite(Constants.LVL_BAR_SPRITE));
+        val bufferedImageSprite = getBufferedImageFromSprite(API.GetSprite(Constants.LVL_BAR_SPRITE))
 
         val totalLevelIcon = ImageCanvas(bufferedImageSprite).apply {
             fillColor = COLOR_BACKGROUND_DARK
@@ -486,7 +488,7 @@ object HiscoresView {
         hiscorePanel.add(totalCombatPanel)
         hiscorePanel.add(Box.createVerticalStrut(10))
 
-        hiScoreView = hiscorePanel;
+        hiScoreView = hiscorePanel
     }
 
     data class HiscoresResponse(

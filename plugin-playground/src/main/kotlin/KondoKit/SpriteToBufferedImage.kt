@@ -69,7 +69,7 @@ object SpriteToBufferedImage {
      * @param brightnessBoost A multiplier to boost the brightness of the image.
      * @return The BufferedImage created from the sprite.
      */
-    fun convertToBufferedImage(
+    private fun convertToBufferedImage(
         sprite: BaseSprite,
         tint: Color? = null,
         grayscale: Boolean = false,
@@ -88,7 +88,7 @@ object SpriteToBufferedImage {
                 for (y in 0 until height) {
                     for (x in 0 until width) {
                         val index = pixels[y * width + x].toInt() and 0xFF
-                        var color = palette[index]
+                        val color = palette[index]
 
                         // Apply grayscale or tint if provided
                         val finalColor = if (grayscale) {
@@ -109,7 +109,7 @@ object SpriteToBufferedImage {
                 // Manually set pixels directly
                 for (y in 0 until height) {
                     for (x in 0 until width) {
-                        var color = pixels[y * width + x]
+                        val color = pixels[y * width + x]
 
                         // Apply grayscale or tint if provided
                         val finalColor = if (grayscale) {
@@ -137,7 +137,7 @@ object SpriteToBufferedImage {
      * @param brightnessBoost A multiplier to boost the brightness of the image.
      * @return The tinted color.
      */
-    fun applyTint(original: Color, tint: Color, brightnessBoost: Float): Color {
+    private fun applyTint(original: Color, tint: Color, brightnessBoost: Float): Color {
         val boostedColor = applyBrightness(original, brightnessBoost)
         val r = (boostedColor.red * tint.red / 255).coerceIn(0, 255)
         val g = (boostedColor.green * tint.green / 255).coerceIn(0, 255)
@@ -152,7 +152,7 @@ object SpriteToBufferedImage {
      * @param factor The multiplier to boost the brightness.
      * @return The color with boosted brightness.
      */
-    fun applyBrightness(original: Color, factor: Float): Color {
+    private fun applyBrightness(original: Color, factor: Float): Color {
         val r = (original.red * factor).coerceIn(0.0f, 255.0f).toInt()
         val g = (original.green * factor).coerceIn(0.0f, 255.0f).toInt()
         val b = (original.blue * factor).coerceIn(0.0f, 255.0f).toInt()
@@ -166,7 +166,7 @@ object SpriteToBufferedImage {
      * @param brightnessBoost A multiplier to boost the brightness.
      * @return The grayscale version of the color with boosted brightness.
      */
-    fun applyGrayscale(original: Color, brightnessBoost: Float): Color {
+    private fun applyGrayscale(original: Color, brightnessBoost: Float): Color {
         // Calculate the grayscale value using the luminosity method
         val grayValue = (0.3 * original.red + 0.59 * original.green + 0.11 * original.blue).toInt()
         val boostedGray = (grayValue * brightnessBoost).coerceIn(0.0f, 255.0f).toInt()

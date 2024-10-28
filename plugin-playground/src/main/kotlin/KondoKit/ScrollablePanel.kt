@@ -9,6 +9,7 @@ import java.awt.Rectangle
 import java.awt.event.*
 import java.util.*
 import javax.swing.JPanel
+import javax.swing.SwingUtilities
 
 class ScrollablePanel(private val content: JPanel) : JPanel() {
     private var lastMouseY = 0
@@ -83,21 +84,23 @@ class ScrollablePanel(private val content: JPanel) : JPanel() {
     }
 
     private fun handleResize() {
-        // Ensure the ScrollablePanel resizes with the frame
-        bounds = Rectangle(0, 0, 242, frame.height)
+        SwingUtilities.invokeLater{
+            // Ensure the ScrollablePanel resizes with the frame
+            bounds = Rectangle(0, 0, 242, frame.height)
 
         // Dynamically update content bounds and scrollbar on frame resize with buffer
         lastSize = content.preferredSize.height.coerceAtLeast(frame.height + viewBuffer)
         content.bounds = Rectangle(0, 0, 242, lastSize)
         showScrollbar = content.height > frame.height
 
-        currentOffsetY = 0
+            currentOffsetY = 0
 
-        content.setLocation(0, currentOffsetY)
-        updateScrollbar()
+            content.setLocation(0, currentOffsetY)
+            updateScrollbar()
 
-        revalidate()
-        repaint()
+            revalidate()
+            repaint()
+        }
     }
 
     private fun scrollContent(deltaY: Int) {
@@ -106,40 +109,41 @@ class ScrollablePanel(private val content: JPanel) : JPanel() {
             content.setLocation(0, currentOffsetY)
             return
         }
+        SwingUtilities.invokeLater {
+            currentOffsetY += deltaY
 
-        currentOffsetY += deltaY
+            // Apply buffer to maxOffset
+            val maxOffset = (frame.height - content.height + viewBuffer).coerceAtMost(0)
+            currentOffsetY = currentOffsetY.coerceAtMost(0).coerceAtLeast(maxOffset)
 
-        // Apply buffer to maxOffset
-        val maxOffset = (frame.height - content.height + viewBuffer).coerceAtMost(0)
-        currentOffsetY = currentOffsetY.coerceAtMost(0).coerceAtLeast(maxOffset)
+            content.setLocation(0, currentOffsetY)
 
-        content.setLocation(0, currentOffsetY)
-
-        val contentHeight = content.height
-        val viewHeight = frame.height + viewBuffer
-        val scrollableRatio = viewHeight.toDouble() / contentHeight
-        scrollbarY = ((-currentOffsetY / contentHeight.toDouble()) * viewHeight).toInt()
-        scrollbarHeight = (viewHeight * scrollableRatio).toInt().coerceAtLeast(20)
-
-        repaint()
-    }
-
-    private fun updateScrollbar() {
-        showScrollbar = content.height > frame.height
-
-        val contentHeight = content.height
-        val viewHeight = frame.height + viewBuffer
-
-        if (showScrollbar) {
+            val contentHeight = content.height
+            val viewHeight = frame.height + viewBuffer
             val scrollableRatio = viewHeight.toDouble() / contentHeight
             scrollbarY = ((-currentOffsetY / contentHeight.toDouble()) * viewHeight).toInt()
             scrollbarHeight = (viewHeight * scrollableRatio).toInt().coerceAtLeast(20)
-        } else {
-            scrollbarY = 0
-            scrollbarHeight = 0
+            repaint()
         }
+    }
 
-        repaint()
+    private fun updateScrollbar() {
+        SwingUtilities.invokeLater {
+            showScrollbar = content.height > frame.height
+
+            val contentHeight = content.height
+            val viewHeight = frame.height + viewBuffer
+
+            if (showScrollbar) {
+                val scrollableRatio = viewHeight.toDouble() / contentHeight
+                scrollbarY = ((-currentOffsetY / contentHeight.toDouble()) * viewHeight).toInt()
+                scrollbarHeight = (viewHeight * scrollableRatio).toInt().coerceAtLeast(20)
+            } else {
+                scrollbarY = 0
+                scrollbarHeight = 0
+            }
+            repaint()
+        }
     }
 
     override fun paintComponent(g: Graphics) {

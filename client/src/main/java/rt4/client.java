@@ -921,6 +921,7 @@ public final class client extends GameShell {
 			Preferences.safeMode = false;
 			Preferences.write(GameShell.signLink);
 		}
+		PluginRepository.LateDraw();
 	}
 
 	@OriginalMember(owner = "client!client", name = "c", descriptor = "(B)V")

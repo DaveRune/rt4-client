@@ -68,7 +68,7 @@ object Helpers {
 
 
             // Adjust for parent component location if it exists
-            if (parentComponent != null) {
+            if (parentComponent != null && GameShell.canvas.isShowing) {
                 val parentLocation = parentComponent.locationOnScreen
                 val x = parentLocation.x
                 val y = GameShell.canvas.locationOnScreen.y
@@ -95,10 +95,8 @@ object Helpers {
     }
 
 
-
-    fun convertToColor(value: String): Color {
-        val color = Color.decode(value) // Assumes value is in format "#RRGGBB" or "0xRRGGBB"
-        return color
+    private fun convertToColor(value: String): Color {
+        return Color.decode(value)
     }
 
     fun colorToHex(color: Color): String {
@@ -134,11 +132,7 @@ object Helpers {
     class FieldNotifier(private val plugin: Any) {
         private val observers = mutableListOf<FieldObserver>()
 
-        fun addObserver(observer: FieldObserver) {
-            observers.add(observer)
-        }
-
-        fun notifyFieldChange(field: Field, newValue: Any?) {
+        private fun notifyFieldChange(field: Field, newValue: Any?) {
             for (observer in observers) {
                 observer.onFieldChange(field, newValue)
             }
