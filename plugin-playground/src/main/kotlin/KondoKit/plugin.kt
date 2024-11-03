@@ -367,10 +367,10 @@ class plugin : Plugin() {
         StoreData("kondoLaunchMinimized", launchMinimized)
         StoreData("kondoUIOffset", uiOffset)
         StoreData("kondoScaledFixed", useScaledFixed)
-        if(lastUIOffset != uiOffset || useScaledFixed){
-            updateDisplaySettings()
+        if(lastUIOffset != uiOffset){
             reloadInterfaces = true
         }
+        updateDisplaySettings()
     }
 
     private fun initAltCanvas(){
