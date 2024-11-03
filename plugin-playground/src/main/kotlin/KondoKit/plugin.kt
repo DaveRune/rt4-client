@@ -308,22 +308,16 @@ class plugin : Plugin() {
         return true
     }
 
-    private fun initAltCanvas(){
-        if (frame != null) {
-            altCanvas = AltCanvas().apply {
-                preferredSize = Dimension(FIXED_WIDTH, FIXED_HEIGHT)
-            }
-            altCanvas?.let { frame.add(it) }
-            moveAltCanvasToFront()
-            frame.setComponentZOrder(rightPanelWrapper, 2)
-        }
-        updateDisplaySettings()
-    }
-
     private fun updateDisplaySettings() {
         val mode = GetWindowMode()
         val currentScrollPaneWidth = if (mainContentPanel.isVisible) NAVBAR_WIDTH + MAIN_CONTENT_WIDTH else NAVBAR_WIDTH
         lastUIOffset = uiOffset
+
+        if(mode != WindowMode.FIXED) {
+            destroyAltCanvas()
+        } else if (useScaledFixed && altCanvas == null) {
+            initAltCanvas()
+        }
 
         when (mode) {
             WindowMode.FIXED -> {
@@ -373,22 +367,43 @@ class plugin : Plugin() {
         StoreData("kondoLaunchMinimized", launchMinimized)
         StoreData("kondoUIOffset", uiOffset)
         StoreData("kondoScaledFixed", useScaledFixed)
-        if(altCanvas == null && useScaledFixed){
-            initAltCanvas()
-        } else if(altCanvas != null && !useScaledFixed){
-            destroyAltCanvas()
-        }
-        if(lastUIOffset != uiOffset){
+        if(lastUIOffset != uiOffset || useScaledFixed){
             updateDisplaySettings()
             reloadInterfaces = true
         }
     }
 
+    private fun initAltCanvas(){
+        if(GetWindowMode() != WindowMode.FIXED || altCanvas != null) return
+        if (frame != null) {
+            altCanvas = AltCanvas().apply {
+                preferredSize = Dimension(FIXED_WIDTH, FIXED_HEIGHT)
+            }
+            altCanvas?.let { frame.add(it) }
+            moveAltCanvasToFront()
+            frame.setComponentZOrder(rightPanelWrapper, 2)
+        }
+    }
+
     private fun destroyAltCanvas(){
+        if (altCanvas == null) return
         moveCanvasToFront()
         frame.remove(altCanvas)
         altCanvas = null
-        updateDisplaySettings()
+    }
+
+    private fun moveAltCanvasToFront(){
+        if (altCanvas == null) return
+        frame.setComponentZOrder(canvas, 2)
+        frame.setComponentZOrder(altCanvas, 1)
+        frame.setComponentZOrder(rightPanelWrapper, 0)
+    }
+
+    private fun moveCanvasToFront(){
+        if (altCanvas == null) return
+        frame.setComponentZOrder(altCanvas, 2)
+        frame.setComponentZOrder(canvas, 1)
+        frame.setComponentZOrder(rightPanelWrapper, 0)
     }
 
     private fun searchHiscore(username: String): Runnable {
@@ -400,20 +415,6 @@ class plugin : Plugin() {
                 println("searchView is null or CustomSearchField creation failed.")
             }
         }
-    }
-
-    private fun moveAltCanvasToFront(){
-        if(altCanvas == null) return
-        frame.setComponentZOrder(canvas, 2)
-        frame.setComponentZOrder(altCanvas, 1)
-        frame.setComponentZOrder(rightPanelWrapper, 0)
-    }
-
-    private fun moveCanvasToFront(){
-        if(altCanvas == null) return
-        frame.setComponentZOrder(altCanvas, 2)
-        frame.setComponentZOrder(canvas, 1)
-        frame.setComponentZOrder(rightPanelWrapper, 0)
     }
 
     private fun restoreSettings(){
@@ -489,9 +490,6 @@ class plugin : Plugin() {
                 setActiveView(HIDDEN_VIEW)
             } else {
                 setActiveView(XPTrackerView.VIEW_NAME)
-            }
-            if(useScaledFixed) {
-                initAltCanvas()
             }
             initialized = true
             pluginsReloaded = true
