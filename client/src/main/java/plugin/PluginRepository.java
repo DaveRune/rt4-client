@@ -160,6 +160,11 @@ public class PluginRepository {
         pluginsSnapshot.forEach(Plugin::_draw);
     }
 
+    public static void LateDraw() {
+        List<Plugin> pluginsSnapshot = new ArrayList<>(loadedPlugins.values());
+        pluginsSnapshot.forEach(Plugin::_lateDraw);
+    }
+
     public static void NPCOverheadDraw(Npc npc, int screenX, int screenY) {
         loadedPlugins.values().forEach((plugin) -> plugin.NPCOverheadDraw(npc, screenX, screenY));
     }

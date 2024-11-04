@@ -6,9 +6,9 @@ import rt4.Node
 
 object XPTable {
 
-    const val MAX_LEVEL = 99
-    const val INVALID_LEVEL = -1
-    const val SKILLS_XP_TABLE = 716
+    private const val MAX_LEVEL = 99
+    private const val INVALID_LEVEL = -1
+    private const val SKILLS_XP_TABLE = 716
 
     private var xpTable: MutableList<Int> = mutableListOf()
 

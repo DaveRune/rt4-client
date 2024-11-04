@@ -1,7 +1,7 @@
 package GroundItems
 
+import KondoKit.Exposed
 import plugin.Plugin
-import plugin.annotations.PluginMeta
 import plugin.api.API.*
 import plugin.api.FontColor.fromColor
 import plugin.api.FontType
@@ -18,27 +18,26 @@ import java.nio.charset.StandardCharsets
 import java.text.DecimalFormat
 import kotlin.math.roundToInt
 
-@PluginMeta(
-    author = "downthecrop",
-    description =
-    """
-        Ground Items Overlay. Just like Runelite!
-        cmds ::set(low,med,high,insane,hide), ::(tag,ignore)item ID, ::(reset)groundconfig
-        Special thanks to Chisato for the original skeleton.
-        """,
-    version = 1.2
-)
-open class plugin : Plugin() {
+class plugin : Plugin() {
 
-    private var kondoExposed_lowValue = 5000
-    private var kondoExposed_mediumValue = 20000
-    private var kondoExposed_highValue = 50000
-    private var kondoExposed_insaneValue = 100000
-    private var kondoExposed_hideBelowValue = 0
-    private var kondoExposed_useLiveGEPrices = true
+    @Exposed(description = "Default: true, Use Local JSON or the prices from the Live/Stable server API")
+    private var useLiveGEPrices = true
+    @Exposed( "Default: 5,000 (blue)")
+    private var lowValue = 5000
+    @Exposed( "Default: 20,000 (green)")
+    private var mediumValue = 20000
+    @Exposed( "Default: 50,000 (orange)")
+    private var highValue = 50000
+    @Exposed( "Default: 100,000 (pink)")
+    private var insaneValue = 100000
+    @Exposed("Default: 0, No labels will be drawn for items below this value (unless tagged)")
+    private var hideBelowValue = 0
+    @Exposed("Tag Items (purple) add/remove with Ctrl+RightClick Tag/Ignore")
+    private lateinit var taggedItems: List<Int>
+    @Exposed("Ignore items add/remove with Ctrl+RightClick Tag/Ignore")
+    private lateinit var ignoredItems: List<Int>
+
     private val coindId = 995
-    private lateinit var kondoExposed_taggedItems: List<Int>
-    private lateinit var kondoExposed_ignoredItems: List<Int>
 
     private var gePriceMap = loadGEPrices()
 
@@ -60,23 +59,23 @@ open class plugin : Plugin() {
     )
 
     override fun Init() {
-        kondoExposed_lowValue = GetData("low-value") as? Int ?: 5000
-        kondoExposed_mediumValue = GetData("medium-value") as? Int ?: 20000
-        kondoExposed_highValue = GetData("high-value") as? Int ?: 50000
-        kondoExposed_insaneValue = GetData("insane-value") as? Int ?: 100000
-        kondoExposed_hideBelowValue = GetData("hide-below-value") as? Int ?: 0
-        kondoExposed_useLiveGEPrices = GetData("ground-item-use-remote") as? Boolean ?: true
-        kondoExposed_taggedItems = GetData("ground-item-tags")?.let { it.toString().split(",").mapNotNull { it.toIntOrNull() } } ?: emptyList()
-        kondoExposed_ignoredItems = GetData("ground-item-ignore")?.let { it.toString().split(",").mapNotNull { it.toIntOrNull() } } ?: emptyList()
-        if (gePriceMap.isEmpty()) SendMessage("Ground Items unable to load GE Prices, Remote: $kondoExposed_useLiveGEPrices")
+        lowValue = GetData("low-value") as? Int ?: 5000
+        mediumValue = GetData("medium-value") as? Int ?: 20000
+        highValue = GetData("high-value") as? Int ?: 50000
+        insaneValue = GetData("insane-value") as? Int ?: 100000
+        hideBelowValue = GetData("hide-below-value") as? Int ?: 0
+        useLiveGEPrices = GetData("ground-item-use-remote") as? Boolean ?: true
+        taggedItems = GetData("ground-item-tags")?.let { it.toString().split(",").mapNotNull { it.toIntOrNull() } } ?: emptyList()
+        ignoredItems = GetData("ground-item-ignore")?.let { it.toString().split(",").mapNotNull { it.toIntOrNull() } } ?: emptyList()
+        if (gePriceMap.isEmpty()) SendMessage("Ground Items unable to load GE Prices, Remote: $useLiveGEPrices")
     }
 
     private fun isTagged(itemId: Int): Boolean {
-        return kondoExposed_taggedItems.contains(itemId)
+        return taggedItems.contains(itemId)
     }
 
     private fun isHidden(itemId: Int): Boolean {
-        return kondoExposed_ignoredItems.contains(itemId)
+        return ignoredItems.contains(itemId)
     }
 
     override fun Draw(timeDelta: Long) = renderGroundItemNames()
@@ -141,10 +140,10 @@ open class plugin : Plugin() {
                         val screenY = screenPos[1]
                         val color = when {
                             isTagged(itemDef.id) -> colorMap["tagged"]
-                            highestValue < kondoExposed_lowValue -> "#FFFFFF"
-                            highestValue < kondoExposed_mediumValue -> colorMap["lowValue"]
-                            highestValue < kondoExposed_highValue -> colorMap["mediumValue"]
-                            highestValue < kondoExposed_insaneValue -> colorMap["highValue"]
+                            highestValue < lowValue -> "#FFFFFF"
+                            highestValue < mediumValue -> colorMap["lowValue"]
+                            highestValue < highValue -> colorMap["mediumValue"]
+                            highestValue < insaneValue -> colorMap["highValue"]
                             else -> colorMap["insaneValue"]
                         } ?: "#FFFFFF"
                         val colorInt = color.drop(1).toInt(16)
@@ -183,7 +182,7 @@ open class plugin : Plugin() {
         val haValue = if (itemDef.id == coindId) item.value.amount else (itemDef.cost * 0.6 * item.value.amount).roundToInt()
         val geValue = (gePriceMap[itemDef.id.toString()]?.toInt() ?: 0) * item.value.amount
         val highestValue = maxOf(haValue, geValue)
-        return !((highestValue < kondoExposed_hideBelowValue || isHidden(itemDef.id)) && !isTagged(itemDef.id))
+        return !((highestValue < hideBelowValue || isHidden(itemDef.id)) && !isTagged(itemDef.id))
     }
 
     override fun OnMiniMenuCreate(currentEntries: Array<out MiniMenuEntry>?) {
@@ -200,7 +199,7 @@ open class plugin : Plugin() {
 
     private fun ignoreItem(itemId: Int): Runnable {
         return Runnable {
-            val existingIgnores = kondoExposed_ignoredItems.toMutableList()
+            val existingIgnores = ignoredItems.toMutableList()
 
             if (existingIgnores.contains(itemId)) {
                 existingIgnores.remove(itemId)
@@ -215,7 +214,7 @@ open class plugin : Plugin() {
 
     private fun tagItem(itemId: Int): Runnable {
         return Runnable {
-            val existingTags = kondoExposed_taggedItems.toMutableList()
+            val existingTags = taggedItems.toMutableList()
 
             if (existingTags.contains(itemId)) {
                 existingTags.remove(itemId)
@@ -230,28 +229,28 @@ open class plugin : Plugin() {
 
 
     private fun resetConfig() {
-        kondoExposed_lowValue = 5000
-        kondoExposed_mediumValue = 20000
-        kondoExposed_highValue = 50000
-        kondoExposed_insaneValue = 100000
-        kondoExposed_hideBelowValue = 0
-        kondoExposed_useLiveGEPrices = true
+        lowValue = 5000
+        mediumValue = 20000
+        highValue = 50000
+        insaneValue = 100000
+        hideBelowValue = 0
+        useLiveGEPrices = true
         StoreData("ground-item-tags","");
         StoreData("ground-item-ignore","");
-        StoreData("low-value", kondoExposed_lowValue)
-        StoreData("ground-item-use-remote", kondoExposed_useLiveGEPrices)
-        StoreData("medium-value", kondoExposed_mediumValue)
-        StoreData("high-value", kondoExposed_highValue)
-        StoreData("insane-value", kondoExposed_insaneValue)
-        StoreData("hide-below-value", kondoExposed_hideBelowValue)
+        StoreData("low-value", lowValue)
+        StoreData("ground-item-use-remote", useLiveGEPrices)
+        StoreData("medium-value", mediumValue)
+        StoreData("high-value", highValue)
+        StoreData("insane-value", insaneValue)
+        StoreData("hide-below-value", hideBelowValue)
     }
 
     private fun displayRanges() {
-        val low = kondoExposed_lowValue
-        val medium = kondoExposed_mediumValue
-        val high = kondoExposed_highValue
-        val insane = kondoExposed_insaneValue
-        val hide = kondoExposed_hideBelowValue
+        val low = lowValue
+        val medium = mediumValue
+        val high = highValue
+        val insane = insaneValue
+        val hide = hideBelowValue
 
         SendMessage("== Ground Item Config ==")
         SendMessage("Low: $low")
@@ -260,12 +259,12 @@ open class plugin : Plugin() {
         SendMessage("Insane: $insane")
         SendMessage("Hide Below: $hide")
         SendMessage("-- Ignored Items --")
-        for(item in kondoExposed_ignoredItems){
+        for(item in ignoredItems){
             val itemDef = ObjTypeList.get(item)
             SendMessage("Ignored: ${itemDef.name} ${itemDef.id}")
         }
         SendMessage("-- Tagged Items --")
-        for(item in kondoExposed_taggedItems){
+        for(item in taggedItems){
             val itemDef = ObjTypeList.get(item)
             SendMessage("Tagged: ${itemDef.name} ${itemDef.id}")
         }
@@ -278,19 +277,19 @@ open class plugin : Plugin() {
     }
 
     fun OnKondoValueUpdated() {
-        StoreData("ground-item-tags",kondoExposed_taggedItems);
-        StoreData("ground-item-ignore",kondoExposed_ignoredItems);
-        StoreData("low-value", kondoExposed_lowValue)
-        StoreData("medium-value", kondoExposed_mediumValue)
-        StoreData("high-value", kondoExposed_highValue)
-        StoreData("insane-value", kondoExposed_insaneValue)
-        StoreData("ground-item-use-remote", kondoExposed_useLiveGEPrices)
-        StoreData("hide-below-value", kondoExposed_hideBelowValue)
+        StoreData("ground-item-tags",taggedItems);
+        StoreData("ground-item-ignore",ignoredItems);
+        StoreData("low-value", lowValue)
+        StoreData("medium-value", mediumValue)
+        StoreData("high-value", highValue)
+        StoreData("insane-value", insaneValue)
+        StoreData("ground-item-use-remote", useLiveGEPrices)
+        StoreData("hide-below-value", hideBelowValue)
         gePriceMap = loadGEPrices();
     }
 
     fun loadGEPrices(): Map<String, String> {
-        return if (kondoExposed_useLiveGEPrices) {
+        return if (useLiveGEPrices) {
             try {
                 println("GroundItems: Loading Remote GE Prices")
                 val url = URL("https://cdn.2009scape.org/gedata/latest.json")
@@ -325,7 +324,7 @@ open class plugin : Plugin() {
         } else {
             try {
                 println("GroundItems: Loading Local GE Prices")
-                BufferedReader(InputStreamReader(GroundItems.plugin::class.java.getResourceAsStream("item_configs.json"), StandardCharsets.UTF_8))
+                BufferedReader(InputStreamReader(plugin::class.java.getResourceAsStream("res/item_configs.json"), StandardCharsets.UTF_8))
                     .useLines { lines ->
                         val json = lines.joinToString("\n")
                         val items = json.trim().removeSurrounding("[", "]").split("},").map { it.trim() + "}" }

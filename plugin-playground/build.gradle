@@ -110,4 +110,10 @@ task buildPlugins(type: Copy, dependsOn: classes) {
         from "build/classes/kotlin/main"
         into pluginsPath
     }
+
+    // Find and copy any 'res' directories from 'src/main/kotlin/**/res/'
+    copy {
+        from fileTree(dir: "src/main/kotlin", include: "**/res/**")
+        into pluginsPath
+    }
 }
