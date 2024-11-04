@@ -307,6 +307,7 @@ public class API {
     public static int[] CalculateSceneGraphScreenPosition(int entityX, int entityZ, int yOffset) {
         final int HALF_FIXED_WIDTH = 256;
         final int HALF_FIXED_HEIGHT = 167;
+        final int RESIZABLE_SD_OFFSET = 500;
 
         int elevation = SceneGraph.getTileHeight(plane, entityX, entityZ) - yOffset;
         entityX -= SceneGraph.cameraX;
@@ -329,15 +330,27 @@ public class API {
         int[] screenPos = new int[2]; // X,Y
 
         if (entityZ >= 50) {
-            if(GetWindowMode() == WindowMode.FIXED) {
+            if (GetWindowMode() == WindowMode.FIXED) {
                 screenPos[0] = HALF_FIXED_WIDTH + ((entityX << 9) / entityZ);
                 screenPos[1] = HALF_FIXED_HEIGHT + ((elevation << 9) / entityZ);
             } else {
                 Dimension canvas = GetWindowDimensions();
-                double newViewDistH = (canvas.width / 2) / Math.tan(Math.toRadians(GlRenderer.hFOV) / 2);
-                double newViewDistV = (canvas.height / 2) / Math.tan(Math.toRadians(GlRenderer.vFOV) / 2);
-                screenPos[0] = canvas.width / 2 + (int)((entityX * newViewDistH) / entityZ);
-                screenPos[1] = canvas.height / 2 + (int)((elevation * newViewDistV) / entityZ);
+                double newViewDistH;
+                double newViewDistV;
+
+                if (API.IsHD()) {
+                    newViewDistH = (canvas.width / 2) / Math.tan(Math.toRadians(GlRenderer.hFOV) / 2);
+                    newViewDistV = (canvas.height / 2) / Math.tan(Math.toRadians(GlRenderer.vFOV) / 2);
+                } else {
+                    double aspectRatio = (double) canvas.width / canvas.height;
+                    double vFOV = 2 * Math.toDegrees(Math.atan((double) canvas.height / (2 * RESIZABLE_SD_OFFSET)));
+                    double hFOV = 2 * Math.toDegrees(Math.atan(Math.tan(Math.toRadians(vFOV / 2)) * aspectRatio));
+
+                    newViewDistH = (canvas.width / 2) / Math.tan(Math.toRadians(hFOV) / 2);
+                    newViewDistV = (canvas.height / 2) / Math.tan(Math.toRadians(vFOV) / 2);
+                }
+                screenPos[0] = canvas.width / 2 + (int) ((entityX * newViewDistH) / entityZ);
+                screenPos[1] = canvas.height / 2 + (int) ((elevation * newViewDistV) / entityZ);
             }
         } else {
             screenPos[0] = -1;
