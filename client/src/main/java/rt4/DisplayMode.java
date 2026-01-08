@@ -178,13 +178,28 @@ public final class DisplayMode {
 				} else {
 					SoftwareRaster.frameBuffer = null;
 				}
-				@Pc(300) PrivilegedRequest local300 = GameShell.signLink.loadGlNatives(client.instance.getClass());
-				while (local300.status == 0) {
-					ThreadUtils.sleep(100L);
-				}
-				if (local300.status == 1) {
-					aBoolean73 = true;
-				}
+
+				/**
+				 * Code below tries to trigger GLProfile.initSingleton() through a queue in PrivilegedRequest where it waits
+				 * for its turn. This along with the while loop waits to return status code 1 which causes
+				 * lag and delay when switching to HD Mode.
+				 * GLProfile.initSingleton() is automatically run starting with jogl 2.0 and later. So no need to execute it.
+				 * After it returns status code 1, it also sets an important variable aBoolean73 to true
+				 * when the queue executes successfully.
+				 * This triggers the needed GLRenderer.init() function which we can control to be true manually.
+				 **/
+
+				/**
+				 @Pc(300) PrivilegedRequest local300 = GameShell.signLink.loadGlNatives(client.instance.getClass());
+				 while (local300.status == 0) {
+				 ThreadUtils.sleep(100L);
+				 }
+				 if (local300.status == 1) {
+				 aBoolean73 = true;
+				 }
+				 */
+
+				aBoolean73 = true; // Manually set here to allow GLRenderer.init() to execute.
 			}
 			if (aBoolean73) {
 				GlRenderer.init(GameShell.canvas, Preferences.antiAliasingMode * 2);
