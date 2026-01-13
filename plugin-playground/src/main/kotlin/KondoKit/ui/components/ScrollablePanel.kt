@@ -1,4 +1,4 @@
-package KondoKit
+package KondoKit.ui.components
 
 import KondoKit.plugin.Companion.SCROLL_BAR_COLOR
 import KondoKit.plugin.Companion.VIEW_BACKGROUND_COLOR

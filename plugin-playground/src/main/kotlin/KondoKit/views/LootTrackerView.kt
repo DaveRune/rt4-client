@@ -1,38 +1,46 @@
-package KondoKit
+package KondoKit.views
 
-import KondoKit.Helpers.addMouseListenerToAll
-import KondoKit.Helpers.formatHtmlLabelText
-import KondoKit.SpriteToBufferedImage.getBufferedImageFromSprite
-import KondoKit.XPTrackerView.wrappedWidget
-import KondoKit.plugin.Companion.POPUP_BACKGROUND
-import KondoKit.plugin.Companion.POPUP_FOREGROUND
+import KondoKit.util.Helpers
+import KondoKit.util.Helpers.formatHtmlLabelText
+import KondoKit.util.ImageCanvas
+import KondoKit.util.SpriteToBufferedImage.getBufferedImageFromSprite
+import KondoKit.ui.BaseView
+import KondoKit.ui.OnKillingBlowNPCCallback
+import KondoKit.ui.OnPostClientTickCallback
+import KondoKit.ui.ViewConstants
+import KondoKit.ui.View
+import KondoKit.util.attachPopupMenu
+import KondoKit.ui.components.XPWidget
+import KondoKit.util.setFixedSize
+import KondoKit.views.XPTrackerView.wrappedWidget
+import KondoKit.ui.components.PopupMenuComponent
+import KondoKit.ui.components.ProgressBar
+import KondoKit.ui.components.LabelComponent
+import KondoKit.ui.components.WidgetPanel
 import KondoKit.plugin.Companion.TITLE_BAR_COLOR
 import KondoKit.plugin.Companion.TOOLTIP_BACKGROUND
-import KondoKit.plugin.Companion.TOTAL_XP_WIDGET_SIZE
-import KondoKit.plugin.Companion.VIEW_BACKGROUND_COLOR
 import KondoKit.plugin.Companion.WIDGET_COLOR
 import KondoKit.plugin.Companion.primaryColor
+import KondoKit.plugin.Companion.registerDrawAction
 import KondoKit.plugin.Companion.secondaryColor
+import KondoKit.plugin.Companion.useLiveGEPrices
 import KondoKit.plugin.StateManager.focusedView
 import plugin.api.API
 import rt4.*
 import java.awt.*
-import java.awt.Font
+import java.awt.Component
 import java.awt.event.MouseAdapter
 import java.awt.event.MouseEvent
 import java.awt.image.BufferedImage
-import java.io.BufferedReader
-import java.io.InputStreamReader
-import java.net.HttpURLConnection
-import java.net.URL
-import java.nio.charset.StandardCharsets
+import KondoKit.util.GEPriceService
 import java.text.DecimalFormat
 import javax.swing.*
 import kotlin.math.ceil
 
-object LootTrackerView {
+object LootTrackerView : View, OnPostClientTickCallback, OnKillingBlowNPCCallback {
     private const val SNAPSHOT_LIFESPAN = 10
     const val BAG_ICON = 900
+    const val OPEN_BAG = 777
     val npcDeathSnapshots = mutableMapOf<Int, GroundSnapshot>()
     var gePriceMap = loadGEPrices()
     const val VIEW_NAME = "LOOT_TRACKER_VIEW"
@@ -42,94 +50,50 @@ object LootTrackerView {
     var lastConfirmedKillNpcId = -1
     private var customToolTipWindow: JWindow? = null
     var lootTrackerView: JPanel? = null
+    override val name: String = VIEW_NAME
+    override val iconSpriteId: Int = OPEN_BAG
 
-     fun loadGEPrices(): Map<String, String> {
-        return if (plugin.useLiveGEPrices) {
-            try {
-                println("LootTracker: Loading Remote GE Prices")
-                val url = URL("https://cdn.2009scape.org/gedata/latest.json")
-                val connection = url.openConnection() as HttpURLConnection
-                connection.requestMethod = "GET"
-                connection.setRequestProperty("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:89.0) Gecko/20100101 Firefox/89.0")
+    override val panel: JPanel
+        get() = lootTrackerView ?: JPanel()
 
-                val responseCode = connection.responseCode
-                if (responseCode == HttpURLConnection.HTTP_OK) {
-                    val inputStream = connection.inputStream
-                    val content = inputStream.bufferedReader().use(BufferedReader::readText)
+    override fun createView() {
+        createLootTrackerView()
+    }
 
-                    val items = content.trim().removeSurrounding("[", "]").split("},").map { it.trim() + "}" }
-                    val gePrices = mutableMapOf<String, String>()
+    override fun registerFunctions() {
+        KondoKit.plugin.registerPostClientTickCallback(this)
+        KondoKit.plugin.registerKillingBlowNPCCallback(this)
+    }
 
-                    for (item in items) {
-                        val pairs = item.removeSurrounding("{", "}").split(",")
-                        val itemId = pairs.find { it.trim().startsWith("\"item_id\"") }?.split(":")?.get(1)?.trim()?.trim('\"')
-                        val value = pairs.find { it.trim().startsWith("\"value\"") }?.split(":")?.get(1)?.trim()?.trim('\"')
-                        if (itemId != null && value != null) {
-                            gePrices[itemId] = value
-                        }
-                    }
+    override fun onPostClientTick() {
+        lootTrackerView?.let { onPostClientTick(it) }
+    }
 
-                    gePrices
-                } else {
-                    emptyMap()
-                }
-            } catch (e: Exception) {
-                emptyMap()
-            }
+    override fun onKillingBlowNPC(npcID: Int, x: Int, z: Int) {
+        val preDeathSnapshot = takeGroundSnapshot(Pair(x,z))
+        npcDeathSnapshots[npcID] = GroundSnapshot(preDeathSnapshot, Pair(x, z), 0)
+    }
+
+    fun loadGEPrices(): Map<String, String> {
+        return if (useLiveGEPrices) {
+            println("LootTracker: Loading Remote GE Prices")
+            GEPriceService.loadRemotePrices()
         } else {
-            try {
-                println("LootTracker: Loading Local GE Prices")
-                BufferedReader(InputStreamReader(plugin::class.java.getResourceAsStream("res/item_configs.json"), StandardCharsets.UTF_8))
-                    .useLines { lines ->
-                        val json = lines.joinToString("\n")
-                        val items = json.trim().removeSurrounding("[", "]").split("},").map { it.trim() + "}" }
-                        val gePrices = mutableMapOf<String, String>()
-
-                        for (item in items) {
-                            val pairs = item.removeSurrounding("{", "}").split(",")
-                            val id = pairs.find { it.trim().startsWith("\"id\"") }?.split(":")?.get(1)?.trim()?.trim('\"')
-                            val grandExchangePrice = pairs.find { it.trim().startsWith("\"grand_exchange_price\"") }?.split(":")?.get(1)?.trim()?.trim('\"')
-                            if (id != null && grandExchangePrice != null) {
-                                gePrices[id] = grandExchangePrice
-                            }
-                        }
-
-                        gePrices
-                    }
-            } catch (e: Exception) {
-                emptyMap()
-            }
+            println("LootTracker: Loading Local GE Prices")
+            GEPriceService.loadLocalPrices { Helpers.readResourceText("res/item_configs.json") }
         }
     }
 
 
 
     fun createLootTrackerView() {
-        lootTrackerView = JPanel().apply {
-            layout = BoxLayout(this, BoxLayout.Y_AXIS) // Use BoxLayout on Y axis to stack widgets vertically
-            background = VIEW_BACKGROUND_COLOR
+        lootTrackerView = BaseView(VIEW_NAME, addDefaultSpacing = false).apply {
             add(Box.createVerticalStrut(5))
             totalTrackerWidget = createTotalLootWidget()
 
-            val wrapped = wrappedWidget(totalTrackerWidget!!.container)
+            val wrapped = wrappedWidget(totalTrackerWidget!!.container, padding = 0)
             val popupMenu = resetLootTrackerMenu()
-
-            // Create a custom MouseListener
-            val rightClickListener = object : MouseAdapter() {
-                override fun mousePressed(e: MouseEvent) {
-                    if (e.isPopupTrigger) {
-                        popupMenu.show(e.component, e.x, e.y)
-                    }
-                }
-
-                override fun mouseReleased(e: MouseEvent) {
-                    if (e.isPopupTrigger) {
-                        popupMenu.show(e.component, e.x, e.y)
-                    }
-                }
-            }
-            addMouseListenerToAll(wrapped,rightClickListener)
-            wrapped.addMouseListener(rightClickListener)
+            wrapped.attachPopupMenu(popupMenu, includeChildren = true)
             add(wrapped)
             add(Box.createVerticalStrut(8))
             revalidate()
@@ -172,42 +136,41 @@ object LootTrackerView {
         )
     }
 
-    private fun createWidgetPanel(bufferedImageSprite: BufferedImage, l1 : JLabel, l2 : JLabel): Panel {
-        val imageCanvas = ImageCanvas(bufferedImageSprite).apply {
-            preferredSize = Dimension(bufferedImageSprite.width, bufferedImageSprite.height)
-            minimumSize = preferredSize
-            maximumSize = preferredSize
-            size = preferredSize
-            background = WIDGET_COLOR
-        }
+    private fun createWidgetPanel(bufferedImageSprite: BufferedImage, l1 : JLabel, l2 : JLabel): WidgetPanel {
+        val (_, imageContainer) = Helpers.createImageCanvasComponents(
+            bufferedImageSprite,
+            borderInsets = Insets(-2, 0, 0, 0)
+        )
 
-        val imageContainer = Panel(BorderLayout()).apply {
-            background = WIDGET_COLOR
-            add(imageCanvas, BorderLayout.NORTH)
-        }
-
-        return Panel(BorderLayout(5, 0)).apply {
-            background = WIDGET_COLOR
-            preferredSize = TOTAL_XP_WIDGET_SIZE
+        return WidgetPanel(
+            widgetWidth = ViewConstants.DEFAULT_WIDGET_SIZE.width,
+            widgetHeight = ViewConstants.TOTAL_XP_WIDGET_SIZE.height,
+            addDefaultPadding = false,
+            paddingTop = 10,
+            paddingBottom = 10,
+            paddingRight = 10,
+            paddingLeft = 10
+        ).apply {
+            layout = BorderLayout(5, 0)
+            setFixedSize(
+                ViewConstants.DEFAULT_WIDGET_SIZE.width,
+                ViewConstants.TOTAL_XP_WIDGET_SIZE.height
+            )
             add(imageContainer, BorderLayout.WEST)
             add(createTextPanel(l1,l2), BorderLayout.CENTER)
         }
     }
 
-    private fun createTextPanel(l1 : JLabel, l2: JLabel): Panel {
-        return Panel(GridLayout(2, 1, 5, 0)).apply {
+    private fun createTextPanel(l1 : JLabel, l2: JLabel): JPanel {
+        return JPanel(GridLayout(2, 1, 5, 0)).apply {
             background = WIDGET_COLOR
             add(l1)
             add(l2)
         }
     }
 
-    private fun createLabel(text: String): JLabel {
-        return JLabel(text).apply {
-            font = Font("RuneScape Small", Font.TRUETYPE_FONT, 16)
-            horizontalAlignment = JLabel.LEFT
-        }
-    }
+    private fun createLabel(text: String): LabelComponent =
+        LabelComponent(text, alignment = JLabel.LEFT)
 
     private fun addItemToLootPanel(lootTrackerView: JPanel, drop: Item, npcName: String) {
         findLootItemsPanel(lootTrackerView, npcName)?.let { lootPanel ->
@@ -218,15 +181,12 @@ object LootTrackerView {
                 ?.let { updateItemPanelIcon(it, drop.id, newQuantity) }
                 ?: addNewItemToPanel(lootPanel, drop, newQuantity)
 
-            // Recalculate lootPanel size based on the number of unique items.
             val totalItems = lootItemPanels[npcName]?.size ?: 0
             val rowsNeeded = ceil(totalItems / 6.0).toInt()
             val lootPanelHeight = rowsNeeded * (40)
 
-            val size = Dimension(lootPanel.width,lootPanelHeight+32)
-            lootPanel.parent.preferredSize = size
-            lootPanel.parent.minimumSize = size
-            lootPanel.parent.maximumSize = size
+            val size = Dimension(lootPanel.width, lootPanelHeight + 32)
+            (lootPanel.parent as? Component)?.setFixedSize(size)
             lootPanel.parent.revalidate()
             lootPanel.parent.repaint()
             lootPanel.revalidate()
@@ -244,35 +204,24 @@ object LootTrackerView {
     private fun createItemPanel(itemId: Int, quantity: Int): JPanel {
         val bufferedImageSprite = getBufferedImageFromSprite(API.GetObjSprite(itemId, quantity, true, 1, 3153952))
 
-        // Create the panel for the item
         val itemPanel = FixedSizePanel(Dimension(36, 32)).apply {
-            preferredSize = Dimension(36, 32)
             background = WIDGET_COLOR
-            minimumSize = preferredSize
-            maximumSize = preferredSize
 
             val imageCanvas = ImageCanvas(bufferedImageSprite).apply {
-                preferredSize = Dimension(36, 32)
+                setFixedSize(36, 32)
                 background = WIDGET_COLOR
-                minimumSize = preferredSize
-                maximumSize = preferredSize
             }
 
-            // Add the imageCanvas to the panel
             add(imageCanvas, BorderLayout.CENTER)
 
-            // Put the itemId as a property for reference
             putClientProperty("itemId", itemId)
 
-            // Add mouse listener for custom hover text
             imageCanvas.addMouseListener(object : MouseAdapter() {
                 override fun mouseEntered(e: MouseEvent) {
-                    // Show custom tooltip when the mouse enters the component
                     showCustomToolTip(e.point, itemId,quantity,imageCanvas)
                 }
 
                 override fun mouseExited(e: MouseEvent) {
-                    // Hide tooltip when mouse exits
                     hideCustomToolTip()
                 }
             })
@@ -281,7 +230,6 @@ object LootTrackerView {
         return itemPanel
     }
 
-    // Function to show the custom tooltip
     fun showCustomToolTip(location: Point, itemId: Int, quantity: Int, parentComponent: ImageCanvas) {
         val itemDef = ObjTypeList.get(itemId)
         val gePricePerItem = gePriceMap[itemDef.id.toString()]?.toInt() ?: 0
@@ -296,7 +244,7 @@ object LootTrackerView {
                 "GE: ${formatValue(totalGePrice)} ${geText}<br>" +
                 "HA: ${formatValue(totalHaPrice)} ${haText}</div></html>"
 
-        val _font = Font("RuneScape Small", Font.TRUETYPE_FONT, 16)
+        val tooltipFont = ViewConstants.FONT_RUNESCAPE_SMALL_16
         if (customToolTipWindow == null) {
             customToolTipWindow = JWindow().apply {
                 contentPane = JLabel(text).apply {
@@ -304,19 +252,17 @@ object LootTrackerView {
                     isOpaque = true
                     background = TOOLTIP_BACKGROUND
                     foreground = Color.WHITE
-                    font = _font
+                    font = tooltipFont
                 }
                 pack()
             }
         }
 
-        // Calculate the tooltip location relative to the parent component
         val screenLocation = parentComponent.locationOnScreen
         customToolTipWindow!!.setLocation(screenLocation.x + location.x, screenLocation.y + location.y + 20)
         customToolTipWindow!!.isVisible = true
     }
 
-    // Function to hide the custom tooltip
     fun hideCustomToolTip() {
         customToolTipWindow?.isVisible = false
         customToolTipWindow = null  // Nullify the global instance
@@ -376,7 +322,8 @@ object LootTrackerView {
     fun onPostClientTick(lootTrackerView: JPanel) {
         val toRemove = mutableListOf<Int>()
 
-        npcDeathSnapshots.entries.forEach { (npcId, snapshot) ->
+        npcDeathSnapshots.entries.forEach { entry ->
+            val (npcId, snapshot) = entry
             val postDeathSnapshot = takeGroundSnapshot(Pair(snapshot.location.first, snapshot.location.second))
             val newDrops = postDeathSnapshot.subtract(snapshot.items)
 
@@ -392,7 +339,9 @@ object LootTrackerView {
             }
         }
 
-        toRemove.forEach { npcDeathSnapshots.remove(it) }
+        toRemove.forEach { npcId ->
+            npcDeathSnapshots.remove(npcId)
+        }
     }
 
 
@@ -427,7 +376,7 @@ object LootTrackerView {
         newDrops.forEach { drop ->
             val geValue = (gePriceMap[drop.id.toString()]?.toInt() ?: 0) * drop.quantity
             updateValueLabel(lootTrackerView, geValue.toString(), npcName)
-            plugin.registerDrawAction {  addItemToLootPanel(lootTrackerView, drop, npcName) }
+            registerDrawAction {  addItemToLootPanel(lootTrackerView, drop, npcName) }
             updateTotalValue(geValue)
         }
     }
@@ -436,30 +385,28 @@ object LootTrackerView {
         val childFramePanel = JPanel().apply {
             layout = BoxLayout(this, BoxLayout.Y_AXIS)
             background = WIDGET_COLOR
-            minimumSize = Dimension(230, 0)
-            maximumSize = Dimension(230, 700)
+            minimumSize = Dimension(ViewConstants.DEFAULT_WIDGET_SIZE.width, 0)
+            maximumSize = Dimension(ViewConstants.DEFAULT_WIDGET_SIZE.width, 700)
             name = "HELLO_WORLD"
         }
 
         val labelPanel = JPanel(BorderLayout()).apply {
             background = TITLE_BAR_COLOR
             border = BorderFactory.createEmptyBorder(5, 5, 5, 5)
-            maximumSize = Dimension(230, 24)
-            minimumSize = maximumSize
-            preferredSize = maximumSize
+            setFixedSize(ViewConstants.DEFAULT_WIDGET_SIZE.width, 24)
         }
 
         val killCount = npcKillCounts.getOrPut(npcName) { 0 }
         val countLabel = JLabel(formatHtmlLabelText(npcName, secondaryColor, " x $killCount", primaryColor)).apply {
             foreground = secondaryColor
-            font = Font("RuneScape Small", Font.TRUETYPE_FONT, 16)
+            font = ViewConstants.FONT_RUNESCAPE_SMALL_16
             horizontalAlignment = JLabel.LEFT
             name = "killCountLabel_$npcName"
         }
 
         val valueLabel = JLabel("0 gp").apply {
             foreground = secondaryColor
-            font = Font("RuneScape Small", Font.TRUETYPE_FONT, 16)
+            font = ViewConstants.FONT_RUNESCAPE_SMALL_16
             horizontalAlignment = JLabel.RIGHT
             name = "valueLabel_$npcName"
         }
@@ -467,7 +414,6 @@ object LootTrackerView {
         labelPanel.add(countLabel, BorderLayout.WEST)
         labelPanel.add(valueLabel, BorderLayout.EAST)
 
-        // Panel to hold loot items, using GridLayout to manage rows and columns.
         val lootPanel = JPanel().apply {
             background = WIDGET_COLOR
             border = BorderFactory.createLineBorder(WIDGET_COLOR, 5)
@@ -481,41 +427,13 @@ object LootTrackerView {
         childFramePanel.add(lootPanel)
 
         val popupMenu = removeLootFrameMenu(childFramePanel, npcName)
-
-        // Create a custom MouseListener
-        val rightClickListener = object : MouseAdapter() {
-            override fun mousePressed(e: MouseEvent) {
-                if (e.isPopupTrigger) {
-                    popupMenu.show(e.component, e.x, e.y)
-                }
-            }
-
-            override fun mouseReleased(e: MouseEvent) {
-                if (e.isPopupTrigger) {
-                    popupMenu.show(e.component, e.x, e.y)
-                }
-            }
-        }
-
-        labelPanel.addMouseListener(rightClickListener)
+        labelPanel.attachPopupMenu(popupMenu)
         return childFramePanel
     }
 
     private fun removeLootFrameMenu(toRemove: JPanel, npcName: String): JPopupMenu {
-        // Create a popup menu
-        val popupMenu = JPopupMenu()
-        val rFont = Font("RuneScape Small", Font.TRUETYPE_FONT, 16)
-
-        popupMenu.background = POPUP_BACKGROUND
-
-        // Create menu items with custom font and colors
-        val menuItem1 = JMenuItem("Remove").apply {
-            font = rFont  // Set custom font
-            background = POPUP_BACKGROUND // Dark background for item
-            foreground = POPUP_FOREGROUND // Light text color for item
-        }
-        popupMenu.add(menuItem1)
-        menuItem1.addActionListener {
+        val popupMenu = PopupMenuComponent()
+        popupMenu.addMenuItem("Remove") {
             lootItemPanels[npcName]?.clear()
             npcKillCounts[npcName] = 0
             lootTrackerView?.let { parent ->
@@ -524,8 +442,6 @@ object LootTrackerView {
                 if (toRemoveIndex >= 0 && toRemoveIndex < components.size - 1) {
                     val nextComponent = components[toRemoveIndex + 1]
                     if (nextComponent is Box.Filler) {
-                        // Nasty way to remove the Box.createVerticalStrut(8) after
-                        // the lootpanel.
                         parent.remove(nextComponent)
                     }
                 }
@@ -539,21 +455,10 @@ object LootTrackerView {
 
 
     private fun resetLootTrackerMenu(): JPopupMenu {
-        // Create a popup menu
-        val popupMenu = JPopupMenu()
-        val rFont = Font("RuneScape Small", Font.TRUETYPE_FONT, 16)
+        val popupMenu = PopupMenuComponent()
 
-        popupMenu.background = POPUP_BACKGROUND
-
-        // Create menu items with custom font and colors
-        val menuItem1 = JMenuItem("Reset Loot Tracker").apply {
-            font = rFont  // Set custom font
-            background = POPUP_BACKGROUND  // Dark background for item
-            foreground = POPUP_FOREGROUND // Light text color for item
-        }
-        popupMenu.add(menuItem1)
-        menuItem1.addActionListener {
-            plugin.registerDrawAction {
+        popupMenu.addMenuItem("Reset Loot Tracker") {
+            registerDrawAction {
                 resetLootTracker()
             }
         }
@@ -566,25 +471,9 @@ object LootTrackerView {
         lootItemPanels.clear()
         totalTrackerWidget = createTotalLootWidget()
 
-        val wrapped = wrappedWidget(totalTrackerWidget!!.container)
+        val wrapped = wrappedWidget(totalTrackerWidget!!.container, padding = 0)
         val _popupMenu = resetLootTrackerMenu()
-
-        // Create a custom MouseListener
-        val rightClickListener = object : MouseAdapter() {
-            override fun mousePressed(e: MouseEvent) {
-                if (e.isPopupTrigger) {
-                    _popupMenu.show(e.component, e.x, e.y)
-                }
-            }
-
-            override fun mouseReleased(e: MouseEvent) {
-                if (e.isPopupTrigger) {
-                    _popupMenu.show(e.component, e.x, e.y)
-                }
-            }
-        }
-        addMouseListenerToAll(wrapped,rightClickListener)
-        wrapped.addMouseListener(rightClickListener)
+        wrapped.attachPopupMenu(_popupMenu, includeChildren = true)
         lootTrackerView?.add(Box.createVerticalStrut(5))
         lootTrackerView?.add(wrapped)
         lootTrackerView?.add(Box.createVerticalStrut(8))
