@@ -613,6 +613,7 @@ public abstract class GameShell extends Applet implements Runnable, FocusListene
 
 			long lastUpdateTime = 0;
 			long lastDrawTime = 0;
+			long nextUpdate = 0;
 			while (killTime == 0L) {
 				if (GameShell.killTime > MonotonicClock.currentTimeMillis()) {
 					break;
@@ -621,6 +622,14 @@ public abstract class GameShell extends Applet implements Runnable, FocusListene
 				long currentTime = System.nanoTime();
 
 				updateDelta = currentTime - lastUpdateTime;
+				renderDelta = currentTime - lastDrawTime;
+
+				nextUpdate = Math.min(FIXED_UPDATE_RATE_NS - updateDelta, VARIABLE_RENDER_RATE_NS - renderDelta);
+				// Convert from ns to ms
+				nextUpdate /= 1_000_000;
+				ThreadUtils.sleep(nextUpdate);
+
+				// Game update
 				if (updateDelta >= FIXED_UPDATE_RATE_NS) {
 					logicCycles = timer.count(minimumDelay, (int) FIXED_UPDATE_RATE);
 					for (int cycle = 0; cycle < logicCycles; ++cycle) {
@@ -630,7 +639,7 @@ public abstract class GameShell extends Applet implements Runnable, FocusListene
 					flush(signLink, canvas);
 				}
 
-				renderDelta = currentTime - lastDrawTime;
+				// Render update
 				if (renderDelta >= VARIABLE_RENDER_RATE_NS) {
 					this.mainInputLoop();
 					this.mainRedrawWrapper();

@@ -5,6 +5,11 @@ import org.openrs2.deob.annotation.OriginalMember;
 import org.openrs2.deob.annotation.Pc;
 
 public class ThreadUtils {
+	/**
+	 * Sleeps the current thread for a set amount of milliseconds.
+	 *
+	 * @param arg0. Time in milliseconds to sleep for.
+	*/
 	@OriginalMember(owner = "client!sk", name = "a", descriptor = "(JI)V")
 	public static void sleep(@OriginalArg(0) long arg0) {
 		if (arg0 <= 0L) {
