@@ -1,4 +1,4 @@
-package KondoKit
+package KondoKit.util
 
 import KondoKit.plugin.Companion.FIXED_HEIGHT
 import KondoKit.plugin.Companion.FIXED_WIDTH

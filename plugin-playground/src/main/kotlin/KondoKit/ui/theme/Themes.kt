@@ -1,4 +1,4 @@
-package KondoKit
+package KondoKit.ui.theme
 
 import java.awt.Color
 
@@ -74,7 +74,6 @@ object Themes {
             )
         }
     }
-
 
     data class Theme(
         val widgetColor: Color,
