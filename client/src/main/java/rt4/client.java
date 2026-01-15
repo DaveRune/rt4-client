@@ -841,10 +841,10 @@ public final class client extends GameShell {
 			}
 		}
 		/**
-		 *  If the game is running fine and is in fullscreen mode and a user wants to leave the mode then
-		 *  this  will reset the window to Standard mode and exist fullscreen.
-		 *  This line can also launch back into full screen when out of focus and refocused by mode 3
-		 *  with the right width and height, by Preference.width and Preference.height.
+		 *  If the game is running in fullscreen mode and focus is lost, by alt tab or ctrl alt tab, the client exits
+		 *  fullscreen mode and enters window mode.
+		 *  This line can also be used to launch back into full screen when out of focus and refocused by sending mode 3
+		 *  with the right width and height, by Preference.width and Preference.height for exmaple.
 		 */
 		if (GameShell.fullScreenFrame != null && !GameShell.focus && (gameState == 30 || gameState == 10)) {
 			DisplayMode.setWindowMode(false, Preferences.favoriteWorlds, -1, -1);
