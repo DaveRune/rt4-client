@@ -196,8 +196,8 @@ public final class DisplayMode {
 
 				/**
 				 * Code below tries to trigger GLProfile.initSingleton() through a queue in PrivilegedRequest where it waits
-				 * for its turn. This along with the while loop waits long enough to cause a desync in the start process which causes
-				 * lag and delay when switching to HD Mode and when launchingt he client in HD Mode.
+				 * for its turn. This along with the while loop waits long enough to cause a de-sync in the start process which causes
+				 * lag and delay when switching to HD Mode and when launching the client in HD Mode.
 				 * GLProfile.initSingleton() is automatically run starting with jogl 2.0 and later. So no need to execute it.
 				 * After it returns status code 1, it also sets an important variable aBoolean73(Start_Renderer) to true.
 				 * This triggers the needed GLRenderer.init() function which we can control to be true manually as intended.
@@ -266,7 +266,7 @@ public final class DisplayMode {
 		if (useHD) {
 			client.method2721();
 		}
-		resizable = newMode == 2; // resizeable should only be done in HD-Resizeable mode and full screen mode.
+		resizable = newMode == 2; // resizeable should only be done in HD-Resizeable mode and not full screen mode.
 		if (InterfaceList.topLevelInterface != -1) {
 			InterfaceList.method3712(true);
 		}
