@@ -1,4 +1,4 @@
-package KondoKit
+package KondoKit.util
 
 import KondoKit.plugin.Companion.WIDGET_COLOR
 import java.awt.Canvas

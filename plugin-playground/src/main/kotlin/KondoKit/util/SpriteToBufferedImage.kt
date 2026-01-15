@@ -1,4 +1,4 @@
-package KondoKit
+package KondoKit.util
 
 import rt4.GlIndexedSprite
 import rt4.GlSprite
@@ -7,7 +7,6 @@ import rt4.SoftwareSprite
 import java.awt.Color
 import java.awt.image.BufferedImage
 
-// Define interfaces for common sprite types
 interface BaseSprite {
     val width: Int
     val height: Int
@@ -22,7 +21,6 @@ interface NonIndexedSprite : BaseSprite {
     val pixels: IntArray?
 }
 
-// Adapter functions for existing sprite types
 fun adaptSoftwareSprite(sprite: SoftwareSprite): NonIndexedSprite {
     return object : NonIndexedSprite {
         override val width: Int = sprite.width

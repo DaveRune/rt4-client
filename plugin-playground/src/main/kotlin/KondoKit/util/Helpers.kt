@@ -1,8 +1,12 @@
-package KondoKit
+package KondoKit.util
 
+import KondoKit.plugin
 import rt4.GameShell
 import java.awt.*
+import java.awt.image.BufferedImage
 import java.awt.event.MouseListener
+import java.nio.charset.Charset
+import java.nio.charset.StandardCharsets
 import java.lang.reflect.Field
 import java.lang.reflect.ParameterizedType
 import java.lang.reflect.Type
@@ -11,6 +15,44 @@ import java.util.Timer
 import javax.swing.*
 
 object Helpers {
+    fun openResource(path: String) = plugin::class.java.getResourceAsStream(path)
+
+    // Read a bundled resource as text using the given charset (UTF-8 by default)
+    fun readResourceText(path: String, charset: Charset = StandardCharsets.UTF_8): String? {
+        val stream = openResource(path) ?: return null
+        stream.use { s ->
+            return s.reader(charset).use { it.readText() }
+        }
+    }
+
+    data class ImageCanvasComponents(val canvas: ImageCanvas, val container: JPanel)
+
+    fun createImageCanvasComponents(
+        bufferedImage: BufferedImage,
+        background: Color = plugin.WIDGET_COLOR,
+        size: Dimension = Dimension(bufferedImage.width, bufferedImage.height),
+        borderInsets: Insets = Insets(-2, 0, 0, 2),
+        componentPosition: String = BorderLayout.NORTH
+    ): ImageCanvasComponents {
+        val imageCanvas = ImageCanvas(bufferedImage).apply {
+            setFixedSize(size)
+            this.size = size
+            this.background = background
+        }
+
+        val container = JPanel(BorderLayout()).apply {
+            this.background = background
+            add(imageCanvas, componentPosition)
+            border = BorderFactory.createEmptyBorder(
+                borderInsets.top,
+                borderInsets.left,
+                borderInsets.bottom,
+                borderInsets.right
+            )
+        }
+
+        return ImageCanvasComponents(imageCanvas, container)
+    }
 
     fun convertValue(type: Class<*>, genericType: Type?, value: String): Any {
         return when {

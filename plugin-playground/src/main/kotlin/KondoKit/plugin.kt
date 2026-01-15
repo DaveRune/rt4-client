@@ -1,35 +1,22 @@
 package KondoKit
 
-import KondoKit.Constants.COMBAT_LVL_SPRITE
-import KondoKit.Helpers.formatHtmlLabelText
-import KondoKit.Helpers.formatNumber
-import KondoKit.Helpers.getSpriteId
-import KondoKit.Helpers.showAlert
-import KondoKit.HiscoresView.createHiscoreSearchView
-import KondoKit.HiscoresView.hiScoreView
-import KondoKit.LootTrackerView.BAG_ICON
-import KondoKit.LootTrackerView.createLootTrackerView
-import KondoKit.LootTrackerView.lootTrackerView
-import KondoKit.LootTrackerView.npcDeathSnapshots
-import KondoKit.LootTrackerView.onPostClientTick
-import KondoKit.LootTrackerView.takeGroundSnapshot
-import KondoKit.ReflectiveEditorView.addPlugins
-import KondoKit.ReflectiveEditorView.createReflectiveEditorView
-import KondoKit.ReflectiveEditorView.reflectiveEditorView
-import KondoKit.SpriteToBufferedImage.getBufferedImageFromSprite
-import KondoKit.Themes.Theme
-import KondoKit.Themes.ThemeType
-import KondoKit.Themes.getTheme
-import KondoKit.XPTrackerView.createXPTrackerView
-import KondoKit.XPTrackerView.createXPWidget
-import KondoKit.XPTrackerView.initialXP
-import KondoKit.XPTrackerView.resetXPTracker
-import KondoKit.XPTrackerView.totalXPWidget
-import KondoKit.XPTrackerView.updateWidget
-import KondoKit.XPTrackerView.wrappedWidget
-import KondoKit.XPTrackerView.xpTrackerView
-import KondoKit.XPTrackerView.xpWidgets
-import KondoKit.plugin.StateManager.focusedView
+import KondoKit.util.Helpers.getSpriteId
+import KondoKit.util.Helpers.showAlert
+import KondoKit.views.*
+import KondoKit.ui.OnUpdateCallback
+import KondoKit.ui.OnDrawCallback
+import KondoKit.ui.OnXPUpdateCallback
+import KondoKit.ui.OnKillingBlowNPCCallback
+import KondoKit.ui.OnPostClientTickCallback
+import KondoKit.util.AltCanvas
+import KondoKit.util.SpriteToBufferedImage.getBufferedImageFromSprite
+import KondoKit.util.ImageCanvas
+import KondoKit.util.setFixedSize
+import KondoKit.ui.ViewConstants
+import KondoKit.ui.theme.Themes.Theme
+import KondoKit.ui.theme.Themes.ThemeType
+import KondoKit.ui.theme.Themes.getTheme
+import KondoKit.ui.components.ScrollablePanel
 import plugin.Plugin
 import plugin.api.*
 import plugin.api.API.*
@@ -46,6 +33,8 @@ import java.awt.event.ActionListener
 import java.awt.event.MouseAdapter
 import java.awt.event.MouseEvent
 import javax.swing.*
+import KondoKit.ui.View
+import KondoKit.util.Helpers
 
 
 @Target(AnnotationTarget.FIELD)
@@ -54,8 +43,6 @@ annotation class Exposed(val description: String = "")
 
 class plugin : Plugin() {
     companion object {
-        val WIDGET_SIZE = Dimension(220, 50)
-        val TOTAL_XP_WIDGET_SIZE = Dimension(220, 30)
         val IMAGE_SIZE = Dimension(25, 23)
 
         // Default Theme Colors
@@ -98,9 +85,9 @@ class plugin : Plugin() {
         const val FIXED_HEIGHT = 503
         private const val NAVBAR_WIDTH = 30
         private const val MAIN_CONTENT_WIDTH = 242
-        private const val WRENCH_ICON = 907
-        private const val LOOT_ICON = 777
-        private const val MAG_SPRITE = 1423
+        const val WRENCH_ICON = 907
+        const val LOOT_ICON = 777
+        const val MAG_SPRITE = 1423
         const val LVL_ICON = 898
         private lateinit var cardLayout: CardLayout
         private lateinit var mainContentPanel: JPanel
@@ -118,16 +105,41 @@ class plugin : Plugin() {
         private const val HIDDEN_VIEW = "HIDDEN"
         private var altCanvas: AltCanvas? = null
         private val drawActions = mutableListOf<() -> Unit>()
+        private val views = mutableListOf<View>()
+        private val updateCallbacks = mutableListOf<OnUpdateCallback>()
+        private val drawCallbacks = mutableListOf<OnDrawCallback>()
+        private val xpUpdateCallbacks = mutableListOf<OnXPUpdateCallback>()
+        private val killingBlowNPCCallbacks = mutableListOf<OnKillingBlowNPCCallback>()
+        private val postClientTickCallbacks = mutableListOf<OnPostClientTickCallback>()
 
         fun registerDrawAction(action: () -> Unit) {
             synchronized(drawActions) {
                 drawActions.add(action)
             }
         }
+        
+        fun registerUpdateCallback(callback: OnUpdateCallback) {
+            updateCallbacks.add(callback)
+        }
+        
+        fun registerDrawCallback(callback: OnDrawCallback) {
+            drawCallbacks.add(callback)
+        }
+        
+        fun registerXPUpdateCallback(callback: OnXPUpdateCallback) {
+            xpUpdateCallbacks.add(callback)
+        }
+        
+        fun registerKillingBlowNPCCallback(callback: OnKillingBlowNPCCallback) {
+            killingBlowNPCCallbacks.add(callback)
+        }
+        
+        fun registerPostClientTickCallback(callback: OnPostClientTickCallback) {
+            postClientTickCallbacks.add(callback)
+        }
     }
 
     override fun Init() {
-        // Disable Font AA
         System.setProperty("sun.java2d.opengl", "false")
         System.setProperty("awt.useSystemAAFontSettings", "off")
         System.setProperty("swing.aatext", "false")
@@ -135,9 +147,7 @@ class plugin : Plugin() {
 
     override fun OnLogin() {
         if (lastLogin != "" && lastLogin != Player.usernameInput.toString()) {
-            // if we logged in with a new character
-            // we need to reset the trackers
-            xpTrackerView?.let { resetXPTracker(it) }
+            XPTrackerView.xpTrackerView?.let { XPTrackerView.resetXPTracker(it) }
         }
         lastLogin = Player.usernameInput.toString()
     }
@@ -147,15 +157,12 @@ class plugin : Plugin() {
             for ((index, entry) in currentEntries.withIndex()) {
                 if (entry.type == MiniMenuType.PLAYER && index == currentEntries.size - 1) {
                     val input = entry.subject
-                    // Trim spaces, clean up tags, and remove the level info
                     val cleanedInput = input
-                            .trim() // Remove any leading/trailing spaces
-                            .replace(Regex("<col=[0-9a-fA-F]{6}>"), "") // Remove color tags
-                            .replace(Regex("<img=\\d+>"), "") // Remove image tags
-                            .replace(Regex("\\(level: \\d+\\)"), "") // Remove level text e.g. (level: 44)
-                            .trim() // Trim again to remove extra spaces after removing level text
-
-                    // Proceed with the full cleaned username
+                            .trim()
+                            .replace(Regex("<col=[0-9a-fA-F]{6}>"), "")
+                            .replace(Regex("<img=\\d+>"), "")
+                            .replace(Regex("\\(level: \\d+\\)"), "")
+                            .trim()
                     InsertMiniMenuEntry("Lookup", entry.subject, searchHiscore(cleanedInput))
                 }
             }
@@ -164,41 +171,39 @@ class plugin : Plugin() {
 
     override fun OnPluginsReloaded(): Boolean {
         if (!initialized) return true
-        updateDisplaySettings()
-        frame.remove(rightPanelWrapper)
-        frame.layout = BorderLayout()
-        rightPanelWrapper?.let { frame.add(it, BorderLayout.EAST) }
-        frame.revalidate()
+        // Ensure Swing updates happen on the EDT to avoid flicker
+        SwingUtilities.invokeLater {
+            updateDisplaySettings()
+            rightPanelWrapper?.let { wrapper ->
+                wrapper.ignoreRepaint = true
+                try {
+                    val parent = wrapper.parent
+                    val wrapperNeedsAttach = parent != frame
+                    if (wrapperNeedsAttach) {
+                        parent?.remove(wrapper)
+                        frame.layout = BorderLayout()
+                        frame.add(wrapper, BorderLayout.EAST)
+                    }
+                    wrapper.revalidate()
+                    wrapper.repaint()
+                } finally {
+                    wrapper.ignoreRepaint = false
+                }
+            }
+            frame.revalidate()
+            frame.repaint()
+            
+            ReflectiveEditorView.addPlugins(ReflectiveEditorView.panel)
+        }
         pluginsReloaded = true
         reloadInterfaces = true
         return true
     }
 
     override fun OnXPUpdate(skillId: Int, xp: Int) {
-            if (!initialXP.containsKey(skillId)) {
-                initialXP[skillId] = xp
-                return
-            }
-            var xpWidget = xpWidgets[skillId]
-            if (xpWidget != null) {
-                updateWidget(xpWidget, xp)
-            } else {
-                val previousXp = initialXP[skillId] ?: xp
-                if (xp == initialXP[skillId]) return
-
-                xpWidget = createXPWidget(skillId, previousXp)
-                xpWidgets[skillId] = xpWidget
-
-                xpTrackerView?.add(wrappedWidget(xpWidget.container))
-                xpTrackerView?.add(Box.createVerticalStrut(5))
-
-                if(focusedView == XPTrackerView.VIEW_NAME) {
-                    xpTrackerView?.revalidate()
-                    xpTrackerView?.repaint()
-                }
-
-                updateWidget(xpWidget, xp)
-            }
+        xpUpdateCallbacks.forEach { callback ->
+            callback.onXPUpdate(skillId, xp)
+        }
     }
 
     override fun Draw(timeDelta: Long) {
@@ -208,7 +213,9 @@ class plugin : Plugin() {
         }
 
         if (pluginsReloaded) {
-            reflectiveEditorView?.let { addPlugins(it) }
+            SwingUtilities.invokeLater {
+                ReflectiveEditorView.addPlugins(ReflectiveEditorView.panel)
+            }
             pluginsReloaded = false
         }
 
@@ -219,8 +226,14 @@ class plugin : Plugin() {
 
         accumulatedTime += timeDelta
         if (accumulatedTime >= TICK_INTERVAL) {
-            lootTrackerView?.let { onPostClientTick(it) }
+            postClientTickCallbacks.forEach { callback ->
+                callback.onPostClientTick()
+            }
             accumulatedTime = 0L
+        }
+
+        drawCallbacks.forEach { callback ->
+            callback.onDraw(timeDelta)
         }
 
         // Draw synced actions (that require to be done between glBegin and glEnd)
@@ -256,47 +269,29 @@ class plugin : Plugin() {
         } else {
             moveCanvasToFront()
         }
-        altCanvas?.updateGameImage() // Update the game image as needed
+        altCanvas?.updateGameImage()
     }
 
     override fun Update() {
-
-        val widgets = xpWidgets.values
-        val totalXP = totalXPWidget
-
-        widgets.forEach { xpWidget ->
-            val elapsedTime = (System.currentTimeMillis() - xpWidget.startTime) / 1000.0 / 60.0 / 60.0
-            val xpPerHour = if (elapsedTime > 0) (xpWidget.totalXpGained / elapsedTime).toInt() else 0
-            val formattedXpPerHour = formatNumber(xpPerHour)
-            xpWidget.xpPerHourLabel.text =
-                formatHtmlLabelText("XP /hr: ", primaryColor, formattedXpPerHour, secondaryColor)
-            xpWidget.container.repaint()
-        }
-
-        totalXP?.let { totalXPWidget ->
-            val elapsedTime = (System.currentTimeMillis() - totalXPWidget.startTime) / 1000.0 / 60.0 / 60.0
-            val totalXPPerHour = if (elapsedTime > 0) (totalXPWidget.totalXpGained / elapsedTime).toInt() else 0
-            val formattedTotalXpPerHour = formatNumber(totalXPPerHour)
-            totalXPWidget.xpPerHourLabel.text =
-                formatHtmlLabelText("XP /hr: ", primaryColor, formattedTotalXpPerHour, secondaryColor)
-            totalXPWidget.container.repaint()
+        updateCallbacks.forEach { callback ->
+            callback.onUpdate()
         }
     }
 
     override fun OnKillingBlowNPC(npcID: Int, x: Int, z: Int) {
-        val preDeathSnapshot = takeGroundSnapshot(Pair(x,z))
-        npcDeathSnapshots[npcID] = LootTrackerView.GroundSnapshot(preDeathSnapshot, Pair(x, z), 0)
+        killingBlowNPCCallbacks.forEach { callback ->
+            callback.onKillingBlowNPC(npcID, x, z)
+        }
     }
 
     private fun allSpritesLoaded() : Boolean {
-        // Check all skill sprites
         try{
             for (i in 0 until 24) {
                 if(!js5Archive8.isFileReady(getSpriteId(i))){
                     return false
                 }
             }
-            val otherIcons = arrayOf(LVL_ICON, MAG_SPRITE, LOOT_ICON, WRENCH_ICON, COMBAT_LVL_SPRITE, BAG_ICON)
+            val otherIcons = arrayOf(LVL_ICON, MAG_SPRITE, LOOT_ICON, WRENCH_ICON, ViewConstants.COMBAT_LVL_SPRITE, LootTrackerView.BAG_ICON)
             for (icon in otherIcons) {
                 if(!js5Archive8.isFileReady(icon)){
                     return false
@@ -309,47 +304,77 @@ class plugin : Plugin() {
     }
 
     private fun updateDisplaySettings() {
-        val mode = GetWindowMode()
-        val currentScrollPaneWidth = if (mainContentPanel.isVisible) NAVBAR_WIDTH + MAIN_CONTENT_WIDTH else NAVBAR_WIDTH
-        lastUIOffset = uiOffset
+        val applyDisplaySettings = {
+            val mode = GetWindowMode()
+            val currentScrollPaneWidth = if (mainContentPanel.isVisible) NAVBAR_WIDTH + MAIN_CONTENT_WIDTH else NAVBAR_WIDTH
+            lastUIOffset = uiOffset
 
-        if(mode != WindowMode.FIXED) {
-            destroyAltCanvas()
-        } else if (useScaledFixed && altCanvas == null) {
-            initAltCanvas()
-        }
-
-        when (mode) {
-            WindowMode.FIXED -> {
-                if (frame.width < FIXED_WIDTH + currentScrollPaneWidth + uiOffset) {
-                    frame.setSize(FIXED_WIDTH + currentScrollPaneWidth + uiOffset, frame.height)
-                }
-
-                val difference = frame.width - (uiOffset + currentScrollPaneWidth)
-
-                if (useScaledFixed) {
-                    GameShell.leftMargin = 0
-                    val canvasWidth = difference + uiOffset / 2
-                    val canvasHeight = frame.height - canvas.y // Restricting height to frame height
-
-                    altCanvas?.size = Dimension(canvasWidth, canvasHeight)
-                    altCanvas?.setLocation(0, canvas.y)
-                    canvas.setLocation(0, canvas.y)
-                } else {
-                    val difference = frame.width - (FIXED_WIDTH + uiOffset + currentScrollPaneWidth)
-                    GameShell.leftMargin = difference / 2
+            // Ensure the scroll wrapper stays attached on the EAST edge even if the game resets the layout
+            rightPanelWrapper?.let { wrapper ->
+                val needsLayoutReset = frame.layout !is BorderLayout
+                val needsAttach = wrapper.parent != frame
+                if (needsLayoutReset || needsAttach) {
+                    wrapper.parent?.remove(wrapper)
+                    frame.layout = BorderLayout()
+                    frame.add(wrapper, BorderLayout.EAST)
+                    if (altCanvas != null) {
+                        moveAltCanvasToFront()
+                    } else {
+                        moveCanvasToFront()
+                    }
                 }
             }
 
-            WindowMode.RESIZABLE -> {
-                GameShell.canvasWidth = frame.width - (currentScrollPaneWidth + uiOffset)
+            if(mode != WindowMode.FIXED) {
+                destroyAltCanvas()
+            } else if (useScaledFixed && altCanvas == null) {
+                initAltCanvas()
+            } else if (!useScaledFixed && altCanvas != null) {
+                // Was using scaled fixed but toggled the setting
+                // restore the original canvas
+                moveCanvasToFront()
+                destroyAltCanvas()
             }
+
+            when (mode) {
+                WindowMode.FIXED -> {
+                    if (frame.width < FIXED_WIDTH + currentScrollPaneWidth + uiOffset) {
+                        frame.setSize(FIXED_WIDTH + currentScrollPaneWidth + uiOffset, frame.height)
+                    }
+
+                    val difference = frame.width - (uiOffset + currentScrollPaneWidth)
+
+                    if (useScaledFixed) {
+                        GameShell.leftMargin = 0
+                        val canvasWidth = difference + uiOffset / 2
+                        val canvasHeight = frame.height - canvas.y // Restricting height to frame height
+
+                        altCanvas?.size = Dimension(canvasWidth, canvasHeight)
+                        altCanvas?.setLocation(0, canvas.y)
+                        canvas.setLocation(0, canvas.y)
+                    } else {
+                        val difference = frame.width - (FIXED_WIDTH + uiOffset + currentScrollPaneWidth)
+                        GameShell.leftMargin = difference / 2
+                    }
+                }
+
+                WindowMode.RESIZABLE -> {
+                    GameShell.canvasWidth = frame.width - (currentScrollPaneWidth + uiOffset)
+                }
+            }
+
+            rightPanelWrapper?.preferredSize = Dimension(currentScrollPaneWidth, frame.height)
+            rightPanelWrapper?.isDoubleBuffered = true
+            rightPanelWrapper?.revalidate()
+            rightPanelWrapper?.repaint()
+            frame.validate()
         }
 
-        rightPanelWrapper?.preferredSize = Dimension(currentScrollPaneWidth, frame.height)
-        rightPanelWrapper?.isDoubleBuffered = true
-        rightPanelWrapper?.revalidate()
-        rightPanelWrapper?.repaint()
+        if (SwingUtilities.isEventDispatchThread()) {
+            applyDisplaySettings()
+        } else {
+            SwingUtilities.invokeLater { applyDisplaySettings() }
+        }
     }
 
     fun OnKondoValueUpdated(){
@@ -409,10 +434,10 @@ class plugin : Plugin() {
     private fun searchHiscore(username: String): Runnable {
         return Runnable {
             setActiveView(HiscoresView.VIEW_NAME)
-            val customSearchField = hiScoreView?.let { HiscoresView.CustomSearchField(it) }
-
-            customSearchField?.searchPlayer(username) ?: run {
-                println("searchView is null or CustomSearchField creation failed.")
+            HiscoresView.hiScoreView?.let { hiscoresPanel ->
+                HiscoresView.searchPlayerForHiscores(username, hiscoresPanel)
+            } ?: run {
+                println("hiscoresPanel is null")
             }
         }
     }
@@ -440,22 +465,36 @@ class plugin : Plugin() {
 
             cardLayout = CardLayout()
             mainContentPanel = JPanel(cardLayout).apply {
-                border = BorderFactory.createEmptyBorder(0, 0, 0, 0)  // Removes any default border or padding
+                border = BorderFactory.createEmptyBorder(0, 0, 0, 0)
                 background = VIEW_BACKGROUND_COLOR
                 preferredSize = Dimension(MAIN_CONTENT_WIDTH, frame.height)
                 isOpaque = true
             }
 
-            // Register Views
-            createXPTrackerView()
-            createHiscoreSearchView()
-            createLootTrackerView()
-            createReflectiveEditorView()
+            val xpTrackerView = XPTrackerView
+            val hiscoresView = HiscoresView
+            val lootTrackerView = LootTrackerView
+            val reflectiveEditorView = ReflectiveEditorView
+            
+            xpTrackerView.createView()
+            hiscoresView.createView()
+            lootTrackerView.createView()
+            reflectiveEditorView.createView()
+            
+            views.add(xpTrackerView)
+            views.add(hiscoresView)
+            views.add(lootTrackerView)
+            views.add(reflectiveEditorView)
+            
+            xpTrackerView.registerFunctions()
+            hiscoresView.registerFunctions()
+            lootTrackerView.registerFunctions()
+            reflectiveEditorView.registerFunctions()
 
-            mainContentPanel.add(ScrollablePanel(xpTrackerView!!), XPTrackerView.VIEW_NAME)
-            mainContentPanel.add(ScrollablePanel(hiScoreView!!), HiscoresView.VIEW_NAME)
-            mainContentPanel.add(ScrollablePanel(lootTrackerView!!), LootTrackerView.VIEW_NAME)
-            mainContentPanel.add(ScrollablePanel(reflectiveEditorView!!), ReflectiveEditorView.VIEW_NAME)
+            mainContentPanel.add(ScrollablePanel(xpTrackerView.panel), xpTrackerView.name)
+            mainContentPanel.add(ScrollablePanel(hiscoresView.panel), hiscoresView.name)
+            mainContentPanel.add(ScrollablePanel(lootTrackerView.panel), lootTrackerView.name)
+            mainContentPanel.add(ScrollablePanel(reflectiveEditorView.panel), reflectiveEditorView.name)
 
             val navPanel = Panel().apply {
                 layout = BoxLayout(this, BoxLayout.Y_AXIS)
@@ -463,10 +502,10 @@ class plugin : Plugin() {
                 preferredSize = Dimension(NAVBAR_WIDTH, frame.height)
             }
 
-            navPanel.add(createNavButton(LVL_ICON, XPTrackerView.VIEW_NAME))
-            navPanel.add(createNavButton(MAG_SPRITE, HiscoresView.VIEW_NAME))
-            navPanel.add(createNavButton(LOOT_ICON, LootTrackerView.VIEW_NAME))
-            navPanel.add(createNavButton(WRENCH_ICON, ReflectiveEditorView.VIEW_NAME))
+            navPanel.add(createNavButton(xpTrackerView.iconSpriteId, xpTrackerView.name))
+            navPanel.add(createNavButton(hiscoresView.iconSpriteId, hiscoresView.name))
+            navPanel.add(createNavButton(lootTrackerView.iconSpriteId, lootTrackerView.name))
+            navPanel.add(createNavButton(reflectiveEditorView.iconSpriteId, reflectiveEditorView.name))
 
             val rightPanel = Panel(BorderLayout()).apply {
                 add(mainContentPanel, BorderLayout.CENTER)
@@ -481,45 +520,80 @@ class plugin : Plugin() {
                 verticalScrollBarPolicy = JScrollPane.VERTICAL_SCROLLBAR_NEVER
             }
 
-            frame.layout = BorderLayout()
-            rightPanelWrapper?.let {
-                frame.add(it, BorderLayout.EAST)
+            val desiredView = if (launchMinimized) HIDDEN_VIEW else xpTrackerView.name
+            // Commit layout synchronously on the EDT to avoid initial misplacement
+            val commit = Runnable {
+                frame.layout = BorderLayout()
+                rightPanelWrapper?.let { frame.add(it, BorderLayout.EAST) }
+                setActiveView(desiredView)
+                frame.validate()
+                frame.repaint()
             }
-
-            if(launchMinimized){
-                setActiveView(HIDDEN_VIEW)
+            if (SwingUtilities.isEventDispatchThread()) {
+                commit.run()
             } else {
-                setActiveView(XPTrackerView.VIEW_NAME)
+                try {
+                    SwingUtilities.invokeAndWait(commit)
+                } catch (e: Exception) {
+                    // Fallback to async if invokeAndWait fails for any reason
+                    SwingUtilities.invokeLater(commit)
+                }
             }
             initialized = true
             pluginsReloaded = true
+            updateDisplaySettings()
         }
     }
 
     private fun setActiveView(viewName: String) {
-        // Handle the visibility of the main content panel
-        if (viewName == HIDDEN_VIEW) {
-            mainContentPanel.isVisible = false
-        } else {
-            if (!mainContentPanel.isVisible) {
-                mainContentPanel.isVisible = true
+        val runUpdate: () -> Unit = {
+            // Track visibility change to decide if we need to resize/reload interfaces
+            val wasVisible = mainContentPanel.isVisible
+
+            // Handle the visibility of the main content panel and card switch
+            if (viewName == HIDDEN_VIEW) {
+                mainContentPanel.isVisible = false
+            } else {
+                if (!mainContentPanel.isVisible) {
+                    mainContentPanel.isVisible = true
+                }
+                cardLayout.show(mainContentPanel, viewName)
             }
-            cardLayout.show(mainContentPanel, viewName)
+
+            val visibilityChanged = wasVisible != mainContentPanel.isVisible
+
+            // Batch painting to avoid intermediate repaints
+            rightPanelWrapper?.ignoreRepaint = true
+            try {
+                if (visibilityChanged) {
+                    // Only touch layout and client interfaces if width actually changes
+                    updateDisplaySettings()
+                    reloadInterfaces = true
+                    rightPanelWrapper?.revalidate()
+                    frame?.validate()
+                } else {
+                    // Just a card switch; avoid full frame revalidate
+                    mainContentPanel.revalidate()
+                }
+            } finally {
+                rightPanelWrapper?.ignoreRepaint = false
+            }
+
+            // Targeted repaint for snappy feedback
+            if (visibilityChanged) {
+                rightPanelWrapper?.repaint()
+                frame?.repaint()
+            } else {
+                mainContentPanel.repaint()
+            }
+            StateManager.focusedView = viewName
         }
 
-        reloadInterfaces = true
-        updateDisplaySettings()
-
-        // Revalidate and repaint necessary panels
-        mainContentPanel.revalidate()
-        rightPanelWrapper?.revalidate()
-        frame?.revalidate()
-
-        mainContentPanel.repaint()
-        rightPanelWrapper?.repaint()
-        frame?.repaint()
-
-        focusedView = viewName
+        if (SwingUtilities.isEventDispatchThread()) {
+            runUpdate()
+        } else {
+            SwingUtilities.invokeLater { runUpdate() }
+        }
     }
 
     private fun createNavButton(spriteId: Int, viewName: String): JPanel {
@@ -535,36 +609,29 @@ class plugin : Plugin() {
             }
             lastClickTime = currentTime
 
-            if (focusedView == viewName) {
+            if (StateManager.focusedView == viewName) {
                 setActiveView("HIDDEN")
             } else {
                 setActiveView(viewName)
             }
         }
 
-        // ImageCanvas with forced size
         val imageCanvas = ImageCanvas(bufferedImageSprite).apply {
             background = WIDGET_COLOR
-            preferredSize = imageSize
-            maximumSize = imageSize
-            minimumSize = imageSize
+            setFixedSize(imageSize)
         }
 
         // Wrapping the ImageCanvas in another JPanel to prevent stretching
         val imageCanvasWrapper = JPanel().apply {
             layout = GridBagLayout() // Keeps the layout of the wrapped panel minimal
-            preferredSize = imageSize
-            maximumSize = imageSize
-            minimumSize = imageSize
+            setFixedSize(imageSize)
             isOpaque = false // No background for the wrapper
             add(imageCanvas) // Adding ImageCanvas directly, layout won't stretch it
         }
 
         val panelButton = JPanel().apply {
             layout = GridBagLayout()
-            preferredSize = buttonSize
-            maximumSize = buttonSize
-            minimumSize = buttonSize
+            setFixedSize(buttonSize)
             background = WIDGET_COLOR
             isOpaque = true
 
@@ -575,7 +642,6 @@ class plugin : Plugin() {
 
             add(imageCanvasWrapper, gbc)
 
-            // Hover and click behavior
             val hoverListener = object : MouseAdapter() {
                 override fun mouseEntered(e: MouseEvent?) {
                     background = WIDGET_COLOR.darker()
@@ -666,7 +732,7 @@ class plugin : Plugin() {
     }
 
     private fun loadFont(): Font? {
-        val fontStream = plugin::class.java.getResourceAsStream("res/runescape_small.ttf")
+        val fontStream = Helpers.openResource("res/runescape_small.ttf")
         return if (fontStream != null) {
             try {
                 val font = Font.createFont(Font.TRUETYPE_FONT, fontStream)
