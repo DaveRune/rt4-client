@@ -14,7 +14,7 @@ public final class DisplayMode {
 	@OriginalMember(owner = "client!ib", name = "i", descriptor = "[Lclient!od;")
 	public static DisplayMode[] aClass114Array1;
 	@OriginalMember(owner = "client!rc", name = "M", descriptor = "Z")
-	public static boolean aBoolean73 = false;
+	public static boolean start_GLRenderer = false;
 	@OriginalMember(owner = "client!jk", name = "y", descriptor = "Z")
 	public static boolean resizable = false;
 	@OriginalMember(owner = "client!hi", name = "f", descriptor = "J")
@@ -94,6 +94,10 @@ public final class DisplayMode {
 				Preferences.write(GameShell.signLink);
 			}
 		}
+		/**
+		 * If somehow the above code block fails to produce a frame for Fullscreen then this block is a safeguard
+		 * to fall back to Standard Mode.
+ 		 */
 		if (newMode == 3 && GameShell.fullScreenFrame == null) {
 			setWindowMode(true, Preferences.favoriteWorlds, true, currentMode, -1, -1);
 			return;
@@ -125,6 +129,11 @@ public final class DisplayMode {
 			GameShell.canvasWidth = 765;
 			GameShell.canvasHeight = 503;
 		}
+		/**
+		 * This code bock executes for Fullscreen mode and removes current canvas in main frame window
+		 * with a new canvas for the fullscreen frame window. Else if no canvas is replaced then just makes
+		 * size adjustments to current canvas.
+		 */
 		if (replaceCanvas) {
 			Keyboard.stop(GameShell.canvas);
 			Mouse.stop(GameShell.canvas);
@@ -149,12 +158,18 @@ public final class DisplayMode {
 				GameShell.canvas.setLocation(GameShell.leftMargin, GameShell.topMargin);
 			}
 		}
+		/**
+		 * newMode 0 is no mode, so this would be a reset of the canvas and glrenderer
+		 */
 		if (newMode == 0 && currentMode > 0) {
 			GlRenderer.createAndDestroyContext(GameShell.canvas);
 		}
+		/**
+		 *  This Code block starts on mode 1=HD,2=HDResize,3=Fullscreen. It also Starts the GLrenderer.
+		 */
 		if (useHD && newMode > 0) {
 			GameShell.canvas.setIgnoreRepaint(true);
-			if (!aBoolean73) {
+			if (!start_GLRenderer) {
 				SceneGraph.clear();
 				SoftwareRaster.frameBuffer = null;
 				SoftwareRaster.frameBuffer = FrameBuffer.create(GameShell.canvasHeight, GameShell.canvasWidth, GameShell.canvas);
@@ -169,7 +184,7 @@ public final class DisplayMode {
 					SoftwareRaster.frameBuffer.draw(graphics);
 				} catch (@Pc(277) Exception local277) {
 				}
-				GameShell.method2704();
+				GameShell.method2704(); // Creates a black background for SD Mode window, gameplay frame will render on top of.
 				if (currentMode == 0) {
 					if(resizableSD)
 						SoftwareRaster.frameBuffer = FrameBuffer.create(GameShell.frameHeight, GameShell.frameWidth, GameShell.canvas);
@@ -181,12 +196,11 @@ public final class DisplayMode {
 
 				/**
 				 * Code below tries to trigger GLProfile.initSingleton() through a queue in PrivilegedRequest where it waits
-				 * for its turn. This along with the while loop waits to return status code 1 which causes
-				 * lag and delay when switching to HD Mode.
+				 * for its turn. This along with the while loop waits long enough to cause a desync in the start process which causes
+				 * lag and delay when switching to HD Mode and when launchingt he client in HD Mode.
 				 * GLProfile.initSingleton() is automatically run starting with jogl 2.0 and later. So no need to execute it.
-				 * After it returns status code 1, it also sets an important variable aBoolean73 to true
-				 * when the queue executes successfully.
-				 * This triggers the needed GLRenderer.init() function which we can control to be true manually.
+				 * After it returns status code 1, it also sets an important variable aBoolean73(Start_Renderer) to true.
+				 * This triggers the needed GLRenderer.init() function which we can control to be true manually as intended.
 				 **/
 
 				/**
@@ -199,16 +213,20 @@ public final class DisplayMode {
 				 }
 				 */
 
-				aBoolean73 = true; // Manually set here to allow GLRenderer.init() to execute.
+				start_GLRenderer = true; // Manually set here to allow GLRenderer.init() to execute.
 			}
-			if (aBoolean73) {
+			if (start_GLRenderer) {
 				GlRenderer.init(GameShell.canvas, Preferences.antiAliasingMode * 2);
 			}
 		}
+		// If HD Mode fails, this restarts the whole process to enter into SD Mode
 		if (!GlRenderer.enabled && newMode > 0) {
 			setWindowMode(true, 0, true, currentMode, -1, -1);
 			return;
 		}
+		/**
+		 * Executes once when the client is launched. Doesn't need to be executed more than that.
+		 */
 		if (newMode > 0 && currentMode == 0) {
 			GameShell.thread.setPriority(5);
 			SoftwareRaster.frameBuffer = null;
@@ -218,7 +236,7 @@ public final class DisplayMode {
 				Rasteriser.setBrightness(0.7F);
 			}
 			LoginManager.method4637();
-		} else if (newMode == 0 && currentMode > 0) {
+		} else if (newMode == 0 && currentMode > 0) { // This is when client switches from any other mode to SD Mode
 			GameShell.thread.setPriority(1);
 			if(resizableSD)
 				SoftwareRaster.frameBuffer = FrameBuffer.create(GameShell.frameHeight, GameShell.frameWidth, GameShell.canvas);
@@ -248,7 +266,7 @@ public final class DisplayMode {
 		if (useHD) {
 			client.method2721();
 		}
-		resizable = newMode >= 2;
+		resizable = newMode == 2; // resizeable should only be done in HD-Resizeable mode and full screen mode.
 		if (InterfaceList.topLevelInterface != -1) {
 			InterfaceList.method3712(true);
 		}

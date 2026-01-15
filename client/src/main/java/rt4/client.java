@@ -840,6 +840,12 @@ public final class client extends GameShell {
 				DisplayMode.aLong89 = MonotonicClock.currentTimeMillis() + 500L;
 			}
 		}
+		/**
+		 *  If the game is running fine and is in fullscreen mode and a user wants to leave the mode then
+		 *  this  will reset the window to Standard mode and exist fullscreen.
+		 *  This line can also launch back into full screen when out of focus and refocused by mode 3
+		 *  with the right width and height, by Preference.width and Preference.height.
+		 */
 		if (GameShell.fullScreenFrame != null && !GameShell.focus && (gameState == 30 || gameState == 10)) {
 			DisplayMode.setWindowMode(false, Preferences.favoriteWorlds, -1, -1);
 		}
@@ -849,7 +855,7 @@ public final class client extends GameShell {
 			GameShell.fullRedraw = false;
 		}
 		if (local158) {
-			GameShell.method2704();
+			GameShell.method2704(); // Creates a black background for SD Mode gameplay frame to render on top of.
 		}
 		if (GlRenderer.enabled) {
 			for (local80 = 0; local80 < 100; local80++) {
