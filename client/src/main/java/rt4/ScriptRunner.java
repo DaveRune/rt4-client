@@ -4668,6 +4668,7 @@ public final class ScriptRunner {
 														if (int1 < 0 || int1 > 2) {
 															int1 = 0;
 														}
+														// Gets called on every mode change.
 														DisplayMode.setWindowMode(false, int1, -1, -1);
 														continue;
 													}
