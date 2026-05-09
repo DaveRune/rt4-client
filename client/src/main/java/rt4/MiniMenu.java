@@ -606,11 +606,17 @@ public class MiniMenu {
 		}
 		if (actionCode == WALK_HERE) {
 			if (local36 == 0) {
+				if (API.IsRoofVisibilityActive()) {
+					API.ClearDestinationRoofTarget();
+				}
 				method3556(Player.plane, local15, local19);
 			} else if (local36 == 1) {
 				if (LoginManager.staffModLevel > 0 && Keyboard.pressedKeys[Keyboard.KEY_CTRL] && Keyboard.pressedKeys[Keyboard.KEY_SHIFT]) {
 					Cheat.teleport(Camera.originX + local15, Camera.originZ + local19, Player.plane);
 				} else if (PathFinder.findPath(PlayerList.self.movementQueueZ[0], 0, 0, true, 0, local15, 0, 0, 1, local19, PlayerList.self.movementQueueX[0])) {
+					if (API.IsRoofVisibilityActive()) {
+						API.SetDestinationRoofTarget(local15, local19);
+					}
 					Protocol.outboundBuffer.p1(InterfaceList.anInt5);
 					Protocol.outboundBuffer.p1(anInt2878);
 					Protocol.outboundBuffer.p2((int) Camera.yawTarget);

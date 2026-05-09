@@ -4,6 +4,7 @@ import com.jogamp.opengl.GL2;
 import org.openrs2.deob.annotation.OriginalArg;
 import org.openrs2.deob.annotation.OriginalMember;
 import org.openrs2.deob.annotation.Pc;
+import plugin.api.API;
 
 public class SceneGraph {
 
@@ -1744,7 +1745,7 @@ public class SceneGraph {
 												}
 												if (local153.plainTile == null) {
 													if (local153.shapedTile != null) {
-														method2762(local153.shapedTile, anInt2886, anInt3038, anInt5205, anInt2222, local18, local21, method187(0, local18, local21));
+														method2762(local153.shapedTile, anInt2886, anInt3038, anInt5205, anInt2222, local18, local21, 0, method187(0, local18, local21));
 													}
 												} else
 													method2610(local153.plainTile, 0, anInt2886, anInt3038, anInt5205, anInt2222, local18, local21, method187(0, local18, local21));
@@ -1776,10 +1777,10 @@ public class SceneGraph {
 											if (local8.plainTile == null) {
 												if (local8.shapedTile != null) {
 													if (method187(local27, local18, local21)) {
-														method2762(local8.shapedTile, anInt2886, anInt3038, anInt5205, anInt2222, local18, local21, true);
+														method2762(local8.shapedTile, anInt2886, anInt3038, anInt5205, anInt2222, local18, local21, local27, true);
 													} else {
 														var24 = true;
-														method2762(local8.shapedTile, anInt2886, anInt3038, anInt5205, anInt2222, local18, local21, false);
+														method2762(local8.shapedTile, anInt2886, anInt3038, anInt5205, anInt2222, local18, local21, local27, false);
 													}
 												}
 											} else if (method187(local27, local18, local21)) {
@@ -3915,6 +3916,9 @@ public class SceneGraph {
 				MiniMenu.anInt1742 = arg6;
 				MiniMenu.anInt2954 = arg7;
 			}
+			if (API.IsRoofVisibilityPicking() && method583(API.GetRoofVisibilityPickScreenX() + Rasteriser.centerX, API.GetRoofVisibilityPickScreenY() + Rasteriser.centerY, local315, local331, local299, local307, local323, local291)) {
+				API.ReportRoofVisibilityTile(arg6, arg7, arg1);
+			}
 			if (!GlRenderer.enabled && !arg8) {
 				Rasteriser.testX = local307 < 0 || local323 < 0 || local291 < 0 || local307 > Rasteriser.width || local323 > Rasteriser.width || local291 > Rasteriser.width;
 				if (arg0.anInt4869 == -1) {
@@ -3937,6 +3941,9 @@ public class SceneGraph {
 		if (MiniMenu.aBoolean187 && method583(MiniMenu.anInt2388 + Rasteriser.centerX, MiniMenu.anInt3259 + Rasteriser.centerY, local283, local299, local331, local275, local291, local323)) {
 			MiniMenu.anInt1742 = arg6;
 			MiniMenu.anInt2954 = arg7;
+		}
+		if (API.IsRoofVisibilityPicking() && method583(API.GetRoofVisibilityPickScreenX() + Rasteriser.centerX, API.GetRoofVisibilityPickScreenY() + Rasteriser.centerY, local283, local299, local331, local275, local291, local323)) {
+			API.ReportRoofVisibilityTile(arg6, arg7, arg1);
 		}
 		if (GlRenderer.enabled || arg8) {
 			return;
@@ -4225,7 +4232,7 @@ public class SceneGraph {
 	}
 
 	@OriginalMember(owner = "client!lh", name = "a", descriptor = "(Lclient!fg;IIIIIIZ)V")
-	public static void method2762(@OriginalArg(0) ShapedTile arg0, @OriginalArg(1) int arg1, @OriginalArg(2) int arg2, @OriginalArg(3) int arg3, @OriginalArg(4) int arg4, @OriginalArg(5) int arg5, @OriginalArg(6) int arg6, @OriginalArg(7) boolean arg7) {
+	public static void method2762(@OriginalArg(0) ShapedTile arg0, @OriginalArg(1) int arg1, @OriginalArg(2) int arg2, @OriginalArg(3) int arg3, @OriginalArg(4) int arg4, @OriginalArg(5) int arg5, @OriginalArg(6) int arg6, int arg7, @OriginalArg(7) boolean arg8) {
 		@Pc(3) int local3 = arg0.anIntArray168.length;
 		@Pc(5) int local5;
 		@Pc(15) int local15;
@@ -4268,7 +4275,10 @@ public class SceneGraph {
 					MiniMenu.anInt1742 = arg5;
 					MiniMenu.anInt2954 = arg6;
 				}
-				if (!GlRenderer.enabled && !arg7) {
+				if (API.IsRoofVisibilityPicking() && method583(API.GetRoofVisibilityPickScreenX() + Rasteriser.centerX, API.GetRoofVisibilityPickScreenY() + Rasteriser.centerY, local156, local160, local164, local39, local148, local152)) {
+					API.ReportRoofVisibilityTile(arg5, arg6, arg7);
+				}
+				if (!GlRenderer.enabled && !arg8) {
 					Rasteriser.testX = local39 < 0 || local148 < 0 || local152 < 0 || local39 > Rasteriser.width || local148 > Rasteriser.width || local152 > Rasteriser.width;
 					if (arg0.anIntArray161 == null || arg0.anIntArray161[local5] == -1) {
 						if (arg0.anIntArray167[local5] != 12345678) {

@@ -4,6 +4,7 @@ import org.openrs2.deob.annotation.OriginalArg;
 import org.openrs2.deob.annotation.OriginalClass;
 import org.openrs2.deob.annotation.OriginalMember;
 import org.openrs2.deob.annotation.Pc;
+import plugin.api.API;
 
 @OriginalClass("client!w")
 public final class SoftwareModel extends Model {
@@ -833,7 +834,9 @@ public final class SoftwareModel extends Model {
 		@Pc(223) int x;
 		@Pc(208) int y;
 		@Pc(227) int z;
-		if (key > 0L && RawModel.allowInput && d > 0) {
+		@Pc(229) boolean roofVisibilityLocPick = API.IsRoofVisibilityLocPickable(key);
+		@Pc(232) boolean miniMenuPick = key > 0L;
+		if ((miniMenuPick || roofVisibilityLocPick) && RawModel.allowInput && d > 0) {
 			if (e > 0) {
 				v = maxScreenX / c;
 				y = minScreenX / d;
@@ -893,7 +896,12 @@ public final class SoftwareModel extends Model {
 				}
 				if (GlModel.anInt3582 >= v && GlModel.anInt3582 <= y && RawModel.anInt1053 >= x && RawModel.anInt1053 <= z) {
 					if (this.pickable) {
-						Model.aLongArray11[MiniMenu.anInt7++] = key;
+						if (miniMenuPick) {
+							Model.aLongArray11[MiniMenu.anInt7++] = key;
+						}
+						if (roofVisibilityLocPick) {
+							API.ReportRoofVisibilityLoc(key, arg9);
+						}
 					} else {
 						local190 = true;
 					}
@@ -933,7 +941,7 @@ public final class SoftwareModel extends Model {
 			}
 		}
 		try {
-			this.draw(project1, local190, key, b - d, c - d + 2, arg10);
+			this.draw(project1, local190, key, b - d, c - d + 2, arg9, arg10);
 		} catch (@Pc(713) Exception ex) {
 			ex.printStackTrace();
 		}
@@ -1148,7 +1156,7 @@ public final class SoftwareModel extends Model {
 					projectSceneZ[local52] = local71;
 				}
 			}
-			this.draw(false, arg6 >= 0L, arg6, this.aShort35, this.aShort35 << 1, null);
+			this.draw(false, arg6 >= 0L || API.IsRoofVisibilityLocPickable(arg6), arg6, this.aShort35, this.aShort35 << 1, Player.plane, null);
 		} catch (@Pc(240) RuntimeException local240) {
 		}
 	}
@@ -1583,7 +1591,7 @@ public final class SoftwareModel extends Model {
 	}
 
 	@OriginalMember(owner = "client!w", name = "a", descriptor = "(ZZJIILclient!ga;)V")
-	private void draw(@OriginalArg(0) boolean arg0, @OriginalArg(1) boolean arg1, @OriginalArg(2) long arg2, @OriginalArg(3) int arg3, @OriginalArg(4) int arg4, @OriginalArg(5) ParticleSystem arg5) {
+	private void draw(@OriginalArg(0) boolean arg0, @OriginalArg(1) boolean arg1, @OriginalArg(2) long arg2, @OriginalArg(3) int arg3, @OriginalArg(4) int arg4, int roofHidePlane, @OriginalArg(5) ParticleSystem arg5) {
 		if (arg4 >= 1600) {
 			return;
 		}
@@ -1659,7 +1667,12 @@ public final class SoftwareModel extends Model {
 					}
 				} else {
 					if (arg1 && this.pointWithinTriangle(GlModel.anInt3582 + Rasteriser.centerX, RawModel.anInt1053 + Rasteriser.centerY, vertexScreenY[local51], vertexScreenY[local56], vertexScreenY[pri], local65, local69, local73)) {
-						Model.aLongArray11[MiniMenu.anInt7++] = arg2;
+						if (arg2 >= 0L) {
+							Model.aLongArray11[MiniMenu.anInt7++] = arg2;
+						}
+						if (API.IsRoofVisibilityLocPickable(arg2)) {
+							API.ReportRoofVisibilityLoc(arg2, roofHidePlane);
+						}
 						arg1 = false;
 					}
 					if ((local65 - local69) * (vertexScreenY[pri] - vertexScreenY[local56]) - (vertexScreenY[local51] - vertexScreenY[local56]) * (local73 - local69) > 0) {
@@ -1946,7 +1959,7 @@ public final class SoftwareModel extends Model {
 					projectSceneZ[local52] = local71;
 				}
 			}
-			this.draw(false, false, 0L, this.aShort35, this.aShort35 << 1, null);
+			this.draw(false, false, 0L, this.aShort35, this.aShort35 << 1, Player.plane, null);
 		} catch (@Pc(234) RuntimeException local234) {
 		}
 	}
