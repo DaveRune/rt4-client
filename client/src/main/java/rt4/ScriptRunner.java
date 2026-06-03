@@ -4,6 +4,7 @@ import org.openrs2.deob.annotation.OriginalArg;
 import org.openrs2.deob.annotation.OriginalMember;
 import org.openrs2.deob.annotation.Pc;
 import plugin.PluginRepository;
+import plugin.api.API;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Calendar;
@@ -116,15 +117,15 @@ public final class ScriptRunner {
 	@OriginalMember(owner = "client!vg", name = "c", descriptor = "Z")
 	public static boolean aBoolean299 = false;
 	@OriginalMember(owner = "client!lj", name = "z", descriptor = "[I")
-	public static int[] anIntArray338 = new int[2];
+	public static int[] anIntArray338 = new int[8];
 	@OriginalMember(owner = "client!vl", name = "i", descriptor = "[I")
-	public static int[] anIntArray518 = new int[2];
+	public static int[] anIntArray518 = new int[8];
 	@OriginalMember(owner = "client!tk", name = "K", descriptor = "[I")
-	public static int[] anIntArray476 = new int[2];
+	public static int[] anIntArray476 = new int[8];
 	@OriginalMember(owner = "client!e", name = "xc", descriptor = "[I")
-	public static int[] anIntArray134 = new int[2];
+	public static int[] anIntArray134 = new int[8];
 	@OriginalMember(owner = "client!ge", name = "k", descriptor = "[I")
-	public static int[] anIntArray205 = new int[2];
+	public static int[] anIntArray205 = new int[8];
 	@OriginalMember(owner = "client!nm", name = "W", descriptor = "Lclient!na;")
 	public static JagString url;
 	@OriginalMember(owner = "client!bf", name = "B", descriptor = "I")
@@ -976,12 +977,16 @@ public final class ScriptRunner {
 			method2608();
 		} else {
 			method960((byte) (anInt3325 - 4 & 0xFF));
-			method3993(2);
+			method3993(API.GetRoofVisibilityGroupLimit());
 		}
 	}
 
 	@OriginalMember(owner = "client!tc", name = "a", descriptor = "(B)I")
 	public static int method4047() {
+		return getBaseRoofMode();
+	}
+
+	private static int getBaseRoofMode() {
 		if (neverRemoveRoofs) {
 			return 0;
 		} else if (SceneGraph.allLevelsAreVisible()) {
@@ -990,6 +995,11 @@ public final class ScriptRunner {
 			return 1;
 		}
 	}
+
+	public static boolean canUseSelectiveRoofHiding() {
+		return getBaseRoofMode() == 2;
+	}
+
 
 	@OriginalMember(owner = "client!ok", name = "a", descriptor = "(IIB)Lclient!ce;")
 	public static SecondaryLinkedList method3333(@OriginalArg(0) int arg0, @OriginalArg(1) int arg1) {
@@ -1042,18 +1052,31 @@ public final class ScriptRunner {
 
 	@OriginalMember(owner = "client!uj", name = "a", descriptor = "(BZII[[[Lclient!bj;I)Z")
 	public static boolean method4348(@OriginalArg(1) boolean arg0, @OriginalArg(2) int arg1, @OriginalArg(3) int arg2, @OriginalArg(4) Tile[][][] arg3, @OriginalArg(5) int arg4) {
-		@Pc(14) byte local14 = arg0 ? 1 : (byte) (anInt3325 & 0xFF);
-		if (local14 == aByteArrayArrayArray15[Player.plane][arg1][arg2]) {
+		return method4348(arg0, arg1, arg2, arg3, arg4, Player.plane);
+	}
+
+
+	public static boolean hideRoofAt(int sceneX, int sceneZ, int group, int plane) {
+		return method4348(false, sceneX, sceneZ, SceneGraph.tiles, group, plane);
+	}
+
+	private static boolean method4348(boolean arg0, int arg1, int arg2, Tile[][][] arg3, int arg4, int plane) {
+		if (plane < 0 || plane >= 3) {
 			return false;
-		} else if ((SceneGraph.renderFlags[Player.plane][arg1][arg2] & 0x4) == 0) {
+		}
+		@Pc(14) byte local14 = arg0 ? 1 : (byte) (anInt3325 & 0xFF);
+		if (local14 == aByteArrayArrayArray15[plane][arg1][arg2]) {
+			return false;
+		} else if ((SceneGraph.renderFlags[plane][arg1][arg2] & API.TILE_FLAG_UNDER_ROOF) == 0) {
 			return false;
 		} else {
+			API.BeginRoofVisibilityGroup(arg4);
 			@Pc(47) int local47 = 0;
 			@Pc(49) byte local49 = 0;
 			PathFinder.queueX[0] = arg1;
 			@Pc(69) int local69 = local49 + 1;
 			PathFinder.queueZ[0] = arg2;
-			aByteArrayArrayArray15[Player.plane][arg1][arg2] = local14;
+			aByteArrayArrayArray15[plane][arg1][arg2] = local14;
 			while (local47 != local69) {
 				@Pc(94) int local94 = PathFinder.queueX[local47] >> 16 & 0xFF;
 				@Pc(102) int local102 = PathFinder.queueX[local47] >> 24 & 0xFF;
@@ -1063,13 +1086,13 @@ public final class ScriptRunner {
 				local47 = local47 + 1 & 0xFFF;
 				@Pc(130) boolean local130 = false;
 				@Pc(132) boolean local132 = false;
-				if ((SceneGraph.renderFlags[Player.plane][local108][local122] & 0x4) == 0) {
+				if ((SceneGraph.renderFlags[plane][local108][local122] & API.TILE_FLAG_UNDER_ROOF) == 0) {
 					local130 = true;
 				}
 				@Pc(150) int local150;
 				@Pc(191) int local191;
 				label238:
-				for (local150 = Player.plane + 1; local150 <= 3; local150++) {
+				for (local150 = plane + 1; local150 <= 3; local150++) {
 					if ((SceneGraph.renderFlags[local150][local108][local122] & 0x8) == 0) {
 						@Pc(227) int local227;
 						@Pc(358) int local358;
@@ -1124,8 +1147,8 @@ public final class ScriptRunner {
 					}
 				}
 				if (local132) {
-					if (SceneGraph.tileHeights[Player.plane + 1][local108][local122] > anIntArray205[arg4]) {
-						anIntArray205[arg4] = SceneGraph.tileHeights[Player.plane + 1][local108][local122];
+					if (SceneGraph.tileHeights[plane + 1][local108][local122] > anIntArray205[arg4]) {
+						anIntArray205[arg4] = SceneGraph.tileHeights[plane + 1][local108][local122];
 					}
 					local150 = local108 << 7;
 					if (local150 < anIntArray338[arg4]) {
@@ -1139,60 +1162,61 @@ public final class ScriptRunner {
 					} else if (anIntArray134[arg4] < local191) {
 						anIntArray134[arg4] = local191;
 					}
+					API.AddRoofVisibilityGroupTile(arg4, plane, local108, local122);
 				}
 				if (!local130) {
-					if (local108 >= 1 && aByteArrayArrayArray15[Player.plane][local108 - 1][local122] != local14) {
+					if (local108 >= 1 && aByteArrayArrayArray15[plane][local108 - 1][local122] != local14) {
 						PathFinder.queueX[local69] = local108 - 1 | 0x120000 | 0xD3000000;
 						PathFinder.queueZ[local69] = local122 | 0x130000;
 						local69 = local69 + 1 & 0xFFF;
-						aByteArrayArrayArray15[Player.plane][local108 - 1][local122] = local14;
+						aByteArrayArrayArray15[plane][local108 - 1][local122] = local14;
 					}
 					local122++;
 					if (local122 < 104) {
-						if (local108 - 1 >= 0 && local14 != aByteArrayArrayArray15[Player.plane][local108 - 1][local122] && (SceneGraph.renderFlags[Player.plane][local108][local122] & 0x4) == 0 && (SceneGraph.renderFlags[Player.plane][local108 - 1][local122 - 1] & 0x4) == 0) {
+						if (local108 - 1 >= 0 && local14 != aByteArrayArrayArray15[plane][local108 - 1][local122] && (SceneGraph.renderFlags[plane][local108][local122] & API.TILE_FLAG_UNDER_ROOF) == 0 && (SceneGraph.renderFlags[plane][local108 - 1][local122 - 1] & API.TILE_FLAG_UNDER_ROOF) == 0) {
 							PathFinder.queueX[local69] = 0x52000000 | 0x120000 | local108 - 1;
 							PathFinder.queueZ[local69] = local122 | 0x130000;
-							aByteArrayArrayArray15[Player.plane][local108 - 1][local122] = local14;
+							aByteArrayArrayArray15[plane][local108 - 1][local122] = local14;
 							local69 = local69 + 1 & 0xFFF;
 						}
-						if (local14 != aByteArrayArrayArray15[Player.plane][local108][local122]) {
+						if (local14 != aByteArrayArrayArray15[plane][local108][local122]) {
 							PathFinder.queueX[local69] = local108 | 0x13000000 | 0x520000;
 							PathFinder.queueZ[local69] = local122 | 0x530000;
 							local69 = local69 + 1 & 0xFFF;
-							aByteArrayArrayArray15[Player.plane][local108][local122] = local14;
+							aByteArrayArrayArray15[plane][local108][local122] = local14;
 						}
-						if (local108 + 1 < 104 && aByteArrayArrayArray15[Player.plane][local108 + 1][local122] != local14 && (SceneGraph.renderFlags[Player.plane][local108][local122] & 0x4) == 0 && (SceneGraph.renderFlags[Player.plane][local108 + 1][local122 - 1] & 0x4) == 0) {
+						if (local108 + 1 < 104 && aByteArrayArrayArray15[plane][local108 + 1][local122] != local14 && (SceneGraph.renderFlags[plane][local108][local122] & API.TILE_FLAG_UNDER_ROOF) == 0 && (SceneGraph.renderFlags[plane][local108 + 1][local122 - 1] & API.TILE_FLAG_UNDER_ROOF) == 0) {
 							PathFinder.queueX[local69] = 0x92000000 | 0x520000 | local108 + 1;
 							PathFinder.queueZ[local69] = local122 | 0x530000;
-							aByteArrayArrayArray15[Player.plane][local108 + 1][local122] = local14;
+							aByteArrayArrayArray15[plane][local108 + 1][local122] = local14;
 							local69 = local69 + 1 & 0xFFF;
 						}
 					}
 					local122--;
-					if (local108 + 1 < 104 && local14 != aByteArrayArrayArray15[Player.plane][local108 + 1][local122]) {
+					if (local108 + 1 < 104 && local14 != aByteArrayArrayArray15[plane][local108 + 1][local122]) {
 						PathFinder.queueX[local69] = local108 + 1 | 0x920000 | 0x53000000;
 						PathFinder.queueZ[local69] = local122 | 0x930000;
-						aByteArrayArrayArray15[Player.plane][local108 + 1][local122] = local14;
+						aByteArrayArrayArray15[plane][local108 + 1][local122] = local14;
 						local69 = local69 + 1 & 0xFFF;
 					}
 					local122--;
 					if (local122 >= 0) {
-						if (local108 - 1 >= 0 && aByteArrayArrayArray15[Player.plane][local108 - 1][local122] != local14 && (SceneGraph.renderFlags[Player.plane][local108][local122] & 0x4) == 0 && (SceneGraph.renderFlags[Player.plane][local108 - 1][local122 + 1] & 0x4) == 0) {
+						if (local108 - 1 >= 0 && aByteArrayArrayArray15[plane][local108 - 1][local122] != local14 && (SceneGraph.renderFlags[plane][local108][local122] & API.TILE_FLAG_UNDER_ROOF) == 0 && (SceneGraph.renderFlags[plane][local108 - 1][local122 + 1] & API.TILE_FLAG_UNDER_ROOF) == 0) {
 							PathFinder.queueX[local69] = local108 - 1 | 0xD20000 | 0x12000000;
 							PathFinder.queueZ[local69] = local122 | 0xD30000;
-							aByteArrayArrayArray15[Player.plane][local108 - 1][local122] = local14;
+							aByteArrayArrayArray15[plane][local108 - 1][local122] = local14;
 							local69 = local69 + 1 & 0xFFF;
 						}
-						if (local14 != aByteArrayArrayArray15[Player.plane][local108][local122]) {
+						if (local14 != aByteArrayArrayArray15[plane][local108][local122]) {
 							PathFinder.queueX[local69] = local108 | 0xD20000 | 0x93000000;
 							PathFinder.queueZ[local69] = local122 | 0xD30000;
 							local69 = local69 + 1 & 0xFFF;
-							aByteArrayArrayArray15[Player.plane][local108][local122] = local14;
+							aByteArrayArrayArray15[plane][local108][local122] = local14;
 						}
-						if (local108 + 1 < 104 && aByteArrayArrayArray15[Player.plane][local108 + 1][local122] != local14 && (SceneGraph.renderFlags[Player.plane][local108][local122] & 0x4) == 0 && (SceneGraph.renderFlags[Player.plane][local108 + 1][local122 + 1] & 0x4) == 0) {
+						if (local108 + 1 < 104 && aByteArrayArrayArray15[plane][local108 + 1][local122] != local14 && (SceneGraph.renderFlags[plane][local108][local122] & API.TILE_FLAG_UNDER_ROOF) == 0 && (SceneGraph.renderFlags[plane][local108 + 1][local122 + 1] & API.TILE_FLAG_UNDER_ROOF) == 0) {
 							PathFinder.queueX[local69] = local108 + 1 | 0xD2000000 | 0x920000;
 							PathFinder.queueZ[local69] = local122 | 0x930000;
-							aByteArrayArrayArray15[Player.plane][local108 + 1][local122] = local14;
+							aByteArrayArrayArray15[plane][local108 + 1][local122] = local14;
 							local69 = local69 + 1 & 0xFFF;
 						}
 					}
@@ -1316,9 +1340,12 @@ public final class ScriptRunner {
 
 	@OriginalMember(owner = "client!uh", name = "f", descriptor = "(I)V")
 	public static void method4302() {
+		API.DisableRoofVisibilityIfExpired();
 		if (method4047() != 2) {
 			return;
 		}
+		API.EnsureRoofVisibilityBuffers();
+		boolean roofVisibilityActive = API.IsRoofVisibilityActive();
 		@Pc(27) byte local27 = (byte) (anInt3325 - 4 & 0xFF);
 		@Pc(31) int local31 = anInt3325 % 104;
 		@Pc(33) int local33;
@@ -1331,7 +1358,7 @@ public final class ScriptRunner {
 		if (Player.plane == 3) {
 			return;
 		}
-		for (local33 = 0; local33 < 2; local33++) {
+		for (local33 = 0; local33 < anIntArray205.length; local33++) {
 			anIntArray205[local33] = -1000000;
 			anIntArray338[local33] = 1000000;
 			anIntArray518[local33] = 0;
@@ -1340,13 +1367,16 @@ public final class ScriptRunner {
 		}
 		if (Camera.cameraType != 1) {
 			local33 = SceneGraph.getTileHeight(Player.plane, Camera.renderX, Camera.renderZ);
-			if (local33 - Camera.anInt40 < 800 && (SceneGraph.renderFlags[Player.plane][Camera.renderX >> 7][Camera.renderZ >> 7] & 0x4) != 0) {
+			if (local33 - Camera.anInt40 < 800 && (SceneGraph.renderFlags[Player.plane][Camera.renderX >> 7][Camera.renderZ >> 7] & API.TILE_FLAG_UNDER_ROOF) != 0) {
 				method4348(false, Camera.renderX >> 7, Camera.renderZ >> 7, SceneGraph.tiles, 1);
 			}
 			return;
 		}
-		if ((SceneGraph.renderFlags[Player.plane][PlayerList.self.xFine >> 7][PlayerList.self.zFine >> 7] & 0x4) != 0) {
+		if ((SceneGraph.renderFlags[Player.plane][PlayerList.self.xFine >> 7][PlayerList.self.zFine >> 7] & API.TILE_FLAG_UNDER_ROOF) != 0) {
 			method4348(false, PlayerList.self.xFine >> 7, PlayerList.self.zFine >> 7, SceneGraph.tiles, 0);
+		}
+		if (roofVisibilityActive) {
+			API.ApplyRoofVisibilityRequests();
 		}
 		if (Camera.cameraPitch >= 310) {
 			return;
@@ -1378,7 +1408,7 @@ public final class ScriptRunner {
 				} else if (local40 > local135) {
 					local40--;
 				}
-				if ((SceneGraph.renderFlags[Player.plane][local33][local40] & 0x4) != 0) {
+				if ((SceneGraph.renderFlags[Player.plane][local33][local40] & API.TILE_FLAG_UNDER_ROOF) != 0) {
 					method4348(false, local33, local40, SceneGraph.tiles, 1);
 					break;
 				}
@@ -1390,7 +1420,7 @@ public final class ScriptRunner {
 						local33--;
 					}
 					local186 -= 65536;
-					if ((SceneGraph.renderFlags[Player.plane][local33][local40] & 0x4) != 0) {
+					if ((SceneGraph.renderFlags[Player.plane][local33][local40] & API.TILE_FLAG_UNDER_ROOF) != 0) {
 						method4348(false, local33, local40, SceneGraph.tiles, 1);
 						break;
 					}
@@ -1406,7 +1436,7 @@ public final class ScriptRunner {
 			} else if (local33 > local162) {
 				local33--;
 			}
-			if ((SceneGraph.renderFlags[Player.plane][local33][local40] & 0x4) != 0) {
+			if ((SceneGraph.renderFlags[Player.plane][local33][local40] & API.TILE_FLAG_UNDER_ROOF) != 0) {
 				method4348(false, local33, local40, SceneGraph.tiles, 1);
 				break;
 			}
@@ -1418,7 +1448,7 @@ public final class ScriptRunner {
 					local40--;
 				}
 				local186 -= 65536;
-				if ((SceneGraph.renderFlags[Player.plane][local33][local40] & 0x4) != 0) {
+				if ((SceneGraph.renderFlags[Player.plane][local33][local40] & API.TILE_FLAG_UNDER_ROOF) != 0) {
 					method4348(false, local33, local40, SceneGraph.tiles, 1);
 					break;
 				}

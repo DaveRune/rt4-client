@@ -20,6 +20,10 @@ import static rt4.Player.plane;
  * @author ceikry
  */
 public class API {
+    public static final int TILE_FLAG_UNDER_ROOF = 0x4;
+    private static final int DEFAULT_ROOF_VISIBILITY_GROUP_LIMIT = 2;
+    private static RoofVisibilityHandler roofVisibilityHandler = null;
+
     public static Runnable[] miniMenuCustomActions = new Runnable[10];
     public static int customMiniMenuIndex = 0;
     public static ArrayList<KeyAdapter> registeredKeyListeners = new ArrayList<>();
@@ -244,6 +248,104 @@ public class API {
 
     public static boolean IsLoggedIn() {
         return client.gameState == 30;
+    }
+
+    public static int[] GetMapFlagTile() {
+        if (LoginManager.mapFlagX == 0) {
+            return null;
+        }
+        return new int[]{LoginManager.mapFlagX, LoginManager.mapFlagZ};
+    }
+
+    public static void SetRoofVisibilityHandler(RoofVisibilityHandler handler) {
+        roofVisibilityHandler = handler;
+    }
+
+    public static void ClearRoofVisibilityHandler(RoofVisibilityHandler handler) {
+        if (roofVisibilityHandler == handler) {
+            roofVisibilityHandler = null;
+        }
+    }
+
+    public static int GetRoofVisibilityGroupLimit() {
+        if (roofVisibilityHandler == null) {
+            return DEFAULT_ROOF_VISIBILITY_GROUP_LIMIT;
+        }
+        return Math.max(DEFAULT_ROOF_VISIBILITY_GROUP_LIMIT, roofVisibilityHandler.getGroupLimit());
+    }
+
+    public static boolean IsRoofVisibilityActive() {
+        return roofVisibilityHandler != null && roofVisibilityHandler.isActive();
+    }
+
+    public static void DisableRoofVisibilityIfExpired() {
+        if (roofVisibilityHandler != null) {
+            roofVisibilityHandler.disableIfExpired();
+        }
+    }
+
+    public static void EnsureRoofVisibilityBuffers() {
+        if (roofVisibilityHandler != null) {
+            roofVisibilityHandler.ensureBuffers();
+        }
+    }
+
+    public static void ApplyRoofVisibilityRequests() {
+        if (roofVisibilityHandler != null) {
+            roofVisibilityHandler.applyRequests();
+        }
+    }
+
+    public static boolean IsRoofVisibilityPicking() {
+        return roofVisibilityHandler != null && roofVisibilityHandler.isPicking();
+    }
+
+    public static int GetRoofVisibilityPickScreenX() {
+        return roofVisibilityHandler == null ? 0 : roofVisibilityHandler.getPickScreenX();
+    }
+
+    public static int GetRoofVisibilityPickScreenY() {
+        return roofVisibilityHandler == null ? 0 : roofVisibilityHandler.getPickScreenY();
+    }
+
+    public static void ReportRoofVisibilityTile(int sceneX, int sceneZ, int plane) {
+        if (roofVisibilityHandler != null) {
+            roofVisibilityHandler.reportTile(sceneX, sceneZ, plane);
+        }
+    }
+
+    public static boolean IsRoofVisibilityLocPickable(long key) {
+        return roofVisibilityHandler != null && roofVisibilityHandler.isLocPickable(key);
+    }
+
+    public static void ReportRoofVisibilityLoc(long key, int plane) {
+        if (roofVisibilityHandler != null) {
+            roofVisibilityHandler.reportLoc(key, plane);
+        }
+    }
+
+    public static void BeginRoofVisibilityGroup(int group) {
+        if (roofVisibilityHandler != null) {
+            roofVisibilityHandler.beginGroup(group);
+        }
+    }
+
+    public static void AddRoofVisibilityGroupTile(int group, int plane, int sceneX, int sceneZ) {
+        if (roofVisibilityHandler != null) {
+            roofVisibilityHandler.addGroupTile(group, plane, sceneX, sceneZ);
+        }
+    }
+
+    public static void SetDestinationRoofTarget(int sceneX, int sceneZ) {
+        if (roofVisibilityHandler != null) {
+            roofVisibilityHandler.setDestinationTarget(sceneX, sceneZ);
+        }
+    }
+
+    public static void ClearDestinationRoofTarget() {
+        if (roofVisibilityHandler != null) {
+            roofVisibilityHandler.clearDestinationTarget();
+        }
     }
 
     public static void StoreData(String key, Object value) {
