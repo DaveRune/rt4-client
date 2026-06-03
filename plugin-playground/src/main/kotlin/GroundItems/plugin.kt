@@ -24,6 +24,10 @@ class plugin : Plugin() {
     private var useLiveGEPrices = true
     @Exposed(description = "Default: true, Toggle GE/HA price visibility")
     private var displayPrices = true
+    @Exposed(description = "Default: true, Show HA value (only applies when DisplayPrices is on)")
+    private var displayHAPrice = true
+    @Exposed(description = "Default: true, Show GE value (only applies when DisplayPrices is on)")
+    private var displayGEPrice = true
     @Exposed( "Default: 5,000 (blue)")
     private var lowValue = 5000
     @Exposed( "Default: 20,000 (green)")
@@ -44,7 +48,7 @@ class plugin : Plugin() {
     private var gePriceMap = loadGEPrices()
 
     private val colorMap = mapOf(
-        "tagged" to "#AA00FF",
+        "tagged" to "#CC66FF",
         "hidden" to "#808080",
         "lowValue" to "#66B2FF",
         "mediumValue" to "#99FF99",
@@ -68,6 +72,8 @@ class plugin : Plugin() {
         hideBelowValue = GetData("hide-below-value") as? Int ?: 0
         useLiveGEPrices = GetData("ground-item-use-remote") as? Boolean ?: true
         displayPrices = GetData("ground-item-display-price") as? Boolean ?: true
+        displayHAPrice = GetData("ground-item-display-ha") as? Boolean ?: true
+        displayGEPrice = GetData("ground-item-display-ge") as? Boolean ?: true
         taggedItems = GetData("ground-item-tags")?.let { it.toString().split(",").mapNotNull { it.toIntOrNull() } } ?: emptyList()
         ignoredItems = GetData("ground-item-ignore")?.let { it.toString().split(",").mapNotNull { it.toIntOrNull() } } ?: emptyList()
         if (gePriceMap.isEmpty()) SendMessage("Ground Items unable to load GE Prices, Remote: $useLiveGEPrices")
@@ -103,6 +109,14 @@ class plugin : Plugin() {
                 displayPrices = !displayPrices
                 SendMessage("Display Prices Set To: $displayPrices")
             }
+            "::displayha" -> {
+                displayHAPrice = !displayHAPrice
+                SendMessage("Display HA Price Set To: $displayHAPrice")
+            }
+            "::displayge" -> {
+                displayGEPrice = !displayGEPrice
+                SendMessage("Display GE Price Set To: $displayGEPrice")
+            }
             else -> {
                 commandMap[commandStr]?.let { key ->
                     args?.get(0)?.toInt()?.let { valueArg ->
@@ -135,7 +149,11 @@ class plugin : Plugin() {
                         val itemDef = ObjTypeList.get(item.value.type)
                         val haValue = if (itemDef.id == coindId) item.value.amount else (itemDef.cost * 0.6 * item.value.amount).roundToInt()
                         val geValue = (gePriceMap[itemDef.id.toString()]?.toInt() ?: 0) * item.value.amount
-                        val highestValue = maxOf(haValue, geValue)
+                        val highestValue = when {
+                            displayPrices && displayGEPrice && geValue > 0 -> geValue
+                            displayPrices && displayHAPrice -> haValue
+                            else -> maxOf(haValue, geValue)
+                        }
 
                         val screenPos: IntArray = CalculateSceneGraphScreenPosition((x shl 7) + 64, (y shl 7) + 64, 64)
                         if (screenPos[0] < 0 || screenPos[1] < 0) {
@@ -158,15 +176,16 @@ class plugin : Plugin() {
                         val formattedHaValue = formatValue(haValue)
                         val formattedGeValue = formatValue(geValue)
                         val amountSuffix = if (item.value.amount > 1) " (${formatValue(item.value.amount)})" else ""
-                        val itemNameAndValue = when (formattedGeValue) {
-                            "0" -> "${itemDef.name}$amountSuffix (HA: $formattedHaValue gp)"
-                            else -> "${itemDef.name}$amountSuffix (GE: $formattedGeValue gp) (HA: $formattedHaValue gp)"
+
+                        val priceText = if (!displayPrices) {
+                            ""
+                        } else {
+                            val gePart = if (displayGEPrice && formattedGeValue != "0") " (GE: $formattedGeValue gp)" else ""
+                            val haPart = if (displayHAPrice) " (HA: $formattedHaValue gp)" else ""
+                            "$gePart$haPart"
                         }
-                        if(displayPrices) {
-                            drawTextWithDropShadow(screenX, screenY - offset, colorInt, itemNameAndValue)
-                        }  else {
-                            drawTextWithDropShadow(screenX, screenY - offset, colorInt, "${itemDef.name}$amountSuffix")
-                        }
+
+                        drawTextWithDropShadow(screenX, screenY - offset, colorInt, "${itemDef.name}$amountSuffix$priceText")
 
                         offset -= 12
                         item = objstacknodeLL.next() as ObjStackNode?
@@ -192,7 +211,11 @@ class plugin : Plugin() {
         val itemDef = ObjTypeList.get(item.value.type)
         val haValue = if (itemDef.id == coindId) item.value.amount else (itemDef.cost * 0.6 * item.value.amount).roundToInt()
         val geValue = (gePriceMap[itemDef.id.toString()]?.toInt() ?: 0) * item.value.amount
-        val highestValue = maxOf(haValue, geValue)
+        val highestValue = when {
+            displayPrices && displayGEPrice && geValue > 0 -> geValue
+            displayPrices && displayHAPrice -> haValue
+            else -> maxOf(haValue, geValue)
+        }
         return !((highestValue < hideBelowValue || isHidden(itemDef.id)) && !isTagged(itemDef.id))
     }
 
@@ -246,6 +269,8 @@ class plugin : Plugin() {
         hideBelowValue = 0
         useLiveGEPrices = true
         displayPrices = true
+        displayHAPrice = true
+        displayGEPrice = true
         StoreData("ground-item-tags","")
         StoreData("ground-item-ignore","")
         StoreData("low-value", lowValue)
@@ -255,6 +280,8 @@ class plugin : Plugin() {
         StoreData("hide-below-value", hideBelowValue)
         StoreData("ground-item-use-remote", useLiveGEPrices)
         StoreData("ground-item-display-price", displayPrices)
+        StoreData("ground-item-display-ha", displayHAPrice)
+        StoreData("ground-item-display-ge", displayGEPrice)
     }
 
     private fun displayRanges() {
@@ -266,6 +293,8 @@ class plugin : Plugin() {
 
         SendMessage("== Ground Item Config ==")
         SendMessage("Display Prices: $displayPrices")
+        SendMessage("Display HA: $displayHAPrice")
+        SendMessage("Display GE: $displayGEPrice")
         SendMessage("Low: $low")
         SendMessage("Medium: $medium")
         SendMessage("High: $high")
@@ -282,7 +311,7 @@ class plugin : Plugin() {
             SendMessage("Tagged: ${itemDef.name} ${itemDef.id}")
         }
         SendMessage("cmds ::set(low,med,high,insane,hide), ::(tag,ignore)item ID, ::(reset)groundconfig,")
-        SendMessage("::displayprices")
+        SendMessage("::displayprices, ::displayha, ::displayge")
     }
 
     private fun drawTextWithDropShadow(x: Int, y: Int, color: Int, text: String) {
@@ -291,8 +320,8 @@ class plugin : Plugin() {
     }
 
     fun OnKondoValueUpdated() {
-        StoreData("ground-item-tags",taggedItems)
-        StoreData("ground-item-ignore",ignoredItems)
+        StoreData("ground-item-tags",taggedItems.joinToString(","))
+        StoreData("ground-item-ignore",ignoredItems.joinToString(","))
         StoreData("low-value", lowValue)
         StoreData("medium-value", mediumValue)
         StoreData("high-value", highValue)
@@ -300,6 +329,8 @@ class plugin : Plugin() {
         StoreData("hide-below-value", hideBelowValue)
         StoreData("ground-item-use-remote", useLiveGEPrices)
         StoreData("ground-item-display-price", displayPrices)
+        StoreData("ground-item-display-ha", displayHAPrice)
+        StoreData("ground-item-display-ge", displayGEPrice)
         gePriceMap = loadGEPrices()
     }
 
