@@ -1,6 +1,7 @@
 package SDChatForHD
 
 import plugin.Plugin
+import plugin.api.API
 import rt4.Component
 import rt4.GlRenderer
 import rt4.InterfaceList
@@ -38,6 +39,10 @@ class plugin : Plugin() {
     }
 
     override fun Draw(timeDelta: Long) {
+        if (!API.IsLoggedIn()) {
+            return
+        }
+
         if (!GlRenderer.enabled) {
             return
         }
