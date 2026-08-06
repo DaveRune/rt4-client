@@ -1056,7 +1056,7 @@ public final class GlModel extends Model {
 							API.ReportRoofVisibilityLoc(arg8, arg9);
 						}
 					} else {
-						if (this.vertexX == null || this.vertexY == null || this.vertexZ == null || this.anIntArray462 == null || this.aShortArray81 == null) {
+						if (this.vertexX == null || this.vertexY == null || this.vertexZ == null || this.anIntArray462 == null || this.aShortArray81 == null || this.aShortArray77 == null || this.aShortArray82 == null || this.aShortArray83 == null) {
 							if (roofVisibilityLocPick) {
 								API.ReportRoofVisibilityLoc(arg8, arg9);
 							}
