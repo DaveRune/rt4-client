@@ -46,6 +46,8 @@ Configurable:
 - Bilinear map filtering in HD/SD
 - Tweening enabled by default (existed in client)
 - Shift-click behavior on inventory items enabled by default (existed in client)
+- Login screen music uses the player's saved Music Volume setting instead of defaulting to max
+- Compatibility patch for HD point-light rendering in Diango's Workshop (legacy 2005 Christmas event)
 
 Unconfigurable:
 - JOGL was updated to 2.4.0
