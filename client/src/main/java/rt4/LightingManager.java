@@ -82,6 +82,22 @@ public class LightingManager {
 		}
 	}
 
+	private static final int[][] STATIC_LIGHT_OVERRIDES = {
+			{ 8005, 3063, 3046, 2 }
+	};
+
+	public static boolean matchesStaticLightOverride(int regionId, int x, int y, int plane) {
+		for (int[] override : STATIC_LIGHT_OVERRIDES) {
+			if (override[0] == regionId
+			&& override[1] == x
+			&& override[2] == y
+			&& override[3] == plane) {
+				return true;
+			}
+		}
+		return false;
+	}
+
 	@OriginalMember(owner = "client!jf", name = "a", descriptor = "()V")
 	public static void method2390() {
 		for (@Pc(1) int local1 = 0; local1 < 4; local1++) {

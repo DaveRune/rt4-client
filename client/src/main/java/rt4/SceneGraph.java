@@ -5266,12 +5266,16 @@ public class SceneGraph {
 					}
 					break label270;
 				} while (local515 <= 0);
+				int regionX = (arg4 + Camera.originX) >> 6;
+				int regionZ = (arg3 + Camera.originZ) >> 6;
+				int regionId = (regionX << 8) + regionZ;
 				for (local243 = 0; local243 < local515; local243++) {
 					@Pc(529) Light local529 = new Light(local95);
 					if (local529.anInt2243 == 31) {
 						@Pc(541) LightType local541 = LightTypeList.get(local95.g2());
 						local529.method1762(local541.anInt2865, local541.anInt2873, local541.anInt2867, local541.anInt2872);
 					}
+					local529.matchesStaticLightOverride = LightingManager.matchesStaticLightOverride(regionId, local529.x, local529.z, local529.level);
 					local529.z += arg3 << 7;
 					local529.x += arg4 << 7;
 					local194 = local529.z >> 7;
