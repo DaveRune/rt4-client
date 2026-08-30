@@ -8,6 +8,10 @@ version = '1.0.0'
 sourceCompatibility = 1.8
 targetCompatibility = 1.8
 
+tasks.withType(JavaCompile) {
+    options.release = 8
+}
+
 dependencies {
     compileOnly project(':deob-annotations')
     compileOnly 'lib:jogl-all'

@@ -14,6 +14,15 @@ import static org.lwjgl.opengl.GL11.*;
 
 public final class GlRaster {
 
+	// Replaced blit. glDrawPixels carries no colour on Android's GL, so the pixels go up as a texture
+	// and onto a quad instead. Nothing here touches blending or alpha testing, which the original did
+	// behind GlRenderer's own state cache and is what left the interface tinted.
+	private static int blitTexture = -1;
+	private static int blitWidth = -1;
+	private static int blitHeight = -1;
+	private static ByteBuffer transferBuffer = null;
+	private static final int CLAMP_TO_EDGE = 0x812F;
+
 	@OriginalMember(owner = "client!dj", name = "b", descriptor = "I")
 	public static int clipTop = 0;
 
@@ -63,22 +72,65 @@ public final class GlRaster {
 	}
 
 	public static void drawPixels(int[] pixels, int x, int y, int width, int height) {
+		if (pixels == null || width <= 0 || height <= 0) {
+			return;
+		}
+
+		int required = width * height * 4;
+		if (transferBuffer == null || transferBuffer.capacity() < required) {
+			transferBuffer = ByteBuffer.allocateDirect(required).order(ByteOrder.nativeOrder());
+		}
+		transferBuffer.clear();
+
+		int count = width * height;
+		for (int i = 0; i < count; i++) {
+			int pixel = pixels[i];
+			transferBuffer.put((byte) (pixel >> 16));
+			transferBuffer.put((byte) (pixel >> 8));
+			transferBuffer.put((byte) pixel);
+			transferBuffer.put((byte) 255);
+		}
+		transferBuffer.flip();
+
+		if (blitTexture == -1) {
+			blitTexture = glGenTextures();
+			blitWidth = -1;
+			blitHeight = -1;
+		}
+
 		GlRenderer.setupRenderingWithNoTexture();
-		GL11.glRasterPos2i(x, GlRenderer.canvasHeight - y);
-		GL11.glPixelZoom((float) GameShell.canvasScale, (float) -GameShell.canvasScale);
-		GL11.glDisable(GL2.GL_BLEND);
-		GL11.glDisable(GL2.GL_ALPHA_TEST);
+		GlRenderer.setTextureId(blitTexture);
 
-		// Create a direct IntBuffer and copy the pixels array into it
-		ByteBuffer byteBuffer = ByteBuffer.allocateDirect(pixels.length * 4).order(ByteOrder.nativeOrder());
-		IntBuffer intBuffer = byteBuffer.asIntBuffer();
-		intBuffer.put(pixels).flip();
+		if (blitWidth != width || blitHeight != height) {
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, CLAMP_TO_EDGE);
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, CLAMP_TO_EDGE);
+			glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, transferBuffer);
+			blitWidth = width;
+			blitHeight = height;
+		} else {
+			glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, width, height, GL_RGBA, GL_UNSIGNED_BYTE, transferBuffer);
+		}
 
-		GL11.glDrawPixels(width, height, GL2.GL_BGRA, GlRenderer.bigEndian ? GL2.GL_UNSIGNED_INT_8_8_8_8_REV : GL2.GL_UNSIGNED_BYTE, intBuffer);
+		float left = (float) x;
+		float right = left + (float) width;
+		float top = (float) (GlRenderer.canvasHeight - y);
+		float bottom = top - (float) height;
 
-		GL11.glPixelZoom(1.0F, 1.0F);
-		GL11.glEnable(GL2.GL_ALPHA_TEST);
-		GL11.glEnable(GL2.GL_BLEND);
+		glColor4ub((byte) 255, (byte) 255, (byte) 255, (byte) 255);
+		glBegin(GL_TRIANGLE_FAN);
+		glTexCoord2f(0.0F, 0.0F);
+		glVertex2f(left, top);
+		glTexCoord2f(0.0F, 1.0F);
+		glVertex2f(left, bottom);
+		glTexCoord2f(1.0F, 1.0F);
+		glVertex2f(right, bottom);
+		glTexCoord2f(1.0F, 0.0F);
+		glVertex2f(right, top);
+		glEnd();
+
+		GlRenderer.setTextureId(-1);
 	}
 
 
