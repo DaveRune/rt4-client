@@ -6,12 +6,6 @@ import plugin.api.MiniMenuEntry
 import plugin.api.MiniMenuType
 import rt4.ObjTypeList
 
-@PluginMeta(
-    author = "bushtail",
-    description = "Identify clue scrolls easily",
-    version = 1.0
-)
-
 class plugin : Plugin() {
     override fun DrawMiniMenu(entry: MiniMenuEntry?) {
         when(entry?.type) {

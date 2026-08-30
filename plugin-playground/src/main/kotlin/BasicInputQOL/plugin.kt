@@ -7,11 +7,6 @@ import rt4.Keyboard
 import java.awt.event.*
 import javax.swing.SwingUtilities
 
-@PluginMeta(
-   author = "Ceikry",
-   description = "Provides some basic input QOL like scroll zoom, middle click panning, etc.",
-   version = 1.0
-)
 class plugin : Plugin() {
     private var cameraDebugEnabled = false
     private var mouseDebugEnabled = false

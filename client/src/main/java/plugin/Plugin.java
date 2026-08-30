@@ -13,6 +13,7 @@ import rt4.Tile;
  */
 public abstract class Plugin {
     long timeOfLastDraw;
+    long timeOfLastLateDraw;
 
     void _init() {
         Init();
@@ -24,12 +25,26 @@ public abstract class Plugin {
         timeOfLastDraw = nowTime;
     }
 
+    void _lateDraw() {
+        long nowTime = System.currentTimeMillis();
+        LateDraw(nowTime - timeOfLastLateDraw);
+        timeOfLastLateDraw = nowTime;
+    }
+
     /**
      * Draw() is called by the client rendering loop so that plugins can draw information onto the screen.
      * This will be called once per frame, meaning it is framerate bound.
      * @param timeDelta the time (ms) elapsed since the last draw call.
      */
     public void Draw(long timeDelta) {}
+
+
+    /**
+     * LateDraw() is called at the end of a finalized frame
+     * This will be called once per frame, meaning it is framerate bound.
+     * @param timeDelta the time (ms) elapsed since the last draw call.
+     */
+    public void LateDraw(long timeDelta) {}
 
     /**
      * Init() is called when the plugin is first loaded
@@ -92,10 +107,31 @@ public abstract class Plugin {
      */
     public void OnLogin() {}
 
+
+    /**
+     * Called when an NPC is killed.
+     *
+     * @param npcID the unique identifier of the NPC
+     * @param x the x-coordinate where the NPC died
+     * @param z the z-coordinate where the NPC died
+     */
+    public void OnKillingBlowNPC(int npcID, int x, int z) {}
+
     /**
      * OnLogout is called when the client logs out. This should be used to clear player-relevant plugin state.
      */
     public void OnLogout() {}
+
+    /**
+     * Called when the client attempts to reload plugins.
+     * Implement this method to control the behavior of the plugin during a reload.
+     *
+     * @return {@code false} to allow the plugin to be reloaded.
+     *         {@code true}  to prevent the plugin from being reloaded and stay loaded,
+     */
+    public boolean OnPluginsReloaded() {
+        return false;
+    }
 
     /**
      * DrawMiniMenu is called when a MiniMenu entry has been created.

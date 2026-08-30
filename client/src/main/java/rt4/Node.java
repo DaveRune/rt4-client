@@ -10,23 +10,23 @@ public class Node {
 	public long key;
 
 	@OriginalMember(owner = "client!ab", name = "d", descriptor = "Lclient!ab;")
-	public Node aClass3_222;
+	public Node nextNode;
 
 	@OriginalMember(owner = "client!ab", name = "l", descriptor = "Lclient!ab;")
-	public Node aClass3_223;
+	public Node previousNode;
 
 	@OriginalMember(owner = "client!ab", name = "a", descriptor = "(I)Z")
 	public final boolean isLinked() {
-		return this.aClass3_223 != null;
+		return this.previousNode != null;
 	}
 
 	@OriginalMember(owner = "client!ab", name = "b", descriptor = "(I)V")
 	public final void unlink() {
-		if (this.aClass3_223 != null) {
-			this.aClass3_223.aClass3_222 = this.aClass3_222;
-			this.aClass3_222.aClass3_223 = this.aClass3_223;
-			this.aClass3_223 = null;
-			this.aClass3_222 = null;
+		if (this.previousNode != null) {
+			this.previousNode.nextNode = this.nextNode;
+			this.nextNode.previousNode = this.previousNode;
+			this.previousNode = null;
+			this.nextNode = null;
 		}
 	}
 }

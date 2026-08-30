@@ -46,6 +46,8 @@ Configurable:
 - Bilinear map filtering in HD/SD
 - Tweening enabled by default (existed in client)
 - Shift-click behavior on inventory items enabled by default (existed in client)
+- Login screen music uses the player's saved Music Volume setting instead of defaulting to max
+- Compatibility patch for HD point-light rendering in Diango's Workshop (legacy 2005 Christmas event)
 
 Unconfigurable:
 - JOGL was updated to 2.4.0
@@ -54,6 +56,19 @@ Unconfigurable:
 - Varp array size was extended to 3500 instead of 2500
 - Mouse wheel camera movement (click middle button and move mouse)
 - Render FPS is set to your monitor's refresh rate
+
+
+## Policy on Use of AI Tools
+
+You, the contributor, agree to submit quality code to the best of your ability which you have tested yourself and confirmed that it works as intended, and if it doesn’t work, you agree to take constructive feedback and fix it. 
+
+You should be able to explain or defend how any part of your code works, without the use of AI or any other assistive tools. 
+
+2009scape reserves the right to reject your MR on grounds of poor quality, poor functionality, poor code style, poor attitudes or unethical over-reliance on assistive tools.  
+
+2009scape reserves the right to bar an individual from contributing due to patterns of aforementioned behavior, and close or delete all future MRs or issues or suggestions from said person without given explanation.
+
+AI may not be used to generate your MR description, your issue description, or any responses to any discourse present on the Gitlab at any time or in any fashion. If you use AI in any of these places, it will be assumed that your entire contribution is AI and that you have no clue how it functions, and the remainder of the policy outlined above will be applied to you immediately.
 
 ## Libraries Used
 

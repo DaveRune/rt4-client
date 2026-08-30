@@ -13,10 +13,10 @@ import java.util.Properties;
  * A data class for storing information about plugins.
  * @author ceikry
  */
-class PluginInfo {
-  double version;
-  String author;
-  String description;
+public class PluginInfo {
+  public double version;
+  public String author;
+  public String description;
 
   public PluginInfo(String author, String description, double version) {
     this.version = version;

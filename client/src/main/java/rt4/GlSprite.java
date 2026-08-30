@@ -31,6 +31,8 @@ public class GlSprite extends Sprite {
 	@OriginalMember(owner = "client!cf", name = "ab", descriptor = "I")
 	public int textureId = -1;
 
+	public int[] pixels;
+
 	@OriginalMember(owner = "client!cf", name = "Z", descriptor = "I")
 	private int anInt1871 = -1;
 
@@ -45,6 +47,7 @@ public class GlSprite extends Sprite {
 		this.anInt1861 = arg3;
 		this.width = arg4;
 		this.height = arg5;
+		this.pixels = arg6;
 		this.method1430(arg6);
 		this.method1431();
 	}
@@ -57,6 +60,7 @@ public class GlSprite extends Sprite {
 		this.anInt1861 = arg0.anInt1861;
 		this.width = arg0.width;
 		this.height = arg0.height;
+		this.pixels = arg0.pixels;
 		this.method1430(arg0.pixels);
 		this.method1431();
 	}

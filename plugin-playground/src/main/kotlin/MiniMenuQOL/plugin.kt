@@ -8,11 +8,6 @@ import rt4.NpcType
 import rt4.ObjType
 import rt4.ObjTypeList
 
-@PluginMeta(
-    author = "Ceikry",
-    description = "Provides debug and some basic QOL for the MiniMenu",
-    version = 1.0
-)
 class plugin : Plugin() {
     private var debugEnabled = false
 

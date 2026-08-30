@@ -12,7 +12,7 @@ public final class SoftwareIndexedSprite extends IndexedSprite {
 	public byte[] pixels;
 
 	@OriginalMember(owner = "client!ek", name = "n", descriptor = "[I")
-	private final int[] anIntArray144;
+	public final int[] pallet;
 
 	@OriginalMember(owner = "client!ek", name = "<init>", descriptor = "(IIIIII[B[I)V")
 	public SoftwareIndexedSprite(@OriginalArg(0) int arg0, @OriginalArg(1) int arg1, @OriginalArg(2) int arg2, @OriginalArg(3) int arg3, @OriginalArg(4) int arg4, @OriginalArg(5) int arg5, @OriginalArg(6) byte[] arg6, @OriginalArg(7) int[] arg7) {
@@ -23,7 +23,7 @@ public final class SoftwareIndexedSprite extends IndexedSprite {
 		this.width = arg4;
 		this.height = arg5;
 		this.pixels = arg6;
-		this.anIntArray144 = arg7;
+		this.pallet = arg7;
 	}
 
 	@OriginalMember(owner = "client!ek", name = "<init>", descriptor = "(III)V")
@@ -32,7 +32,7 @@ public final class SoftwareIndexedSprite extends IndexedSprite {
 		this.innerHeight = this.height = arg1;
 		this.xOffset = this.yOffset = 0;
 		this.pixels = new byte[arg0 * arg1];
-		this.anIntArray144 = new int[arg2];
+		this.pallet = new int[arg2];
 	}
 
 	@OriginalMember(owner = "client!ek", name = "a", descriptor = "([I[B[IIIIIIIIII)V")
@@ -149,29 +149,29 @@ public final class SoftwareIndexedSprite extends IndexedSprite {
 
 	@OriginalMember(owner = "client!ek", name = "b", descriptor = "(III)V")
 	public final void adjustPalette(@OriginalArg(0) int arg0, @OriginalArg(1) int arg1, @OriginalArg(2) int arg2) {
-		for (@Pc(1) int local1 = 0; local1 < this.anIntArray144.length; local1++) {
-			@Pc(15) int local15 = this.anIntArray144[local1] >> 16 & 0xFF;
+		for (@Pc(1) int local1 = 0; local1 < this.pallet.length; local1++) {
+			@Pc(15) int local15 = this.pallet[local1] >> 16 & 0xFF;
 			local15 += arg0;
 			if (local15 < 0) {
 				local15 = 0;
 			} else if (local15 > 255) {
 				local15 = 255;
 			}
-			@Pc(38) int local38 = this.anIntArray144[local1] >> 8 & 0xFF;
+			@Pc(38) int local38 = this.pallet[local1] >> 8 & 0xFF;
 			local38 += arg1;
 			if (local38 < 0) {
 				local38 = 0;
 			} else if (local38 > 255) {
 				local38 = 255;
 			}
-			@Pc(59) int local59 = this.anIntArray144[local1] & 0xFF;
+			@Pc(59) int local59 = this.pallet[local1] & 0xFF;
 			local59 += arg2;
 			if (local59 < 0) {
 				local59 = 0;
 			} else if (local59 > 255) {
 				local59 = 255;
 			}
-			this.anIntArray144[local1] = (local15 << 16) + (local38 << 8) + local59;
+			this.pallet[local1] = (local15 << 16) + (local38 << 8) + local59;
 		}
 	}
 
@@ -226,7 +226,7 @@ public final class SoftwareIndexedSprite extends IndexedSprite {
 			local7 += local21 * local145;
 			local125 += local145;
 		}
-		method1394(SoftwareRaster.pixels, this.pixels, this.anIntArray144, local7, local9, local41, local125, arg2, arg3, local21, local27, local2, arg4);
+		method1394(SoftwareRaster.pixels, this.pixels, this.pallet, local7, local9, local41, local125, arg2, arg3, local21, local27, local2, arg4);
 	}
 
 	@OriginalMember(owner = "client!ek", name = "a", descriptor = "()V")
@@ -309,7 +309,7 @@ public final class SoftwareIndexedSprite extends IndexedSprite {
 			local27 += local36;
 		}
 		if (local23 > 0 && local20 > 0) {
-			method1397(SoftwareRaster.pixels, this.pixels, this.anIntArray144, local17, local15, local23, local20, local27, local29, arg2);
+			method1397(SoftwareRaster.pixels, this.pixels, this.pallet, local17, local15, local23, local20, local27, local29, arg2);
 		}
 	}
 
@@ -383,7 +383,7 @@ public final class SoftwareIndexedSprite extends IndexedSprite {
 			local7 += local21 * local145;
 			local125 += local145;
 		}
-		method1391(SoftwareRaster.pixels, this.pixels, this.anIntArray144, local7, local9, local41, local125, arg2, arg3, local21, local27, local2);
+		method1391(SoftwareRaster.pixels, this.pixels, this.pallet, local7, local9, local41, local125, arg2, arg3, local21, local27, local2);
 	}
 
 	@OriginalMember(owner = "client!ek", name = "a", descriptor = "(II)V")
@@ -424,7 +424,7 @@ public final class SoftwareIndexedSprite extends IndexedSprite {
 			local27 += local36;
 		}
 		if (local23 > 0 && local20 > 0) {
-			method1393(SoftwareRaster.pixels, this.pixels, this.anIntArray144, local17, local15, local23, local20, local27, local29);
+			method1393(SoftwareRaster.pixels, this.pixels, this.pallet, local17, local15, local23, local20, local27, local29);
 		}
 	}
 }

@@ -8,7 +8,9 @@ import rt4.Font;
 import java.awt.*;
 import java.awt.event.*;
 import java.awt.image.BufferedImage;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 
 import static rt4.MathUtils.clamp;
 import static rt4.Player.plane;
@@ -18,6 +20,10 @@ import static rt4.Player.plane;
  * @author ceikry
  */
 public class API {
+    public static final int TILE_FLAG_UNDER_ROOF = 0x4;
+    private static final int DEFAULT_ROOF_VISIBILITY_GROUP_LIMIT = 2;
+    private static RoofVisibilityHandler roofVisibilityHandler = null;
+
     public static Runnable[] miniMenuCustomActions = new Runnable[10];
     public static int customMiniMenuIndex = 0;
     public static ArrayList<KeyAdapter> registeredKeyListeners = new ArrayList<>();
@@ -63,6 +69,10 @@ public class API {
 
     public static boolean PlayerHasPrivilege(Privileges privilege) {
         return LoginManager.staffModLevel >= privilege.ordinal();
+    }
+
+    public static EnumType GetDataMap(int id) {
+        return EnumTypeList.get(id);
     }
 
     public static boolean IsHD() {
@@ -242,8 +252,107 @@ public class API {
         return client.gameState == 30;
     }
 
+    public static int[] GetMapFlagTile() {
+        if (LoginManager.mapFlagX == 0) {
+            return null;
+        }
+        return new int[]{LoginManager.mapFlagX, LoginManager.mapFlagZ};
+    }
+
+    public static void SetRoofVisibilityHandler(RoofVisibilityHandler handler) {
+        roofVisibilityHandler = handler;
+    }
+
+    public static void ClearRoofVisibilityHandler(RoofVisibilityHandler handler) {
+        if (roofVisibilityHandler == handler) {
+            roofVisibilityHandler = null;
+        }
+    }
+
+    public static int GetRoofVisibilityGroupLimit() {
+        if (roofVisibilityHandler == null) {
+            return DEFAULT_ROOF_VISIBILITY_GROUP_LIMIT;
+        }
+        return Math.max(DEFAULT_ROOF_VISIBILITY_GROUP_LIMIT, roofVisibilityHandler.getGroupLimit());
+    }
+
+    public static boolean IsRoofVisibilityActive() {
+        return roofVisibilityHandler != null && roofVisibilityHandler.isActive();
+    }
+
+    public static void DisableRoofVisibilityIfExpired() {
+        if (roofVisibilityHandler != null) {
+            roofVisibilityHandler.disableIfExpired();
+        }
+    }
+
+    public static void EnsureRoofVisibilityBuffers() {
+        if (roofVisibilityHandler != null) {
+            roofVisibilityHandler.ensureBuffers();
+        }
+    }
+
+    public static void ApplyRoofVisibilityRequests() {
+        if (roofVisibilityHandler != null) {
+            roofVisibilityHandler.applyRequests();
+        }
+    }
+
+    public static boolean IsRoofVisibilityPicking() {
+        return roofVisibilityHandler != null && roofVisibilityHandler.isPicking();
+    }
+
+    public static int GetRoofVisibilityPickScreenX() {
+        return roofVisibilityHandler == null ? 0 : roofVisibilityHandler.getPickScreenX();
+    }
+
+    public static int GetRoofVisibilityPickScreenY() {
+        return roofVisibilityHandler == null ? 0 : roofVisibilityHandler.getPickScreenY();
+    }
+
+    public static void ReportRoofVisibilityTile(int sceneX, int sceneZ, int plane) {
+        if (roofVisibilityHandler != null) {
+            roofVisibilityHandler.reportTile(sceneX, sceneZ, plane);
+        }
+    }
+
+    public static boolean IsRoofVisibilityLocPickable(long key) {
+        return roofVisibilityHandler != null && roofVisibilityHandler.isLocPickable(key);
+    }
+
+    public static void ReportRoofVisibilityLoc(long key, int plane) {
+        if (roofVisibilityHandler != null) {
+            roofVisibilityHandler.reportLoc(key, plane);
+        }
+    }
+
+    public static void BeginRoofVisibilityGroup(int group) {
+        if (roofVisibilityHandler != null) {
+            roofVisibilityHandler.beginGroup(group);
+        }
+    }
+
+    public static void AddRoofVisibilityGroupTile(int group, int plane, int sceneX, int sceneZ) {
+        if (roofVisibilityHandler != null) {
+            roofVisibilityHandler.addGroupTile(group, plane, sceneX, sceneZ);
+        }
+    }
+
+    public static void SetDestinationRoofTarget(int sceneX, int sceneZ) {
+        if (roofVisibilityHandler != null) {
+            roofVisibilityHandler.setDestinationTarget(sceneX, sceneZ);
+        }
+    }
+
+    public static void ClearDestinationRoofTarget() {
+        if (roofVisibilityHandler != null) {
+            roofVisibilityHandler.clearDestinationTarget();
+        }
+    }
+
     public static void StoreData(String key, Object value) {
         PluginRepository.pluginStorage.put(key, value);
+        PluginRepository.pluginStorage.put("_keystoreDirty", true);
     }
 
     public static Object GetData(String key) {
@@ -271,6 +380,13 @@ public class API {
     public static void DispatchCommand(String command) {
         Cheat.sendCheatPacket(JagString.of(command));
     }
+    
+    public static void Screenshot(String... subfolders) {
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy_MM_dd-HH_mm_ss");
+        String dateTime = dateFormat.format(new Date());
+        String username = PlayerList.self != null && PlayerList.self.username != null && !PlayerList.self.username.toString().isEmpty() ? PlayerList.self.username.toString() : "2009Scape";
+        client.instance.saveScreenshot( username + "_" + dateTime + ".png", subfolders);
+    }
 
     public static void PlaySound(int volume, int trackId, int delay) {
         SoundPlayer.play(volume, trackId, delay);
@@ -278,6 +394,10 @@ public class API {
 
     public static void PlayMusic(int volume, int trackId) {
         MidiPlayer.playFadeOut(trackId, client.js5Archive6, volume);
+    }
+
+    public static void SetLoginScreenMusicOnLoad(String song) {
+        client.TITLE_SONG = JagString.parse(song);
     }
 
     /**
@@ -291,6 +411,7 @@ public class API {
     public static int[] CalculateSceneGraphScreenPosition(int entityX, int entityZ, int yOffset) {
         final int HALF_FIXED_WIDTH = 256;
         final int HALF_FIXED_HEIGHT = 167;
+        final int RESIZABLE_SD_OFFSET = 500;
 
         int elevation = SceneGraph.getTileHeight(plane, entityX, entityZ) - yOffset;
         entityX -= SceneGraph.cameraX;
@@ -313,15 +434,27 @@ public class API {
         int[] screenPos = new int[2]; // X,Y
 
         if (entityZ >= 50) {
-            if(GetWindowMode() == WindowMode.FIXED) {
+            if (GetWindowMode() == WindowMode.FIXED) {
                 screenPos[0] = HALF_FIXED_WIDTH + ((entityX << 9) / entityZ);
                 screenPos[1] = HALF_FIXED_HEIGHT + ((elevation << 9) / entityZ);
             } else {
                 Dimension canvas = GetWindowDimensions();
-                double newViewDistH = (canvas.width / 2) / Math.tan(Math.toRadians(GlRenderer.hFOV) / 2);
-                double newViewDistV = (canvas.height / 2) / Math.tan(Math.toRadians(GlRenderer.vFOV) / 2);
-                screenPos[0] = canvas.width / 2 + (int)((entityX * newViewDistH) / entityZ);
-                screenPos[1] = canvas.height / 2 + (int)((elevation * newViewDistV) / entityZ);
+                double newViewDistH;
+                double newViewDistV;
+
+                if (API.IsHD()) {
+                    newViewDistH = (canvas.width / 2) / Math.tan(Math.toRadians(GlRenderer.hFOV) / 2);
+                    newViewDistV = (canvas.height / 2) / Math.tan(Math.toRadians(GlRenderer.vFOV) / 2);
+                } else {
+                    double aspectRatio = (double) canvas.width / canvas.height;
+                    double vFOV = 2 * Math.toDegrees(Math.atan((double) canvas.height / (2 * RESIZABLE_SD_OFFSET)));
+                    double hFOV = 2 * Math.toDegrees(Math.atan(Math.tan(Math.toRadians(vFOV / 2)) * aspectRatio));
+
+                    newViewDistH = (canvas.width / 2) / Math.tan(Math.toRadians(hFOV) / 2);
+                    newViewDistV = (canvas.height / 2) / Math.tan(Math.toRadians(vFOV) / 2);
+                }
+                screenPos[0] = canvas.width / 2 + (int) ((entityX * newViewDistH) / entityZ);
+                screenPos[1] = canvas.height / 2 + (int) ((elevation * newViewDistV) / entityZ);
             }
         } else {
             screenPos[0] = -1;

@@ -18,7 +18,7 @@ public final class DisplayMode {
 	@OriginalMember(owner = "client!ib", name = "i", descriptor = "[Lclient!od;")
 	public static DisplayMode[] aClass114Array1;
 	@OriginalMember(owner = "client!rc", name = "M", descriptor = "Z")
-	public static boolean aBoolean73 = false;
+	public static boolean start_GLRenderer = false;
 	@OriginalMember(owner = "client!jk", name = "y", descriptor = "Z")
 	public static boolean resizable = false;
 	@OriginalMember(owner = "client!hi", name = "f", descriptor = "J")
@@ -36,16 +36,18 @@ public final class DisplayMode {
 	@OriginalMember(owner = "client!od", name = "m", descriptor = "I")
 	public int bitDepth;
 
+	public static boolean resizableSD = false;
+
 	@OriginalMember(owner = "client!c", name = "a", descriptor = "(Ljava/awt/Frame;ZLsignlink!ll;)V")
-	public static void exitFullScreen(@OriginalArg(0) Frame arg0, @OriginalArg(2) SignLink arg1) {
+	public static void exitFullScreen(@OriginalArg(0) Frame frame, @OriginalArg(2) SignLink signLink) {
 		while (true) {
-			@Pc(16) PrivilegedRequest local16 = arg1.exitFullScreen(arg0);
-			while (local16.status == 0) {
+			@Pc(16) PrivilegedRequest request = signLink.exitFullScreen(frame);
+			while (request.status == 0) {
 				ThreadUtils.sleep(10L);
 			}
-			if (local16.status == 1) {
-				arg0.setVisible(false);
-				arg0.dispose();
+			if (request.status == 1) {
+				frame.setVisible(false);
+				frame.dispose();
 				return;
 			}
 			ThreadUtils.sleep(100L);
@@ -92,7 +94,7 @@ public final class DisplayMode {
 			GameShell.fullScreenFrame = null;
 		}
 		if (newMode == HD_FULLSCREEN && GameShell.fullScreenFrame == null) {
-			GameShell.fullScreenFrame = method3176(0, fullscreenH, fullscreenW, GameShell.signLink);
+			GameShell.fullScreenFrame = createFullScreenFrame(0, fullscreenH, fullscreenW, GameShell.signLink);
 			if (GameShell.fullScreenFrame != null) {
 				Preferences.fullScreenHeight = fullscreenH;
 				Preferences.fullScreenWidth = fullscreenW;
@@ -186,7 +188,10 @@ public final class DisplayMode {
 			LoginManager.method4637();
 		} else if (newMode == SD_FIXED && currentMode != SD_FIXED) {
 			GameShell.thread.setPriority(1);
-			SoftwareRaster.frameBuffer = FrameBuffer.create(503, 765, GameShell.canvas);
+			if(resizableSD)
+				SoftwareRaster.frameBuffer = FrameBuffer.create(GameShell.frameHeight, GameShell.frameWidth, GameShell.canvas);
+			else
+				SoftwareRaster.frameBuffer = FrameBuffer.create(503, 765, GameShell.canvas);
 			SoftwareModel.method4583();
 			ParticleSystem.quit();
 			((Js5GlTextureProvider) Rasteriser.textureProvider).method3248(20);
@@ -286,36 +291,36 @@ public final class DisplayMode {
 	}
 
 	@OriginalMember(owner = "client!nf", name = "a", descriptor = "(IIIIILsignlink!ll;)Ljava/awt/Frame;")
-	public static Frame method3176(@OriginalArg(2) int arg0, @OriginalArg(3) int arg1, @OriginalArg(4) int arg2, @OriginalArg(5) SignLink arg3) {
-		if (!arg3.isFullScreenSupported()) {
+	public static Frame createFullScreenFrame(@OriginalArg(2) int bitDepth, @OriginalArg(3) int height, @OriginalArg(4) int width, @OriginalArg(5) SignLink signLink) {
+		if (!signLink.isFullScreenSupported()) {
 			return null;
 		}
-		@Pc(20) DisplayMode[] local20 = method3558(arg3);
-		if (local20 == null) {
+		@Pc(20) DisplayMode[] displayModes = method3558(signLink);
+		if (displayModes == null) {
 			return null;
 		}
 		@Pc(27) boolean local27 = false;
-		for (@Pc(29) int local29 = 0; local29 < local20.length; local29++) {
-			if (arg2 == local20[local29].width && arg1 == local20[local29].height && (!local27 || local20[local29].bitDepth > arg0)) {
-				arg0 = local20[local29].bitDepth;
+		for (@Pc(29) int local29 = 0; local29 < displayModes.length; local29++) {
+			if (width == displayModes[local29].width && height == displayModes[local29].height && (!local27 || displayModes[local29].bitDepth > bitDepth)) {
+				bitDepth = displayModes[local29].bitDepth;
 				local27 = true;
 			}
 		}
 		if (!local27) {
 			return null;
 		}
-		@Pc(90) PrivilegedRequest local90 = arg3.enterFullScreen(arg0, arg1, arg2);
-		while (local90.status == 0) {
+		@Pc(90) PrivilegedRequest request = signLink.enterFullScreen(bitDepth, height, width);
+		while (request.status == 0) {
 			ThreadUtils.sleep(10L);
 		}
-		@Pc(103) Frame local103 = (Frame) local90.result;
-		if (local103 == null) {
+		@Pc(103) Frame frame = (Frame) request.result;
+		if (frame == null) {
 			return null;
-		} else if (local90.status == 2) {
-			exitFullScreen(local103, arg3);
+		} else if (request.status == 2) {
+			exitFullScreen(frame, signLink);
 			return null;
 		} else {
-			return local103;
+			return frame;
 		}
 	}
 

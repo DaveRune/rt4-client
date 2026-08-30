@@ -231,6 +231,7 @@ public class Cheat {
 					shiftClick = true;
 				}
 			}
+
 		if (arg0.equalsIgnoreCase(RELOADPLUGINS)) {
 			PluginRepository.reloadPlugins();
 		}

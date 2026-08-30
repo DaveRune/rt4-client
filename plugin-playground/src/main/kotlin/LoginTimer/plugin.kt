@@ -14,11 +14,6 @@ import java.util.concurrent.TimeUnit
  * Timer/SysTime that goes over the report abuse button
  * @author Woah
  */
-@PluginMeta(
-    author = "Woahscam, Ceikry",
-    description = "Displays the session time played, system time, or no time over the \"Report Abuse\" button.",
-    version = 1.2
-)
 class plugin : Plugin() {
 
     private val COMPONENT_REPORT_ABUSE = 49217565
@@ -30,6 +25,7 @@ class plugin : Plugin() {
 
     private var timeMode = TIME_MODE_INITIALIZATION
     private var initTime: Long = 0
+    private var logoutFlag = true
     private var displayMessageCounter = 0
 
     private var component: Component? = null
@@ -38,6 +34,20 @@ class plugin : Plugin() {
         timeMode = TIME_MODE_INITIALIZATION
         initTime = System.currentTimeMillis()
         displayMessageCounter = 0
+    }
+
+    override fun OnPluginsReloaded(): Boolean {
+        return true
+    }
+
+    override fun OnLogin() {
+        if(logoutFlag)
+            initTime = System.currentTimeMillis()
+        logoutFlag = false
+    }
+
+    override fun OnLogout() {
+        logoutFlag = true
     }
 
     override fun Draw(timeDelta: Long) {
@@ -138,6 +148,9 @@ class plugin : Plugin() {
             }
             API.InsertMiniMenuEntry("Disable Timer", "") {
                 timeMode = DEFAULT_TIME_MODE
+            }
+            API.InsertMiniMenuEntry("Reset Play Time", "") {
+                initTime = System.currentTimeMillis()
             }
         }
     }

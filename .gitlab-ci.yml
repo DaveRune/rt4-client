@@ -1,4 +1,4 @@
-image: java:8-jdk
+image: eclipse-temurin:8u412-b08-jdk
 
 stages:
   - build

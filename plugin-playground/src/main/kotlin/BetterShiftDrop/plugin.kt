@@ -7,11 +7,6 @@ import plugin.api.MiniMenuEntry
 import rt4.Cheat
 import rt4.Keyboard
 
-@PluginMeta(
-    author = "bushtail",
-    description = "Better dropping and destroying while holding shift. Use ::bsd command to toggle. If for some reason after installing the plugin, Better Shift Drop does not activate, run the command to activate it.",
-    version = 2.0
-)
 class plugin : Plugin() {
     override fun Init() {
         if(API.GetData("bsd-toggle") == null) {

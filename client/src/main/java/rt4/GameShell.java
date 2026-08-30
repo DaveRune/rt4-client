@@ -616,6 +616,7 @@ public abstract class GameShell extends Applet implements Runnable, FocusListene
 
 			long lastUpdateTime = 0;
 			long lastDrawTime = 0;
+			long nextUpdate = 0;
 			while (killTime == 0L) {
 				if (GameShell.killTime > MonotonicClock.currentTimeMillis()) {
 					break;
@@ -624,6 +625,14 @@ public abstract class GameShell extends Applet implements Runnable, FocusListene
 				long currentTime = System.nanoTime();
 
 				updateDelta = currentTime - lastUpdateTime;
+				renderDelta = currentTime - lastDrawTime;
+
+				nextUpdate = Math.min(FIXED_UPDATE_RATE_NS - updateDelta, VARIABLE_RENDER_RATE_NS - renderDelta);
+				// Convert from ns to ms
+				nextUpdate /= 1_000_000;
+				ThreadUtils.sleep(nextUpdate);
+
+				// Game update
 				if (updateDelta >= FIXED_UPDATE_RATE_NS) {
 					logicCycles = timer.count(minimumDelay, (int) FIXED_UPDATE_RATE);
 					for (int cycle = 0; cycle < logicCycles; ++cycle) {
@@ -633,7 +642,7 @@ public abstract class GameShell extends Applet implements Runnable, FocusListene
 					flush(signLink, canvas);
 				}
 
-				renderDelta = currentTime - lastDrawTime;
+				// Render update
 				if (renderDelta >= VARIABLE_RENDER_RATE_NS) {
 					this.mainInputLoop();
 					this.mainRedrawWrapper();
@@ -731,11 +740,18 @@ public abstract class GameShell extends Applet implements Runnable, FocusListene
         }
 
         private final void configureTargetFPS() {
-            int refreshRate = getCurrentDevice().getDisplayMode().getRefreshRate();
-            if (refreshRate == java.awt.DisplayMode.REFRESH_RATE_UNKNOWN) {  
-                refreshRate = 60; //just assume 60hz and call it a day.
+            int targetFps = 0;
+            String clientFps = System.getProperty("clientFps");
+            if (clientFps != null) {
+                targetFps = Integer.parseInt(clientFps); //if invalid number, we're happy to get the exception
+	    }
+	    if (targetFps == 0) {
+                targetFps = getCurrentDevice().getDisplayMode().getRefreshRate();
+                if (targetFps == java.awt.DisplayMode.REFRESH_RATE_UNKNOWN) {
+                    targetFps = 60; //just assume 60hz and call it a day.
+                }
             }
-            GameShell.setFpsTarget(refreshRate);
+            GameShell.setFpsTarget(targetFps);
         }
 
 	@OriginalMember(owner = "client!rc", name = "windowOpened", descriptor = "(Ljava/awt/event/WindowEvent;)V")

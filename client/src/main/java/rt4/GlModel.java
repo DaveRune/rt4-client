@@ -5,6 +5,7 @@ import org.openrs2.deob.annotation.OriginalArg;
 import org.openrs2.deob.annotation.OriginalClass;
 import org.openrs2.deob.annotation.OriginalMember;
 import org.openrs2.deob.annotation.Pc;
+import plugin.api.API;
 
 import java.nio.ByteBuffer;
 
@@ -975,7 +976,9 @@ public final class GlModel extends Model {
 			local161 = MathUtils.sin[arg0];
 			local163 = MathUtils.cos[arg0];
 		}
-		if (arg8 > 0L && RawModel.allowInput && local70 > 0) {
+		@Pc(165) boolean roofVisibilityLocPick = API.IsRoofVisibilityLocPickable(arg8);
+		@Pc(168) boolean miniMenuPick = arg8 > 0L;
+		if ((miniMenuPick || roofVisibilityLocPick) && RawModel.allowInput && local70 > 0) {
 			@Pc(187) int local187;
 			@Pc(191) int local191;
 			if (local84 > 0) {
@@ -1049,63 +1052,79 @@ public final class GlModel extends Model {
 				}
 				if (anInt3582 >= local187 && anInt3582 <= local191 && RawModel.anInt1053 >= local206 && RawModel.anInt1053 <= local210) {
 					if (this.pickable) {
-						Model.aLongArray11[MiniMenu.anInt7++] = arg8;
-					} else {
-						if (anIntArray468.length < this.anInt5296) {
-							anIntArray468 = new int[this.anInt5296];
-							anIntArray467 = new int[this.anInt5296];
+						if (miniMenuPick) {
+							Model.aLongArray11[MiniMenu.anInt7++] = arg8;
 						}
-						local362 = 0;
-						label118:
-						while (true) {
-							if (local362 >= this.vertexCount) {
-								local362 = 0;
-								while (true) {
-									if (local362 >= this.triangleCount) {
-										break label118;
+						if (roofVisibilityLocPick) {
+							API.ReportRoofVisibilityLoc(arg8, arg9);
+						}
+					} else {
+						if (this.vertexX == null || this.vertexY == null || this.vertexZ == null || this.anIntArray462 == null || this.aShortArray81 == null || this.aShortArray77 == null || this.aShortArray82 == null || this.aShortArray83 == null) {
+							if (roofVisibilityLocPick) {
+								API.ReportRoofVisibilityLoc(arg8, arg9);
+							}
+						} else {
+							if (anIntArray468.length < this.anInt5296) {
+								anIntArray468 = new int[this.anInt5296];
+								anIntArray467 = new int[this.anInt5296];
+							}
+							local362 = 0;
+							label118:
+							while (true) {
+								if (local362 >= this.vertexCount) {
+									local362 = 0;
+									while (true) {
+										if (local362 >= this.triangleCount) {
+											break label118;
+										}
+										@Pc(698) short local698 = this.aShortArray77[local362];
+										@Pc(703) short local703 = this.aShortArray82[local362];
+										@Pc(708) short local708 = this.aShortArray83[local362];
+										if (this.method4118(anInt3582, RawModel.anInt1053, anIntArray467[local698], anIntArray467[local703], anIntArray467[local708], anIntArray468[local698], anIntArray468[local703], anIntArray468[local708])) {
+											if (miniMenuPick) {
+												Model.aLongArray11[MiniMenu.anInt7++] = arg8;
+											}
+											if (roofVisibilityLocPick) {
+												API.ReportRoofVisibilityLoc(arg8, arg9);
+											}
+											break label118;
+										}
+										local362++;
 									}
-									@Pc(698) short local698 = this.aShortArray77[local362];
-									@Pc(703) short local703 = this.aShortArray82[local362];
-									@Pc(708) short local708 = this.aShortArray83[local362];
-									if (this.method4118(anInt3582, RawModel.anInt1053, anIntArray467[local698], anIntArray467[local703], anIntArray467[local708], anIntArray468[local698], anIntArray468[local703], anIntArray468[local708])) {
-										Model.aLongArray11[MiniMenu.anInt7++] = arg8;
-										break label118;
-									}
-									local362++;
 								}
-							}
-							local369 = this.vertexX[local362];
-							local373 = this.vertexY[local362];
-							local377 = this.vertexZ[local362];
-							if (arg0 != 0) {
-								local389 = local377 * local161 + local369 * local163 >> 16;
-								local377 = local377 * local163 - local369 * local161 >> 16;
+								local369 = this.vertexX[local362];
+								local373 = this.vertexY[local362];
+								local377 = this.vertexZ[local362];
+								if (arg0 != 0) {
+									local389 = local377 * local161 + local369 * local163 >> 16;
+									local377 = local377 * local163 - local369 * local161 >> 16;
+									local369 = local389;
+								}
+								local369 += arg5;
+								local373 += arg6;
+								local377 += arg7;
+								local389 = local377 * arg3 + local369 * arg4 >> 16;
+								local377 = local377 * arg4 - local369 * arg3 >> 16;
 								local369 = local389;
-							}
-							local369 += arg5;
-							local373 += arg6;
-							local377 += arg7;
-							local389 = local377 * arg3 + local369 * arg4 >> 16;
-							local377 = local377 * arg4 - local369 * arg3 >> 16;
-							local369 = local389;
-							local389 = local373 * arg2 - local377 * arg1 >> 16;
-							local377 = local373 * arg1 + local377 * arg2 >> 16;
-							if (local377 < 50) {
-								break;
-							}
-							local465 = (local369 << 9) / local377;
-							local471 = (local389 << 9) / local377;
-							@Pc(652) int local652 = this.anIntArray462[local362];
-							@Pc(659) int local659 = this.anIntArray462[local362 + 1];
-							for (@Pc(661) int local661 = local652; local661 < local659; local661++) {
-								@Pc(671) int local671 = this.aShortArray81[local661] - 1;
-								if (local671 == -1) {
+								local389 = local373 * arg2 - local377 * arg1 >> 16;
+								local377 = local373 * arg1 + local377 * arg2 >> 16;
+								if (local377 < 50) {
 									break;
 								}
-								anIntArray468[local671] = local465;
-								anIntArray467[local671] = local471;
+								local465 = (local369 << 9) / local377;
+								local471 = (local389 << 9) / local377;
+								@Pc(652) int local652 = this.anIntArray462[local362];
+								@Pc(659) int local659 = this.anIntArray462[local362 + 1];
+								for (@Pc(661) int local661 = local652; local661 < local659; local661++) {
+									@Pc(671) int local671 = this.aShortArray81[local661] - 1;
+									if (local671 == -1) {
+										break;
+									}
+									anIntArray468[local671] = local465;
+									anIntArray467[local671] = local471;
+								}
+								local362++;
 							}
-							local362++;
 						}
 					}
 				}

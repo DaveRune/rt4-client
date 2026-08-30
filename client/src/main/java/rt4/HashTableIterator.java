@@ -25,18 +25,18 @@ public final class HashTableIterator {
 	@OriginalMember(owner = "client!l", name = "a", descriptor = "(I)Lclient!ab;")
 	public final Node method2700() {
 		@Pc(30) Node local30;
-		if (this.anInt3447 > 0 && this.aClass133_10.aClass3Array1[this.anInt3447 - 1] != this.aClass3_135) {
+		if (this.anInt3447 > 0 && this.aClass133_10.nodes[this.anInt3447 - 1] != this.aClass3_135) {
 			local30 = this.aClass3_135;
-			this.aClass3_135 = local30.aClass3_222;
+			this.aClass3_135 = local30.nextNode;
 			return local30;
 		}
 		do {
 			if (this.aClass133_10.anInt5023 <= this.anInt3447) {
 				return null;
 			}
-			local30 = this.aClass133_10.aClass3Array1[this.anInt3447++].aClass3_222;
-		} while (local30 == this.aClass133_10.aClass3Array1[this.anInt3447 - 1]);
-		this.aClass3_135 = local30.aClass3_222;
+			local30 = this.aClass133_10.nodes[this.anInt3447++].nextNode;
+		} while (local30 == this.aClass133_10.nodes[this.anInt3447 - 1]);
+		this.aClass3_135 = local30.nextNode;
 		return local30;
 	}
 

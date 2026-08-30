@@ -12,10 +12,7 @@ import java.awt.event.MouseWheelListener;
 import java.io.*;
 import java.net.URL;
 import java.net.URLClassLoader;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -48,7 +45,24 @@ public class PluginRepository {
         API.registeredWheelListeners.clear();
         API.registeredMouseListeners.clear();
         API.registeredKeyListeners.clear();
+
+        HashMap<PluginInfo, Plugin> pluginsToKeep = new HashMap<>();
+
+        // Check and store plugins with OnPluginsReloaded method
+        loadedPlugins.forEach((info, plugin) -> {
+            try {
+                boolean keep = plugin.OnPluginsReloaded();
+                if (keep) {
+                    pluginsToKeep.put(info, plugin);
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        });
+
         loadedPlugins.clear();
+        loadedPlugins.putAll(pluginsToKeep);
+        SaveStorage();
         Init();
     }
 
@@ -75,13 +89,7 @@ public class PluginRepository {
            } catch (Exception e) {e.printStackTrace();}
         }
 
-        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
-            try(FileOutputStream fos = new FileOutputStream(GlobalJsonConfig.instance.pluginsFolder + File.separator + "plsto")) {
-                ObjectOutputStream oos = new ObjectOutputStream(fos);
-                oos.writeObject(PluginRepository.pluginStorage);
-                oos.close();
-            } catch (Exception e) {e.printStackTrace();}
-        }));
+        Runtime.getRuntime().addShutdownHook(new Thread(PluginRepository::SaveStorage));
 
         try {
             URL[] classPath = {pluginsDirectory.toURI().toURL()};
@@ -101,14 +109,24 @@ public class PluginRepository {
 
                 Class<?> clazz = loader.loadClass(file.getName() + ".plugin");
 
-                PluginInfo info;
-                if (infoFile.exists())
-                    info = PluginInfo.loadFromFile(infoFile);
-                else
-                    info = PluginInfo.loadFromClass(clazz);
+                PluginInfo info = null;
+                try {
+                    if (infoFile.exists())
+                        info = PluginInfo.loadFromFile(infoFile);
+                    else
+                        info = PluginInfo.loadFromClass(clazz);
+                } catch (Exception e) {
+                    System.err.println("Unable to load plugin " + file.getName() + " because there were issues parsing its info: ");
+                    e.printStackTrace();
+                }
 
                 if (info == null) {
                     System.err.println("Unable to load plugin " + file.getName() + " because it contains no information about author, version, etc!");
+                    continue;
+                }
+
+                if (loadedPlugins.containsKey(info)) {
+                    System.out.println("Skipping reloading of plugin " + file.getName() + " as it already exists and has OnPluginsReloaded.");
                     continue;
                 }
 
@@ -144,7 +162,13 @@ public class PluginRepository {
     }
 
     public static void Draw() {
-        loadedPlugins.values().forEach(Plugin::_draw);
+        List<Plugin> pluginsSnapshot = new ArrayList<>(loadedPlugins.values());
+        pluginsSnapshot.forEach(Plugin::_draw);
+    }
+
+    public static void LateDraw() {
+        List<Plugin> pluginsSnapshot = new ArrayList<>(loadedPlugins.values());
+        pluginsSnapshot.forEach(Plugin::_lateDraw);
     }
 
     public static void NPCOverheadDraw(Npc npc, int screenX, int screenY) {
@@ -158,7 +182,8 @@ public class PluginRepository {
     public static void ProcessCommand(JagString commandStr) {
         String[] tokens = commandStr.toString().split(" ");
         String[] args = Arrays.copyOfRange(tokens, 1, tokens.length);
-        loadedPlugins.values().forEach((plugin) -> plugin.ProcessCommand(tokens[0], args));
+        List<Plugin> pluginsSnapshot = new ArrayList<>(loadedPlugins.values());
+        pluginsSnapshot.forEach((plugin) -> plugin.ProcessCommand(tokens[0], args));
     }
 
     public static void ComponentDraw(int componentIndex, Component component, int screenX, int screenY) {
@@ -174,7 +199,8 @@ public class PluginRepository {
     }
 
     public static void OnLogout() {
-        loadedPlugins.values().forEach(Plugin::OnLogout);
+        List<Plugin> pluginsSnapshot = new ArrayList<>(loadedPlugins.values());
+        pluginsSnapshot.forEach(Plugin::OnLogout);
     }
 
     public static void DrawMiniMenu(MiniMenuEntry entry) {
@@ -188,5 +214,20 @@ public class PluginRepository {
 
     public static void OnLogin() {
         loadedPlugins.values().forEach((plugin) -> plugin.OnLogin());
+    }
+
+    public static void OnKillingBlowNPC(int npcId, int x, int z) {
+        loadedPlugins.values().forEach((plugin) -> plugin.OnKillingBlowNPC(npcId, x, z));
+    }
+
+    public static void SaveStorage() {
+        if (pluginStorage.containsKey("_keystoreDirty")) {
+            pluginStorage.remove("_keystoreDirty");
+            try(FileOutputStream fos = new FileOutputStream(GlobalJsonConfig.instance.pluginsFolder + File.separator + "plsto")) {
+                ObjectOutputStream oos = new ObjectOutputStream(fos);
+                oos.writeObject(PluginRepository.pluginStorage);
+                oos.close();
+            } catch (Exception e) {e.printStackTrace();}
+        }
     }
 }

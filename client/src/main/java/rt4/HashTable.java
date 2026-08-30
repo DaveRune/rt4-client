@@ -21,28 +21,28 @@ public final class HashTable {
 	private int anInt5037 = 0;
 
 	@OriginalMember(owner = "client!sc", name = "c", descriptor = "[Lclient!ab;")
-	public final Node[] aClass3Array1;
+	public final Node[] nodes;
 
 	@OriginalMember(owner = "client!sc", name = "h", descriptor = "I")
 	public final int anInt5023;
 
 	@OriginalMember(owner = "client!sc", name = "<init>", descriptor = "(I)V")
 	public HashTable(@OriginalArg(0) int arg0) {
-		this.aClass3Array1 = new Node[arg0];
+		this.nodes = new Node[arg0];
 		this.anInt5023 = arg0;
-		for (@Pc(13) int local13 = 0; local13 < arg0; local13++) {
-			@Pc(25) Node local25 = this.aClass3Array1[local13] = new Node();
-			local25.aClass3_223 = local25;
-			local25.aClass3_222 = local25;
+		for (@Pc(13) int i = 0; i < arg0; i++) {
+			@Pc(25) Node node = this.nodes[i] = new Node();
+			node.previousNode = node;
+			node.nextNode = node;
 		}
 	}
 
 	@OriginalMember(owner = "client!sc", name = "a", descriptor = "(I)V")
 	public final void clear() {
 		for (@Pc(5) int local5 = 0; local5 < this.anInt5023; local5++) {
-			@Pc(14) Node local14 = this.aClass3Array1[local5];
+			@Pc(14) Node local14 = this.nodes[local5];
 			while (true) {
-				@Pc(17) Node local17 = local14.aClass3_222;
+				@Pc(17) Node local17 = local14.nextNode;
 				if (local14 == local17) {
 					break;
 				}
@@ -62,42 +62,42 @@ public final class HashTable {
 	@OriginalMember(owner = "client!sc", name = "d", descriptor = "(I)Lclient!ab;")
 	public final Node next() {
 		@Pc(24) Node local24;
-		if (this.anInt5037 > 0 && this.aClass3_193 != this.aClass3Array1[this.anInt5037 - 1]) {
+		if (this.anInt5037 > 0 && this.aClass3_193 != this.nodes[this.anInt5037 - 1]) {
 			local24 = this.aClass3_193;
-			this.aClass3_193 = local24.aClass3_222;
+			this.aClass3_193 = local24.nextNode;
 			return local24;
 		}
 		do {
 			if (this.anInt5037 >= this.anInt5023) {
 				return null;
 			}
-			local24 = this.aClass3Array1[this.anInt5037++].aClass3_222;
-		} while (this.aClass3Array1[this.anInt5037 - 1] == local24);
-		this.aClass3_193 = local24.aClass3_222;
+			local24 = this.nodes[this.anInt5037++].nextNode;
+		} while (this.nodes[this.anInt5037 - 1] == local24);
+		this.aClass3_193 = local24.nextNode;
 		return local24;
 	}
 
 	@OriginalMember(owner = "client!sc", name = "a", descriptor = "(ILclient!ab;J)V")
 	public final void put(@OriginalArg(1) Node arg0, @OriginalArg(2) long arg1) {
-		if (arg0.aClass3_223 != null) {
+		if (arg0.previousNode != null) {
 			arg0.unlink();
 		}
-		@Pc(21) Node local21 = this.aClass3Array1[(int) (arg1 & (long) (this.anInt5023 - 1))];
-		arg0.aClass3_222 = local21;
+		@Pc(21) Node local21 = this.nodes[(int) (arg1 & (long) (this.anInt5023 - 1))];
+		arg0.nextNode = local21;
 		arg0.key = arg1;
-		arg0.aClass3_223 = local21.aClass3_223;
-		arg0.aClass3_223.aClass3_222 = arg0;
-		arg0.aClass3_222.aClass3_223 = arg0;
+		arg0.previousNode = local21.previousNode;
+		arg0.previousNode.nextNode = arg0;
+		arg0.nextNode.previousNode = arg0;
 	}
 
 	@OriginalMember(owner = "client!sc", name = "a", descriptor = "(JI)Lclient!ab;")
 	public final Node get(@OriginalArg(0) long arg0) {
 		this.aLong168 = arg0;
-		@Pc(24) Node local24 = this.aClass3Array1[(int) (arg0 & (long) (this.anInt5023 - 1))];
-		for (this.aClass3_192 = local24.aClass3_222; this.aClass3_192 != local24; this.aClass3_192 = this.aClass3_192.aClass3_222) {
+		@Pc(24) Node local24 = this.nodes[(int) (arg0 & (long) (this.anInt5023 - 1))];
+		for (this.aClass3_192 = local24.nextNode; this.aClass3_192 != local24; this.aClass3_192 = this.aClass3_192.nextNode) {
 			if (arg0 == this.aClass3_192.key) {
 				@Pc(46) Node local46 = this.aClass3_192;
-				this.aClass3_192 = this.aClass3_192.aClass3_222;
+				this.aClass3_192 = this.aClass3_192.nextNode;
 				return local46;
 			}
 		}
@@ -109,10 +109,10 @@ public final class HashTable {
 	public final int size() {
 		@Pc(15) int local15 = 0;
 		for (@Pc(17) int local17 = 0; local17 < this.anInt5023; local17++) {
-			@Pc(26) Node local26 = this.aClass3Array1[local17];
-			@Pc(29) Node local29 = local26.aClass3_222;
+			@Pc(26) Node local26 = this.nodes[local17];
+			@Pc(29) Node local29 = local26.nextNode;
 			while (local29 != local26) {
-				local29 = local29.aClass3_222;
+				local29 = local29.nextNode;
 				local15++;
 			}
 		}
@@ -123,8 +123,8 @@ public final class HashTable {
 	public final int method3865(@OriginalArg(0) Node[] arg0) {
 		@Pc(13) int local13 = 0;
 		for (@Pc(15) int local15 = 0; local15 < this.anInt5023; local15++) {
-			@Pc(24) Node local24 = this.aClass3Array1[local15];
-			for (@Pc(27) Node local27 = local24.aClass3_222; local27 != local24; local27 = local27.aClass3_222) {
+			@Pc(24) Node local24 = this.nodes[local15];
+			for (@Pc(27) Node local27 = local24.nextNode; local27 != local24; local27 = local27.nextNode) {
 				arg0[local13++] = local27;
 			}
 		}
@@ -136,14 +136,14 @@ public final class HashTable {
 		if (this.aClass3_192 == null) {
 			return null;
 		}
-		@Pc(23) Node local23 = this.aClass3Array1[(int) (this.aLong168 & (long) (this.anInt5023 - 1))];
+		@Pc(23) Node local23 = this.nodes[(int) (this.aLong168 & (long) (this.anInt5023 - 1))];
 		while (local23 != this.aClass3_192) {
 			if (this.aClass3_192.key == this.aLong168) {
 				@Pc(45) Node local45 = this.aClass3_192;
-				this.aClass3_192 = this.aClass3_192.aClass3_222;
+				this.aClass3_192 = this.aClass3_192.nextNode;
 				return local45;
 			}
-			this.aClass3_192 = this.aClass3_192.aClass3_222;
+			this.aClass3_192 = this.aClass3_192.nextNode;
 		}
 		this.aClass3_192 = null;
 		return null;

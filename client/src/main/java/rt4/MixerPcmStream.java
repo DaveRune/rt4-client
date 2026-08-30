@@ -22,20 +22,20 @@ public final class MixerPcmStream extends PcmStream {
 
 	@OriginalMember(owner = "client!ok", name = "a", descriptor = "(Lclient!ab;Lclient!ab;I)V")
 	public static void method3331(@OriginalArg(0) Node arg0, @OriginalArg(1) Node arg1) {
-		if (arg0.aClass3_223 != null) {
+		if (arg0.previousNode != null) {
 			arg0.unlink();
 		}
-		arg0.aClass3_222 = arg1;
-		arg0.aClass3_223 = arg1.aClass3_223;
-		arg0.aClass3_223.aClass3_222 = arg0;
-		arg0.aClass3_222.aClass3_223 = arg0;
+		arg0.nextNode = arg1;
+		arg0.previousNode = arg1.previousNode;
+		arg0.previousNode.nextNode = arg0;
+		arg0.nextNode.previousNode = arg0;
 	}
 
 	@OriginalMember(owner = "client!ei", name = "a", descriptor = "(Lclient!cc;)V")
 	private void method1342(@OriginalArg(0) MixerListener arg0) {
 		arg0.unlink();
 		arg0.method780();
-		@Pc(9) Node local9 = this.aClass69_44.aClass3_109.aClass3_222;
+		@Pc(9) Node local9 = this.aClass69_44.aClass3_109.nextNode;
 		if (local9 == this.aClass69_44.aClass3_109) {
 			this.anInt1781 = -1;
 		} else {
@@ -75,7 +75,7 @@ public final class MixerPcmStream extends PcmStream {
 					this.method1342(local60);
 				} else {
 					local60.anInt905 = local68;
-					this.method1348(local60.aClass3_222, local60);
+					this.method1348(local60.nextNode, local60);
 				}
 			}
 		} while (arg2 != 0);
@@ -150,7 +150,7 @@ public final class MixerPcmStream extends PcmStream {
 					this.method1342(local50);
 				} else {
 					local50.anInt905 = local58;
-					this.method1348(local50.aClass3_222, local50);
+					this.method1348(local50.nextNode, local50);
 				}
 			}
 		} while (arg0 != 0);
@@ -165,9 +165,9 @@ public final class MixerPcmStream extends PcmStream {
 	@OriginalMember(owner = "client!ei", name = "a", descriptor = "(Lclient!ab;Lclient!cc;)V")
 	private void method1348(@OriginalArg(0) Node arg0, @OriginalArg(1) MixerListener arg1) {
 		while (arg0 != this.aClass69_44.aClass3_109 && ((MixerListener) arg0).anInt905 <= arg1.anInt905) {
-			arg0 = arg0.aClass3_222;
+			arg0 = arg0.nextNode;
 		}
 		method3331(arg1, arg0);
-		this.anInt1781 = ((MixerListener) this.aClass69_44.aClass3_109.aClass3_222).anInt905;
+		this.anInt1781 = ((MixerListener) this.aClass69_44.aClass3_109.nextNode).anInt905;
 	}
 }

@@ -67,6 +67,8 @@ public final class Light {
 	@OriginalMember(owner = "client!gi", name = "g", descriptor = "Z")
 	public boolean doesNotInteractWithLight = false;
 
+	public boolean matchesStaticLightOverride = false;
+
 	@OriginalMember(owner = "client!gi", name = "I", descriptor = "[F")
 	public final float[] diffuse = new float[4];
 
@@ -151,7 +153,7 @@ public final class Light {
 		} else {
 			alpha = 2048;
 		}
-		if (disableFlicker) {
+		if (disableFlicker || matchesStaticLightOverride) {
 			alpha = 2048;
 		}
 		this.alpha = (float) (this.alphaMax + (alpha * this.alphaMin >> 11)) / 2048.0F;

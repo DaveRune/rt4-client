@@ -9,11 +9,6 @@ import rt4.GameShell;
 import java.util.ArrayList;
 import java.util.Arrays;
 
-@PluginMeta(
-        author = "Ceikry",
-        description = "Aids in identifying interface components/varps/model IDs.",
-        version = 1.2
-)
 public class plugin extends Plugin {
     private boolean isEnabled;
     private boolean isVerbose;
