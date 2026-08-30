@@ -49,9 +49,33 @@ dependencies {
     runtime 'org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.4.10'
 }
 
+// Records which commit a jar was built from, so any jar can be traced back to its source.
+// A build with uncommitted changes is marked dirty, because its commit does not describe it.
+def clientCommit() {
+    try {
+        def commit = new ByteArrayOutputStream()
+        exec {
+            commandLine 'git', 'rev-parse', '--short=8', 'HEAD'
+            standardOutput = commit
+            errorOutput = new ByteArrayOutputStream()
+        }
+        def changes = new ByteArrayOutputStream()
+        exec {
+            commandLine 'git', 'status', '--porcelain'
+            standardOutput = changes
+            errorOutput = new ByteArrayOutputStream()
+        }
+        def id = commit.toString().trim()
+        return changes.toString().trim().isEmpty() ? id : id + '-dirty'
+    } catch (Exception ignored) {
+        return 'unknown'
+    }
+}
+
 jar {
     manifest {
-        attributes 'Main-Class': "$mainClassName"
+        attributes 'Main-Class': "$mainClassName",
+                   'Client-Commit': clientCommit()
     }
     from { configurations.compileClasspath.collect { it.isDirectory() ? it : zipTree(it) } }
     duplicatesStrategy = DuplicatesStrategy.INCLUDE
