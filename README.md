@@ -1,76 +1,57 @@
-[Fork of Pazaz/RT4-Client](https://github.com/pazaz/rt4-client)
+# RT4 Client, Android
 
-## Goals
+The 2009Scape game client, rewritten to draw through LWJGL and GLFW so it runs on Android under PojavLauncher. This is the client that [DaveRune/2009Scape-mobile](https://github.com/DaveRune/2009Scape-mobile) includes as `rt4.jar`.
 
-* Identify all classes
-  * Create new static classes by grouping related members
-* Identify all methods
-* Identify all fields
-* Identify all local variables
-* Remove any remaining obfuscation (possibly none left)
-* Fix poor decompiler behavior (fernflower)
-* Replace magic numbers and bitmasks with named final fields
-* Refactor code to improve behavior/readability
-* Modernize code/libraries (High DPI support, modern refresh rates, ...)
-* Support existing servers via global config flags that adjust packet behaviors
-* Organize classes into packages
+I modified this for me, so I could play on my tablet. I am not committing to maintaining it or taking requests. I used AI tools.
+I leave it here in case anyone else wants to pick it up one day like I did from downthecrop's work.
 
-OpenRS2 annotations are left in the source to build a deob map from, in case some of my changes aren't desirable.  
-That mapping can be used to generate a new deob with everything renamed for you.
+## What this is, and what it is not
 
-## Instructions
+There are two clients and they are not two versions of one thing.
 
-Build requirements:
-* Java 8+
+The **desktop client** at [2009scape/rt4-client](https://gitlab.com/2009scape/rt4-client) draws through JOGL. It is the live one, actively worked on, and a jar built from it will work on Android.
 
-Runtime requirements:
-* SD: Java 8+
-* HD on Windows, use Java 15 or lower. There is a JOGL issue on 16+ related to how they grab the WGL context from the window.
-* HD on Linux: Java 8+
-* HD on macOS: Not possible yet on latest macOS. Might work for earlier OS versions.
+The **Android client** is this. In July 2023 downthecrop took a copy of the desktop client and replaced JOGL with LWJGL 3 and GLFW, because that is what PojavLauncher provides. That work covers the whole renderer: every `Gl*` class, the material renderers, lighting, shadows, fog, water, fonts, sprites, textures and vertex buffers, plus the mouse and keyboard bridge into AWT and an OpenAL audio channel. It stopped in June 2024.
 
-```
-git clone https://github.com/Pazaz/RT4-Client.git
-cd RT4-Client
-./gradlew run
+This fork carries that forward. The desktop client's changes since June 2024 are merged in, and the world map is fixed.
+
+## Changes in this fork
+
+| | |
+|---|---|
+| World map | `GlRaster.drawPixels` used `glRasterPos2i`, `glPixelZoom` and `glDrawPixels`, none of which exist in OpenGL ES, so the map drew as a black rectangle and left stale GL state that tinted the interface afterwards. It now uploads a texture and draws a quad. |
+| Build target | Compiles against the Java 8 API rather than only emitting Java 8 bytecode. See below. |
+| Build stamp | Every jar records the commit it was built from. |
+| Merged | The desktop client's work from June 2024 to August 2026, minus a per-frame framebuffer readback that exists for a desktop overlay plugin and is far too expensive here. |
+
+## Building
+
+```bash
+./gradlew :client:jar
 ```
 
-You will be connected to a test server automatically.  
-This server is provided by 2009scape for their own internal developments.
+The output is `client/build/libs/client-1.0.0.jar`. A JDK 17 is fine.
 
-## Deviations
+**The build must compile against the Java 8 API, not just emit Java 8 bytecode.** `client/build.gradle` and `signlink/build.gradle` set `options.release = 8` for this. Without it, javac links against the modern class library and emits calls like `ByteBuffer.flip()` returning `ByteBuffer`, which is the Java 9 signature. PojavLauncher runs the client on a Java 8 runtime, so those calls do not exist and the client dies with `NoSuchMethodError` before it draws anything. Setting `sourceCompatibility` and `targetCompatibility` does not prevent this, which is a good few hours of your life if you find out the hard way.
 
-Configurable:
-- Packet behaviors to make it compatible with existing servers
-- View distance in HD
-- Bilinear map filtering in HD/SD
-- Tweening enabled by default (existed in client)
-- Shift-click behavior on inventory items enabled by default (existed in client)
-- Login screen music uses the player's saved Music Volume setting instead of defaulting to max
-- Compatibility patch for HD point-light rendering in Diango's Workshop (legacy 2005 Christmas event)
+Every jar records its own origin, so any build can be traced back to source:
 
-Unconfigurable:
-- JOGL was updated to 2.4.0
-- Update/render loop was decoupled to tick indepedently from each other
-- Camera panning input rewritten to use render loop timing
-- Varp array size was extended to 3500 instead of 2500
-- Mouse wheel camera movement (click middle button and move mouse)
-- Render FPS is set to your monitor's refresh rate
+```bash
+unzip -p rt4.jar META-INF/MANIFEST.MF
+```
 
+A build made with uncommitted changes is marked `-dirty`.
 
-## Policy on Use of AI Tools
+## Contributing
 
-You, the contributor, agree to submit quality code to the best of your ability which you have tested yourself and confirmed that it works as intended, and if it doesn’t work, you agree to take constructive feedback and fix it. 
+If you want to contribute to 2009Scape, do it [upstream](https://gitlab.com/2009scape/rt4-client) rather than here, and read their contribution and AI policy first, because they are strict about both and it is their project to run as they see fit.
 
-You should be able to explain or defend how any part of your code works, without the use of AI or any other assistive tools. 
+## Licence
 
-2009scape reserves the right to reject your MR on grounds of poor quality, poor functionality, poor code style, poor attitudes or unethical over-reliance on assistive tools.  
+AGPL-3.0, inherited from upstream. See [LICENSE](LICENSE).
 
-2009scape reserves the right to bar an individual from contributing due to patterns of aforementioned behavior, and close or delete all future MRs or issues or suggestions from said person without given explanation.
-
-AI may not be used to generate your MR description, your issue description, or any responses to any discourse present on the Gitlab at any time or in any fashion. If you use AI in any of these places, it will be assumed that your entire contribution is AI and that you have no clue how it functions, and the remainder of the policy outlined above will be applied to you immediately.
-
-## Libraries Used
-
-- JOGL/Gluegen 2.4.0rc
-- Google Gson 2.9.0
+| | |
+|---|---|
+| Forked from | [downthecrop/rt4-client](https://gitlab.com/downthecrop/rt4-client), branch `lwjgl-mobile-callbacks` |
+| Which forked | [2009scape/rt4-client](https://gitlab.com/2009scape/rt4-client) |
+| Which forked | [Pazaz/RT4-Client](https://github.com/pazaz/rt4-client) |
